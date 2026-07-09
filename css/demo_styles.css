@@ -1,0 +1,1217 @@
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #222;
+            touch-action: none;
+            font-family: sans-serif;
+            /* 🚀 FIX IOS: Use dynamic viewport height to account for browser chrome */
+            height: 100dvh;
+            width: 100vw;
+
+            /* 📱 FIX iOS 'Larger Text' accessibility: prevent browser from scaling fonts */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* 👾 EL FIX MAESTRO PARA LA FUENTE GLOBAL 👾 */
+        * {
+            font-family: 'VT323', monospace !important;
+            letter-spacing: 1px;
+            box-sizing: border-box; /* Prevents padding from pushing elements out of bounds */
+        }
+
+        /* 📱 UNIVERSAL MODAL OVERLAY: always covers the true visible area, even on iPhone */
+        .modal-overlay, [style*="width: 100vw"][style*="height: 100vh"],
+        [style*="width:100vw"][style*="height:100vh"] {
+            width: 100vw !important;
+            height: 100dvh !important;
+        }
+
+        /* 📱 UNIVERSAL MODAL PANEL: clamps any modal box to fit any screen */
+        .modal-panel {
+            max-width: min(95vw, 600px) !important;
+            max-height: 85dvh !important;
+            overflow-y: auto !important;
+            /* iPhone notch + home indicator safe area */
+            padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+        }
+
+        /* ========================================================= */
+        /* 📜 BARRAS DE DESPLAZAMIENTO ESTILO CRISTAL (SCROLLBARS)   */
+        /* ========================================================= */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Universal iOS Lockdown */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            /* Kills the grey flash when tapping */
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+            /* Double-secures no native zooming */
+        }
+
+        /* Expanding Chat UI */
+        #chat-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            height: 45px;
+            width: 45px;
+            /* Starts as a dark square */
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        #chat-container.expanded {
+            width: calc(100vw - 40px);
+            /* Expands across the screen */
+            max-width: 400px;
+        }
+
+        #chat-toggle {
+            min-width: 45px;
+            height: 45px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            font-size: 16px;
+            padding: 0 10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
+        #chat-container.expanded #chat-input {
+            opacity: 1;
+        }
+
+        #send-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            margin-right: 5px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            /* Can't click when hidden */
+        }
+
+        #chat-container.expanded #send-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+
+        /* Shared Joystick Styles */
+        #joystick-zone,
+        #aim-zone {
+            position: fixed;
+            bottom: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+        }
+
+        #joystick-zone {
+            left: 30px;
+        }
+
+        #aim-zone {
+            right: 30px;
+        }
+
+        /* Anchored to the right side */
+
+        #joystick-knob,
+        #aim-knob {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            position: relative;
+            pointer-events: none;
+        }
+
+        #auth-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        #auth-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 80%;
+            max-width: 320px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #auth-box input {
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            border: 1px solid transparent;
+        }
+
+        #auth-box input:focus {
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            transition: background 0.2s;
+        }
+
+        .auth-btn:active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #auth-message {
+            color: #ff6b6b;
+            /* Soft red for errors */
+            font-size: 14px;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        #menu-toggle {
+            position: fixed;
+            top: 75px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- APP TRAY STYLES (TOP CENTERED DROPDOWN) --- */
+        #app-tray {
+            position: fixed;
+            top: 40px;
+            /* Safely below the dynamic island and chat */
+            left: 50%;
+            /* Anchor to the horizontal center */
+            width: max-content;
+            max-width: 90vw;
+            /* Keeps it within screen bounds on small phones */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 15px 20px;
+
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            overflow-x: auto;
+            /* Scroll horizontal if you have many apps */
+
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+
+            /* 🛑 CENTERED ANIMATION 🛑 */
+            transform-origin: top center;
+            /* Animation grows from the top middle */
+
+            /* translateX(-50%) keeps it centered, scale & translateY handle the hidden state */
+            transform: translateX(-50%) scale(0.8) translateY(-20px);
+            transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1.2), transform 0.3s cubic-bezier(0.25, 1, 0.5, 1.2);
+            z-index: 99;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+            scrollbar-width: none;
+        }
+
+        #app-tray::-webkit-scrollbar {
+            display: none;
+        }
+
+        #app-tray.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            /* Snaps to full size, 0 offset, perfectly centered */
+            transform: translateX(-50%) scale(0.9) translateY(0);
+        }
+
+        /* Individual App Icons */
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .app-bg {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            /* The classic iOS app curve */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin-bottom: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s, filter 0.1s;
+        }
+
+        /* The squish effect when you physically tap an app */
+        .app-icon:active .app-bg {
+            transform: scale(0.85);
+            filter: brightness(0.8);
+        }
+
+        .app-icon span {
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            letter-spacing: 0.5px;
+        }
+
+        /* --- TILE PALETTE STYLES ---*/
+        #tile-palette {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 80vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #palette-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #tile-grid {
+            flex: 1;
+            overflow: auto;
+            /* Allows infinite scrolling horizontally and vertically */
+            padding: 10px;
+        }
+
+        .palette-tile {
+            width: 24px;
+            /* Fixed size so they are easy to tap on mobile */
+            height: 24px;
+            cursor: pointer;
+            image-rendering: pixelated;
+            box-sizing: border-box;
+        }
+
+        .palette-tile.selected {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px #f1c40f;
+            position: relative;
+            z-index: 2;
+            /* Makes the highlight pop over other tiles */
+        }
+
+        /* --- PALETTE RESIZER --- */
+        #palette-resizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 100%;
+            cursor: ew-resize;
+            /* Shows the left-right stretch cursor */
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            /* Crucial so dragging it doesn't accidentally scroll */
+        }
+
+        #palette-resizer::after {
+            content: "⋮";
+            color: white;
+            font-size: 20px;
+            opacity: 0.5;
+        }
+
+        /* --- TILE INSPECTOR STYLES (NUEVO DISEÑO ANCLADO) --- */
+        #tile-inspector {
+            position: fixed;
+            bottom: 75px;
+            /* Se apila perfectamente encima de la barra principal */
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            max-width: 95vw;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 12px;
+
+            display: none;
+            /* Flex cuando está activo */
+            align-items: center;
+            gap: 12px;
+
+            z-index: 1001;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            overflow-x: auto;
+            /* Permite hacer scroll lateral en celulares si se llena de botones */
+            white-space: nowrap;
+        }
+
+        #tile-inspector::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Ocultar barra de scroll visual */
+
+        /* Inspector Buttons */
+        .layer-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .layer-btn.active {
+            background: #f1c40f;
+            color: black;
+            border-color: white;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .tool-btn.active {
+            background: #3498db;
+            border-color: white;
+        }
+
+        /* --- FLOATING EDITOR TOOLBAR --- */
+        #editor-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            max-width: 95vw;
+
+            height: 45px;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            /* Slightly tighter corners */
+            display: flex;
+            align-items: center;
+            z-index: 1002;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+
+        #toolbar-drag-handle {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 18px;
+            /* SHRUNK */
+            padding: 0 5px;
+            /* SHRUNK */
+            cursor: grab;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+        }
+
+        #toolbar-controls {
+            display: flex;
+            flex: 1;
+            gap: 4px;
+            /* SHRUNK gap between buttons */
+            overflow-x: auto;
+            align-items: center;
+            height: 100%;
+            padding: 0 5px;
+            scrollbar-width: none;
+        }
+
+        #toolbar-controls::-webkit-scrollbar {
+            display: none;
+        }
+
+        .toolbar-divider {
+            width: 2px;
+            height: 24px;
+            /* SHRUNK */
+            background: rgba(255, 255, 255, 0.15);
+            margin: 0 2px;
+            flex-shrink: 0;
+            border-radius: 2px;
+        }
+
+        /* THE COMPACT BUTTON STYLES */
+        #editor-toolbar .tool-btn,
+        #editor-toolbar .layer-btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+            padding: 6px 8px;
+            /* SHRUNK padding */
+            font-size: 11px;
+            /* SHRUNK font size */
+            border-radius: 8px;
+        }
+
+        /* --- MAP BUTTON & MODAL --- */
+        #map-toggle {
+            position: fixed;
+            top: 130px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #map-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            /* Forces it above the edit tray */
+        }
+
+        #map-container {
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #minimap-canvas {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            image-rendering: pixelated;
+            /* Keeps tiles sharp when shrunk */
+        }
+
+        /* Mini-Map Overlay Buttons */
+        .map-ctrl-btn {
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .map-ctrl-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
+        }
+
+        /* --- FLASH ROJO DE DAÑO EN PANTALLA COMPLETA --- */
+        #damage-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Un gradiente que oscurece y pinta de rojo los bordes de la pantalla */
+            background: radial-gradient(circle, rgba(255, 0, 0, 0) 60%, rgba(255, 0, 0, 0.5) 100%);
+            pointer-events: none;
+            /* Para que los toques traspasen hacia el joystick */
+            opacity: 0;
+            transition: opacity 0.1s ease-out;
+            z-index: 999;
+        }
+
+        /* --- ISLA DINÁMICA (ULTRA COMPACTA Y AUTO-OCULTABLE) --- */
+        #dynamic-island {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            /* Aún más estrecha */
+            height: 26px;
+            /* Ultra delgada (antes 36px) */
+            background-color: #000;
+            border-radius: 13px;
+            /* Mitad de la altura */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px;
+            /* Relleno 100% simétrico en todos los lados */
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 2px solid #222;
+
+            /* -- SISTEMA DE TRANSPARENCIA -- */
+            opacity: 0.3;
+            /* Traslúcida por defecto */
+            transition: width 0.4s cubic-bezier(0.25, 1.5, 0.5, 1), height 0.4s, opacity 0.5s ease;
+            z-index: 1000;
+            pointer-events: auto;
+            /* Para detectar toques */
+        }
+
+        /* --- BOTÓN DE NOTIFICACIONES --- */
+        #island-notif-btn {
+            position: relative;
+            width: 16px;
+            /* Reducido a 16px (Igual que el avatar) */
+            height: 16px;
+            /* Reducido a 16px (Igual que el avatar) */
+            background-color: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.2s;
+            pointer-events: auto;
+        }
+
+        #island-notif-btn:active {
+            background-color: #555;
+        }
+
+        /* El puntito rojo de alerta ajustado a la nueva escala */
+        #notif-badge {
+            position: absolute;
+            top: -1px;
+            /* Más pegado al botón */
+            right: -1px;
+            /* Más pegado al botón */
+            width: 4px;
+            /* Un poco más pequeño */
+            height: 4px;
+            /* Un poco más pequeño */
+            background-color: #e74c3c;
+            border-radius: 50%;
+            border: 1px solid #000;
+        }
+
+        /* Clase mágica que la despierta */
+        #dynamic-island.active {
+            opacity: 1.0;
+        }
+
+        #island-hp-container {
+            position: relative;
+            flex-grow: 1;
+            height: 12px;
+            /* Píldora súper delgada */
+            background-color: #333;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #island-hp-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #2ecc71;
+            transition: width 0.2s ease, background-color 0.3s ease;
+            z-index: 1;
+        }
+
+        #island-hp-text {
+            position: relative;
+            z-index: 2;
+            color: white;
+            font-weight: 900;
+            font-size: 9px;
+            /* Texto miniatura */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        #island-avatar {
+            width: 16px;
+            /* Avatar miniatura */
+            height: 16px;
+            image-rendering: pixelated;
+            border-radius: 50%;
+            background-color: #1a1a1a;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        /* ========================================================= */
+        /*  MODAL JUNKYARD PRO (Glassmorphism & Two Columns) */
+        /* ========================================================= */
+        #junkyard-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            /* Efecto Glassmorphism */
+            background: rgba(18, 25, 33, 0.85);
+            /* Tono oscuro profundo semi-transparente */
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* Borde sutil */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
+
+            color: white;
+            z-index: 1000;
+            width: 580px;
+            /* Más ancho para las dos columnas */
+            height: 400px;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        /* Cabecera */
+        #junkyard-modal h2 {
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e67e22;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 18px;
+        }
+
+        /* Contenedor Principal (Flexbox) */
+        .junkyard-body {
+            display: flex;
+            flex: 1;
+            height: calc(100% - 100px);
+            /* Restar header y footer */
+        }
+
+        /* COLUMNA IZQUIERDA (LISTA) */
+        .junkyard-left {
+            width: 60%;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #junkyard-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* Barras de desplazamiento estilizadas */
+        #junkyard-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #junkyard-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* Fila de Basura Interactiva */
+        .trash-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trash-row:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .trash-row.selected {
+            background: rgba(230, 126, 34, 0.15);
+            border-color: rgba(230, 126, 34, 0.4);
+        }
+
+        /* COLUMNA DERECHA (PREVISUALIZADOR) */
+        .junkyard-right {
+            width: 40%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #trash-visualizer {
+            width: 100%;
+            text-align: center;
+            display: none;
+            /* Se muestra al seleccionar */
+        }
+
+        #junk-preview-canvas {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            image-rendering: pixelated;
+            margin-bottom: 10px;
+        }
+
+        #visualizer-placeholder {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-size: 13px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Footer y Botones */
+        .junkyard-footer {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-green {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-green:hover {
+            background: #2ecc71;
+        }
+
+        .btn-red {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-red:hover {
+            background: #e74c3c;
+        }
+
+        /* Inputs y Selectores */
+        .junk-quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .junk-quantity-selector input {
+            width: 60px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        /* ========================================================= */
+        /* 📱 BLOQUEO DE ORIENTACIÓN (PORTRAIT LOCK)                 */
+        /* ========================================================= */
+        #orientation-lock {
+            display: none;
+            /* Oculto por defecto */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #111;
+            z-index: 999999;
+            /* Por encima de TODO */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        #orientation-lock span {
+            font-size: 60px;
+            animation: rotatePhone 2s infinite ease-in-out;
+            margin-bottom: 20px;
+        }
+
+        @keyframes rotatePhone {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-90deg);
+            }
+
+            100% {
+                transform: rotate(-90deg);
+            }
+        }
+
+        @keyframes blink-arrow {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            50% {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+        }
+
+        /* ========================================================= */
+        /* 👾 ÍCONOS PIXEL ART (UI)                                  */
+        /* ========================================================= */
+        .pixel-icon {
+            width: 25px;
+            /* Escalamos el ícono de 16px para que se vea bien en el botón */
+            height: 25px;
+            image-rendering: pixelated;
+            /* ¡LA MAGIA! Evita que se vea borroso */
+            object-fit: contain;
+            filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.6));
+            /* Reemplaza el text-shadow de los emojis */
+        }
+
+        /* ========================================================= */
+        /* 📱 RESPONSIVIDAD PARA MODALES DE DOS COLUMNAS (CELULAR)   */
+        /* ========================================================= */
+        @media (max-width: 700px) {
+
+            #junkyard-modal,
+            #jeweler-modal {
+                width: 95vw !important;
+                height: 85vh !important;
+                max-height: none !important;
+            }
+
+            .junkyard-body {
+                flex-direction: column !important;
+                /* Apila las columnas verticalmente */
+            }
+
+            .junkyard-left {
+                width: 100% !important;
+                height: 45% !important;
+                /* La lista toma la mitad de arriba */
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .junkyard-right {
+                width: 100% !important;
+                height: 55% !important;
+                /* La vista previa toma la mitad de abajo */
+                padding: 10px !important;
+            }
+
+            .shop-flex-container {
+                flex-direction: column !important;
+                /* Apila el monito y la info */
+                overflow-y: auto;
+            }
+
+            #shop-player-preview-container {
+                height: 180px !important;
+                flex: none !important;
+            }
+        }
+
+        /* ========================================================= */
+        /* 🚀 RENDIMIENTO MÓVIL: APAGAR EFECTO CRISTAL Y SOMBRAS     */
+        /* ========================================================= */
+        @media (max-width: 768px),
+        (hover: none) and (pointer: coarse) {
+
+            /* Atrapamos todos los modales pesados de un golpe */
+            * {
+                /* Destruir el glassmorphism y glow en móviles */
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            #junkyard-modal,
+            #jeweler-modal,
+            #shop-modal>div,
+            #squad-chat-modal>div,
+            #squad-main-modal>div,
+            #squad-list-modal>div,
+            #squad-search-modal>div,
+            #leaderboard-modal>div,
+            #inventory-modal>div,
+            #equip-modal>div,
+            #profile-modal>div,
+            #more-options-modal>div,
+            #options-modal>div,
+            #pm-modal>div,
+            #inbox-modal>div,
+            #squad-member-modal>div,
+            #app-tray,
+            #chat-container {
+                background: rgba(25, 25, 25, 0.98) !important;
+                /* Color sólido elegante */
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.9) !important;
+                /* Sombra barata y optimizada */
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Apagamos el gradiente animado de neón del mapa */
+            #fx-gloom,
+            #fx-vignette {
+                display: none !important;
+            }
+
+            /* Evita tirones al recalcular layouts en botones vivos */
+            .app-icon .app-bg {
+                box-shadow: none !important;
+                transition: transform 0.1s !important;
+                /* Matar transición de filtro */
+            }
+        }
+
+        /* ====================================================
+           📱 UNIVERSAL MOBILE MODAL FIX
+           Targets every fullscreen overlay + inner panel
+           ==================================================== */
+
+        /* 1. Every fullscreen overlay — use dvh so it never goes under Safari's address bar */
+        [style*="height: 100vh"],
+        [style*="height:100vh"] {
+            height: 100dvh !important;
+        }
+
+        /* 2. Every modal inner panel — clamp width & height, allow scrolling */
+        /* Matches elements that have a dark background (rgba 30,30,30 pattern) and are inside overlays */
+        [style*="background: rgba(30, 30, 30"],
+        [style*="background: rgba(20, 20, 20"],
+        [style*="background: rgba(15, 15, 15"] {
+            max-width: min(95vw, 700px) !important;
+            max-height: 88dvh !important;
+            overflow-y: auto !important;
+            /* Pull up from iPhone home indicator */
+            margin-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* 3. Small phones (≤390px wide, e.g. iPhone SE, older Androids) */
+        @media (max-width: 390px) {
+            [style*="background: rgba(30, 30, 30"],
+            [style*="background: rgba(20, 20, 20"],
+            [style*="background: rgba(15, 15, 15"] {
+                max-width: 98vw !important;
+                max-height: 90dvh !important;
+                padding: 12px !important;
+                font-size: 14px !important;
+            }
+            /* Shrink modal headings on tiny screens */
+            [style*="background: rgba(30, 30, 30"] h2,
+            [style*="background: rgba(30, 30, 30"] h3 {
+                font-size: 18px !important;
+            }
+        }
+
+        /* 4. Safe area for iPhone notch & home bar — applied to fixed HUD elements */
+        #hud-hotbar,
+        #hud-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
+        }
+        #joystick-zone {
+            margin-bottom: env(safe-area-inset-bottom, 0px);
+            margin-left: env(safe-area-inset-left, 0px);
+        }
+        #aim-zone {
+            margin-bottom: env(safe-area-inset-bottom, 0px);
+            margin-right: env(safe-area-inset-right, 0px);
+        }
