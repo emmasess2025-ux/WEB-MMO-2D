@@ -1692,6 +1692,7 @@
             <div class="toolbar-divider"></div>
 
             <button id="world-paint-btn" class="tool-btn active" style="background: #27ae60;">🖌️ Paint</button>
+            <button id="world-fill-btn" class="tool-btn">🪣 Fill</button>
             <button id="world-select-btn" class="tool-btn">🔲 Select</button>
             <select id="zone-type-select"
                 style="background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 5px; margin-right: 5px; cursor: pointer; font-family: sans-serif; display: none;"></select>
@@ -1714,7 +1715,12 @@
                 style="background: transparent; border: 1px solid #2ecc71; color: #2ecc71; font-weight: bold; display: none; margin-left: 5px;">👁️
                 Ver Zonas</button>
 
-            <button id="eraser-btn" class="tool-btn" style="background: rgba(255, 107, 107, 0.4);">🗑️ Erase</button>
+            <button id="overlay-collisions-btn" class="tool-btn" style="background: rgba(255, 0, 0, 0.1); border: 1px solid red; color: white; font-weight: bold; margin-left: 5px;">🟥 Collisions</button>
+            <button id="overlay-logic-btn" class="tool-btn" style="background: rgba(155, 89, 182, 0.1); border: 1px solid #9b59b6; color: white; font-weight: bold; margin-left: 5px;">🟪 Logic</button>
+            <button id="overlay-grid-btn" class="tool-btn" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; margin-left: 5px;">📐 Grid</button>
+            <button id="prefabs-btn" class="tool-btn" style="background: rgba(41, 128, 185, 0.5); border: 1px solid #3498db; color: white; font-weight: bold; margin-left: 5px;">💾 Prefabs</button>
+
+            <button id="eraser-btn" class="tool-btn" style="background: rgba(255, 107, 107, 0.4); margin-left: 10px;">🗑️ Erase</button>
             <div class="toolbar-divider"></div>
 
             <button class="layer-btn active" data-layer="0">L0 ⬇</button>
@@ -1791,175 +1797,183 @@
         </div>
     </div>
 
-    <div id="tile-inspector">
+    <div id="tile-inspector" style="flex-direction: column; align-items: stretch; padding: 10px;">
+        <!-- TABS HEADER -->
+        <div style="display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; justify-content: center;">
+            <button id="tab-btn-logic" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">⚙️ Lógica</button>
+            <button id="tab-btn-copy" style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">📋 Copiar</button>
+            <button id="tab-btn-delete" style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">🗑️ Borrar</button>
+        </div>
 
-        <label
-            style="color: white; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">
-            <input type="checkbox" id="inspect-collision"> Solid
-            <input type="checkbox" id="inspect-issit" style="margin-left:8px;"> Sentarse
-        </label>
-
-        <div id="teleport-settings"
-            style="display: none; align-items: center; gap: 5px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">
-
+        <!-- TAB 1: LOGICA -->
+        <div id="tab-logic" style="display: flex; align-items: center; gap: 10px;">
             <label
-                style="color: #3498db; font-size: 11px; display: flex; align-items: center; gap: 3px; cursor: pointer; border-right: 1px dashed rgba(255,255,255,0.2); padding-right: 5px; margin-right: 5px; font-weight: bold;">
-                <input type="checkbox" id="logic-requires-click"> Clic (Acción)
+                style="color: white; font-size: 12px; display: flex; align-items: center; gap: 5px; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 10px;">
+                <input type="checkbox" id="inspect-collision"> Solid
+                <input type="checkbox" id="inspect-issit" style="margin-left:8px;"> Sentarse
             </label>
 
-            <span style="color: #f1c40f; font-size: 11px; font-weight: bold;">⚡ Lógica:</span>
+            <div id="teleport-settings"
+                style="display: none; align-items: center; gap: 5px;">
 
-            <select id="logic-type-select"
-                style="background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size: 11px; outline: none;">
-                <option value="none">Normal (Vacío)</option>
-                <option value="teleport">Puerta (TP)</option>
-                <option value="shop">Tienda</option>
-                <option value="base">🏰 Base de Captura (Turf War)</option>
-                <option value="safezone">Zona Segura 🛡️</option>
-                <option value="junkyard"> El Yonke (Vender)</option>
-                <option value="jeweler"> Joyería (Metales)</option>
-                <option value="npc">🗣️ NPC (Mensaje)</option>
-                <option value="arena">🎮 Minigames</option>
-            </select>
-            <div id="arena-settings"
-                style="display:none; flex-wrap: wrap; gap:5px; margin-left: 5px; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); width: 220px;">
-                <input type="text" id="ins-arena-name" placeholder="Nombre de sala"
-                    style="width: 100%; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;">
-                
-                <select id="ins-minigame-type" style="width: 100%; background: #222; color: white; border: 1px solid #555; padding: 3px; font-size: 11px;">
-                    <option value="spar">🥊 Sparring (Combat)</option>
-                    <option value="soccer">⚽ Soccer</option>
-                    <option value="battle_royale">🪂 Battle Royale</option>
+                <label
+                    style="color: #3498db; font-size: 11px; display: flex; align-items: center; gap: 3px; cursor: pointer; border-right: 1px dashed rgba(255,255,255,0.2); padding-right: 5px; margin-right: 5px; font-weight: bold;">
+                    <input type="checkbox" id="logic-requires-click"> Clic (Acción)
+                </label>
+
+                <span style="color: #f1c40f; font-size: 11px; font-weight: bold;">⚡ Lógica:</span>
+
+                <select id="logic-type-select"
+                    style="background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size: 11px; outline: none;">
+                    <option value="none">Normal (Vacío)</option>
+                    <option value="teleport">Puerta (TP)</option>
+                    <option value="shop">Tienda</option>
+                    <option value="base">🏰 Base de Captura (Turf War)</option>
+                    <option value="safezone">Zona Segura 🛡️</option>
+                    <option value="junkyard"> El Yonke (Vender)</option>
+                    <option value="jeweler"> Joyería (Metales)</option>
+                    <option value="npc">🗣️ NPC (Mensaje)</option>
+                    <option value="arena">🎮 Minigames</option>
                 </select>
+                <div id="arena-settings"
+                    style="display:none; flex-wrap: wrap; gap:5px; margin-left: 5px; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); width: 220px;">
+                    <input type="text" id="ins-arena-name" placeholder="Nombre de sala"
+                        style="width: 100%; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;">
+                    
+                    <select id="ins-minigame-type" style="width: 100%; background: #222; color: white; border: 1px solid #555; padding: 3px; font-size: 11px;">
+                        <option value="spar">🥊 Sparring (Combat)</option>
+                        <option value="soccer">⚽ Soccer</option>
+                        <option value="battle_royale">🪂 Battle Royale</option>
+                    </select>
 
-                <!-- COMMON SETTINGS (TEAMS) -->
-                <div id="arena-common-settings" style="width: 100%; display: flex; gap: 5px;">
-                    <input type="number" id="ins-arena-t1-size" placeholder="T1 Max" value="1"
-                        style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;"
-                        title="Jugadores Equipo Azul">
-                    <span style="color:white; font-size:10px; margin-top:4px;">vs</span>
-                    <input type="number" id="ins-arena-t2-size" placeholder="T2 Max" value="1"
-                        style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;"
-                        title="Jugadores Equipo Rojo">
-                    <input type="number" id="ins-arena-max-players" placeholder="Max" value="2"
-                        style="width: 40px; background: #111; color: #2ecc71; border: 1px solid #555; padding: 3px; font-size:11px; display: none;"
-                        title="Jugadores Máximos (BR/HideSeek)">
-                </div>
-
-                <!-- SPAR SETTINGS -->
-                <div id="arena-fields-spar" style="width: 100%; display:flex; gap: 5px; margin-top: 5px;">
-                    <input type="number" id="ins-arena-p1x" placeholder="P1 X" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-arena-p1y" placeholder="P1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-arena-p2x" placeholder="P2 X" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-arena-p2y" placeholder="P2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
-                </div>
-
-                <!-- SOCCER SETTINGS -->
-                <div id="arena-fields-soccer" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-                    <div style="width:100%; display:flex; gap: 5px;">
-                        <input type="number" id="ins-soccer-bx" placeholder="Ball X" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn X">
-                        <input type="number" id="ins-soccer-by" placeholder="Ball Y" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn Y">
+                    <!-- COMMON SETTINGS (TEAMS) -->
+                    <div id="arena-common-settings" style="width: 100%; display: flex; gap: 5px;">
+                        <input type="number" id="ins-arena-t1-size" placeholder="T1 Max" value="1"
+                            style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;"
+                            title="Jugadores Equipo Azul">
+                        <span style="color:white; font-size:10px; margin-top:4px;">vs</span>
+                        <input type="number" id="ins-arena-t2-size" placeholder="T2 Max" value="1"
+                            style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;"
+                            title="Jugadores Equipo Rojo">
+                        <input type="number" id="ins-arena-max-players" placeholder="Max" value="2"
+                            style="width: 40px; background: #111; color: #2ecc71; border: 1px solid #555; padding: 3px; font-size:11px; display: none;"
+                            title="Jugadores Máximos (BR/HideSeek)">
                     </div>
-                    <div style="width:100%; display:flex; gap: 5px;">
-                        <input type="number" id="ins-soccer-g1x1" placeholder="G1 X1" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Start X">
-                        <input type="number" id="ins-soccer-g1x2" placeholder="G1 X2" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue End X">
-                        <input type="number" id="ins-soccer-g1y" placeholder="G1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Row Y">
+
+                    <!-- SPAR SETTINGS -->
+                    <div id="arena-fields-spar" style="width: 100%; display:flex; gap: 5px; margin-top: 5px;">
+                        <input type="number" id="ins-arena-p1x" placeholder="P1 X" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-arena-p1y" placeholder="P1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-arena-p2x" placeholder="P2 X" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-arena-p2y" placeholder="P2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
                     </div>
-                    <div style="width:100%; display:flex; gap: 5px;">
-                        <input type="number" id="ins-soccer-g2x1" placeholder="G2 X1" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Start X">
-                        <input type="number" id="ins-soccer-g2x2" placeholder="G2 X2" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red End X">
-                        <input type="number" id="ins-soccer-g2y" placeholder="G2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Row Y">
+
+                    <!-- SOCCER SETTINGS -->
+                    <div id="arena-fields-soccer" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                        <div style="width:100%; display:flex; gap: 5px;">
+                            <input type="number" id="ins-soccer-bx" placeholder="Ball X" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn X">
+                            <input type="number" id="ins-soccer-by" placeholder="Ball Y" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn Y">
+                        </div>
+                        <div style="width:100%; display:flex; gap: 5px;">
+                            <input type="number" id="ins-soccer-g1x1" placeholder="G1 X1" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Start X">
+                            <input type="number" id="ins-soccer-g1x2" placeholder="G1 X2" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue End X">
+                            <input type="number" id="ins-soccer-g1y" placeholder="G1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Row Y">
+                        </div>
+                        <div style="width:100%; display:flex; gap: 5px;">
+                            <input type="number" id="ins-soccer-g2x1" placeholder="G2 X1" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Start X">
+                            <input type="number" id="ins-soccer-g2x2" placeholder="G2 X2" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red End X">
+                            <input type="number" id="ins-soccer-g2y" placeholder="G2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Row Y">
+                        </div>
                     </div>
+
+                    <!-- BR SETTINGS -->
+                    <div id="arena-fields-br" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                        <input type="number" id="ins-br-minx" placeholder="MinX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-maxx" placeholder="MaxX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-miny" placeholder="MinY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-maxy" placeholder="MaxY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                    </div>
+
+                    <div style="width: 100%; margin-top: 5px;">
+                        <label style="color: #f1c40f; font-size: 11px; font-weight: bold; cursor: pointer;">
+                            <input type="checkbox" id="ins-arena-ranked"> 🏆 Ranked Match
+                        </label>
+                    </div>
+                </div>
+                <div id="base-settings"
+                    style="display:none; align-items:center; gap:5px; margin-left: 5px; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); flex-wrap: wrap; width: 330px;">
+                    <input type="text" id="ins-turf-name" placeholder="Nombre"
+                        style="width: 100px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;">
+                    <input type="number" id="ins-turf-hp" placeholder="HP" value="5000"
+                        style="width: 50px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;">
+
+                    <input type="number" id="ins-turf-ox" placeholder="Img X"
+                        style="width: 38px; background: #111; color: #3498db; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Offset Visual X">
+                    <input type="number" id="ins-turf-oy" placeholder="Img Y"
+                        style="width: 38px; background: #111; color: #e74c3c; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Offset Visual Y">
+
+                    <input type="number" id="ins-turf-hx" placeholder="Hit X"
+                        style="width: 38px; background: #111; color: #f1c40f; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Offset Hitbox X">
+                    <input type="number" id="ins-turf-hy" placeholder="Hit Y"
+                        style="width: 38px; background: #111; color: #f1c40f; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Offset Hitbox Y">
+
+                    <input type="number" id="ins-turf-hw" placeholder="Ancho (W)"
+                        style="width: 38px; background: #111; color: #2ecc71; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Ancho Hitbox (W)">
+                    <input type="number" id="ins-turf-hh" placeholder="Alto (H)"
+                        style="width: 38px; background: #111; color: #2ecc71; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
+                        title="Alto Hitbox (H)">
                 </div>
 
-                <!-- BR SETTINGS -->
-                <div id="arena-fields-br" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-                    <input type="number" id="ins-br-minx" placeholder="MinX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-br-maxx" placeholder="MaxX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-br-miny" placeholder="MinY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    <input type="number" id="ins-br-maxy" placeholder="MaxY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                </div>
+                <input type="text" id="npc-message-input" placeholder="Mensaje del NPC..."
+                    style="width: 150px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none; font-size: 11px;">
 
-                <div style="width: 100%; margin-top: 5px;">
-                    <label style="color: #f1c40f; font-size: 11px; font-weight: bold; cursor: pointer;">
-                        <input type="checkbox" id="ins-arena-ranked"> 🏆 Ranked Match
-                    </label>
-                </div>
+                <input type="number" id="tp-dest-x" placeholder="X"
+                    style="width: 40px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
+                <input type="number" id="tp-dest-y" placeholder="Y"
+                    style="width: 40px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
+                <input type="text" id="shop-item-id" placeholder="Item ID"
+                    style="width: 70px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
+
+                <input type="number" id="shop-item-row" placeholder="Fila" min="0" max="10"
+                    style="width: 35px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
+                    title="Fila de la imagen">
+
+                <input type="number" id="shop-item-sx" placeholder="X" value="0"
+                    style="width: 30px; background: #111; color: #3498db; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
+                    title="Mover Izquierda/Derecha">
+                <input type="number" id="shop-item-sy" placeholder="Y" value="0"
+                    style="width: 30px; background: #111; color: #e74c3c; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
+                    title="Mover Arriba/Abajo">
+
+                <button id="save-tp-btn"
+                    style="background: #2ecc71; color: white; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Guardar</button>
             </div>
-            <div id="base-settings"
-                style="display:none; align-items:center; gap:5px; margin-left: 5px; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); flex-wrap: wrap; width: 330px;">
-                <input type="text" id="ins-turf-name" placeholder="Nombre"
-                    style="width: 100px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;">
-                <input type="number" id="ins-turf-hp" placeholder="HP" value="5000"
-                    style="width: 50px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;">
-
-                <input type="number" id="ins-turf-ox" placeholder="Img X"
-                    style="width: 38px; background: #111; color: #3498db; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Offset Visual X">
-                <input type="number" id="ins-turf-oy" placeholder="Img Y"
-                    style="width: 38px; background: #111; color: #e74c3c; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Offset Visual Y">
-
-                <input type="number" id="ins-turf-hx" placeholder="Hit X"
-                    style="width: 38px; background: #111; color: #f1c40f; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Offset Hitbox X">
-                <input type="number" id="ins-turf-hy" placeholder="Hit Y"
-                    style="width: 38px; background: #111; color: #f1c40f; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Offset Hitbox Y">
-
-                <input type="number" id="ins-turf-hw" placeholder="Ancho (W)"
-                    style="width: 38px; background: #111; color: #2ecc71; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Ancho Hitbox (W)">
-                <input type="number" id="ins-turf-hh" placeholder="Alto (H)"
-                    style="width: 38px; background: #111; color: #2ecc71; border: 1px solid #555; border-radius: 4px; padding: 3px; font-size:11px;"
-                    title="Alto Hitbox (H)">
-            </div>
-
-            <input type="text" id="npc-message-input" placeholder="Mensaje del NPC..."
-                style="width: 150px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none; font-size: 11px;">
-
-            <input type="number" id="tp-dest-x" placeholder="X"
-                style="width: 40px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
-            <input type="number" id="tp-dest-y" placeholder="Y"
-                style="width: 40px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
-            <input type="text" id="shop-item-id" placeholder="Item ID"
-                style="width: 70px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;">
-
-            <input type="number" id="shop-item-row" placeholder="Fila" min="0" max="10"
-                style="width: 35px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
-                title="Fila de la imagen">
-
-            <input type="number" id="shop-item-sx" placeholder="X" value="0"
-                style="width: 30px; background: #111; color: #3498db; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
-                title="Mover Izquierda/Derecha">
-            <input type="number" id="shop-item-sy" placeholder="Y" value="0"
-                style="width: 30px; background: #111; color: #e74c3c; border: 1px solid #555; border-radius: 4px; padding: 3px; display: none;"
-                title="Mover Arriba/Abajo">
-
-            <button id="save-tp-btn"
-                style="background: #2ecc71; color: white; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Guardar</button>
         </div>
-        <button id="inspect-rotate-btn" class="tool-btn"
-            style="background: #e67e22; border: none; color: white; font-weight: bold; margin-right: 10px;">🔄
-            Rotate</button>
-        <button id="inspect-copy-btn" class="tool-btn" style="background: #3498db; border: none; color: white;">📋 Copy
-            L<span id="copy-layer-num"></span></button>
-        <button id="inspect-copy-below-btn" class="tool-btn" style="background: #2980b9; border: none; color: white;">👇
-            Copy Below</button>
-        <button id="inspect-copy-above-btn" class="tool-btn" style="background: #e67e22; border: none; color: white;">👆
-            Copy Above</button>
-        <button id="inspect-copy-all-btn" class="tool-btn" style="background: #9b59b6; border: none; color: white;">📚
-            Copy ALL</button>
 
-        <div style="width: 2px; height: 20px; background: rgba(255,255,255,0.2);"></div> <button id="inspect-delete-btn"
-            class="tool-btn" style="background: #e74c3c; border: none; color: white;">🗑️ Del L<span
-                id="del-layer-num"></span></button>
-        <button id="inspect-delete-below-btn" class="tool-btn"
-            style="background: #c0392b; border: none; color: white;">👇 Del Below</button>
-        <button id="inspect-delete-above-btn" class="tool-btn"
-            style="background: #d35400; border: none; color: white;">👆 Del Above</button>
-        <button id="inspect-delete-all-btn" class="tool-btn" style="background: #8e44ad; border: none; color: white;">☢️
-            Del ALL</button>
+        <!-- TAB 2: COPIAR -->
+        <div id="tab-copy" style="display: none; align-items: center; gap: 5px; justify-content: center;">
+            <button id="inspect-rotate-btn" class="tool-btn"
+                style="background: #e67e22; border: none; color: white; font-weight: bold;">🔄 Rotate</button>
+            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+            <button id="inspect-copy-btn" class="tool-btn" style="background: #3498db; border: none; color: white;">📋 Copy L<span id="copy-layer-num"></span></button>
+            <button id="inspect-copy-below-btn" class="tool-btn" style="background: #2980b9; border: none; color: white;">👇 Copy Below</button>
+            <button id="inspect-copy-above-btn" class="tool-btn" style="background: #e67e22; border: none; color: white;">👆 Copy Above</button>
+            <button id="inspect-copy-all-btn" class="tool-btn" style="background: #9b59b6; border: none; color: white;">📚 Copy ALL</button>
+        </div>
+
+        <!-- TAB 3: BORRAR -->
+        <div id="tab-delete" style="display: none; align-items: center; gap: 5px; justify-content: center;">
+            <button id="inspect-delete-btn" class="tool-btn" style="background: #e74c3c; border: none; color: white;">🗑️ Del L<span id="del-layer-num"></span></button>
+            <button id="inspect-delete-below-btn" class="tool-btn" style="background: #c0392b; border: none; color: white;">👇 Del Below</button>
+            <button id="inspect-delete-above-btn" class="tool-btn" style="background: #d35400; border: none; color: white;">👆 Del Above</button>
+            <button id="inspect-delete-all-btn" class="tool-btn" style="background: #8e44ad; border: none; color: white;">☢️ Del ALL</button>
+        </div>
+
     </div>
 
     <div id="retro-dialog-box" onmousedown="handleDialogClick(event)" ontouchstart="handleDialogClick(event)"
@@ -1969,6 +1983,29 @@
         <div id="retro-dialog-indicator"
             style="position: absolute; bottom: 10px; right: 15px; color: #f1c40f; font-size: 18px; animation: blink-arrow 1s infinite; display: none;">
             ▼</div>
+    </div>
+
+    <!-- 💾 MODAL DE PREFABS -->
+    <div id="prefabs-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 6000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div style="background: rgba(15, 15, 20, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; width: 90%; max-width: 500px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); color: white;">
+            
+            <h2 style="margin: 0 0 15px 0; color: #3498db; text-align: center; font-family: monospace;">💾 Blueprint Library</h2>
+            
+            <!-- Guardar Nueva -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px;">
+                <input type="text" id="prefab-save-name" placeholder="Nombre (Ej: Casa Grande)" style="flex: 1; background: #111; color: white; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 14px;">
+                <button id="btn-save-prefab" style="background: #2ecc71; color: black; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Guardar Selección</button>
+            </div>
+
+            <!-- Lista de Prefabs -->
+            <div id="prefabs-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Items se inyectan acá -->
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="document.getElementById('prefabs-modal').style.display='none';" style="background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar</button>
+            </div>
+        </div>
     </div>
 
     <!-- 🌟 MODAL DE TAREAS Y LOGROS 🌟 -->
