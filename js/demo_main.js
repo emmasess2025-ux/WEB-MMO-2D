@@ -113,6 +113,10 @@
         }
 
         let editMode = false;
+        let editorMouseGridX = 0;
+        let editorMouseGridY = 0;
+        let showGridOverlay = false;
+        let hiddenLayers = new Set();
         let selectedTileId = 0;
         const TILE_SIZE = 16; // Your tileset looks like a 16px grid
         // 🚀 EL FIX DE RENDIMIENTO MÁXIMO: TILEMAP CHUNKING ARCHITECTURE
@@ -1241,6 +1245,49 @@
                 }
                 // reason:'wall' = colisión limpia, sin flash ni penalti
                 return; // Detenemos la ejecución
+            }
+
+            // --- NEW: BLUEPRINTS (PREFABS) ---
+            if (data.type === 'blueprint_list') {
+                const listDiv = document.getElementById('prefabs-list');
+                if (listDiv) {
+                    listDiv.innerHTML = '';
+                    if (!data.blueprints || data.blueprints.length === 0) {
+                        listDiv.innerHTML = '<div style="color: #aaa; text-align: center; padding: 10px;">No hay prefabs guardados.</div>';
+                    } else {
+                        data.blueprints.forEach(bp => {
+                            const btn = document.createElement('button');
+                            btn.style.background = '#222';
+                            btn.style.border = '1px solid #444';
+                            btn.style.color = 'white';
+                            btn.style.padding = '10px';
+                            btn.style.borderRadius = '5px';
+                            btn.style.cursor = 'pointer';
+                            btn.style.display = 'flex';
+                            btn.style.justifyContent = 'space-between';
+                            btn.innerHTML = `<span><b>${bp.name}</b></span> <span style="color:#aaa;">(${bp.w}x${bp.h})</span>`;
+                            btn.onclick = () => {
+                                // Cargar en el pincel
+                                selectedGrid = {
+                                    w: bp.w,
+                                    h: bp.h,
+                                    isMultiLayer: bp.isMultiLayer,
+                                    multiTiles: bp.multiTiles,
+                                    tiles: []
+                                };
+                                document.getElementById('prefabs-modal').style.display = 'none';
+                                
+                                // Auto-cambiar a Paint
+                                worldMode = 'paint';
+                                mapSelectionBox = null; // ELIMINA EL CUADRO MORADO DESPUES DE EQUIPAR
+                                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                                document.getElementById('world-paint-btn').classList.add('active');
+                            };
+                            listDiv.appendChild(btn);
+                        });
+                    }
+                }
+                return;
             }
 
             // --- NEW: AUTHENTICATION RESPONSES ---
@@ -3519,7 +3566,7 @@
         let draggedTilesBuffer = [];
 
         // FUNCIÓN MAESTRA 1: Recoger bloques del piso
-        function captureAndClearSelection() {
+        function captureSelection(keepOnMap = false) {
             let captured = [];
             let deleteOps = [];
             for (let r = mapSelectionBox.minY; r <= mapSelectionBox.maxY; r++) {
@@ -3534,13 +3581,22 @@
                                 destX: tile.destX, destY: tile.destY, itemId: tile.itemId,
                                 rotation: tile.rotation || 0
                             });
-                            deleteOps.push({ x: c, y: r, l: l, prevId: tile.tileId, newId: -1 });
-                            worldMap.delete(key);
+                            if (!keepOnMap) {
+                                deleteOps.push({ x: c, y: r, l: l, prevId: tile.tileId, newId: -1 });
+                                worldMap.delete(key);
+                            }
+                        } else {
+                            // Capture air so paste overwrites destination trees!
+                            captured.push({
+                                x: c, y: r, l: l, tileId: -1,
+                                hasCollision: false, isSit: false, triggerType: 'none',
+                                rotation: 0
+                            });
                         }
                     }
                 }
             }
-            if (deleteOps.length > 0) {
+            if (!keepOnMap && deleteOps.length > 0) {
                 const bulkNetwork = deleteOps.map(op => ({ x: op.x, y: op.y, l: op.l, tileId: -1 }));
                 ws.send(MessagePack.encode({ type: 'place_tiles_bulk', tiles: bulkNetwork }));
                 recordHistory(deleteOps);
@@ -3559,22 +3615,22 @@
                 const prevTile = worldMap.get(key);
                 const prevId = prevTile ? prevTile.tileId : -1;
 
-                worldMap.set(key, {
-                    tileId: t.tileId, l: t.l, hasCollision: t.hasCollision, isSit: t.isSit,
-                    triggerType: t.triggerType, destX: t.destX, destY: t.destY, itemId: t.itemId,
-                    rotation: t.rotation || 0
-                });
+                if (t.tileId === -1) {
+                    worldMap.delete(key);
+                } else {
+                    worldMap.set(key, {
+                        tileId: t.tileId, l: t.l, hasCollision: t.hasCollision, isSit: t.isSit,
+                        triggerType: t.triggerType, destX: t.destX, destY: t.destY, itemId: t.itemId,
+                        rotation: t.rotation || 0
+                    });
+                }
 
                 placeOps.push({ x: nx, y: ny, l: t.l, prevId: prevId, newId: t.tileId, rotation: t.rotation || 0 });
-                bulkNetwork.push({ x: nx, y: ny, l: t.l, tileId: t.tileId, rotation: t.rotation || 0 });
-
-                if (t.hasCollision || t.triggerType) {
-                    ws.send(MessagePack.encode({
-                        type: 'update_tile_metadata', x: nx, y: ny, layer: t.l,
-                        hasCollision: t.hasCollision, isSit: t.isSit, triggerType: t.triggerType,
-                        destX: t.destX, destY: t.destY, itemId: t.itemId
-                    }));
-                }
+                bulkNetwork.push({ 
+                    x: nx, y: ny, l: t.l, tileId: t.tileId, rotation: t.rotation || 0,
+                    hasCollision: t.hasCollision, isSit: t.isSit, triggerType: t.triggerType,
+                    destX: t.destX, destY: t.destY, itemId: t.itemId
+                });
             });
 
             if (placeOps.length > 0) {
@@ -3599,6 +3655,38 @@
                 if (copyLayerNum) copyLayerNum.innerText = activeLayer;
                 if (delLayerNum) delLayerNum.innerText = activeLayer;
             };
+
+            // Toggle visibility on Right Click
+            btn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const l = parseInt(e.target.dataset.layer);
+                if (hiddenLayers.has(l)) {
+                    hiddenLayers.delete(l);
+                    e.target.style.opacity = "1";
+                    e.target.style.textDecoration = "none";
+                } else {
+                    hiddenLayers.add(l);
+                    e.target.style.opacity = "0.5";
+                    e.target.style.textDecoration = "line-through";
+                }
+            });
+
+            // Solo Mode on Double Click
+            btn.addEventListener('dblclick', (e) => {
+                const targetL = parseInt(e.target.dataset.layer);
+                document.querySelectorAll('.layer-btn').forEach(b => {
+                    const l = parseInt(b.dataset.layer);
+                    if (l !== targetL) {
+                        hiddenLayers.add(l);
+                        b.style.opacity = "0.5";
+                        b.style.textDecoration = "line-through";
+                    } else {
+                        hiddenLayers.delete(l);
+                        b.style.opacity = "1";
+                        b.style.textDecoration = "none";
+                    }
+                });
+            });
         });
 
         document.getElementById('tool-select').onclick = (e) => {
@@ -3611,45 +3699,50 @@
 
         // --- 3. LÓGICA DE HERRAMIENTAS PRINCIPALES (PAINT, SELECT, ERASE) ---
         const worldPaintBtn = document.getElementById('world-paint-btn');
+        const worldFillBtn = document.getElementById('world-fill-btn');
         const worldSelectBtn = document.getElementById('world-select-btn');
         const inspectCopyBtn = document.getElementById('inspect-copy-btn');
 
-        worldPaintBtn.onclick = () => {
-            worldMode = 'paint';
-            worldPaintBtn.style.background = '#27ae60';
+        function clearModes() {
+            worldPaintBtn.style.background = 'rgba(255,255,255,0.1)';
+            if (worldFillBtn) worldFillBtn.style.background = 'rgba(255,255,255,0.1)';
             worldSelectBtn.style.background = 'rgba(255,255,255,0.1)';
             tileInspector.style.display = 'none';
-            mapSelectionBox = null; // Clear selections
-
-            // EL FIX: Si estábamos borrando y tocamos "Paint", apagamos el borrador y regresamos al último bloque
+            mapSelectionBox = null;
             if (selectedTileId === -1) {
                 selectedTileId = selectedGrid.tiles[0][0] !== undefined ? selectedGrid.tiles[0][0] : 0;
                 eraserBtn.style.borderColor = "transparent";
             }
+        }
+
+        worldPaintBtn.onclick = () => {
+            clearModes();
+            worldMode = 'paint';
+            worldPaintBtn.style.background = '#27ae60';
         };
 
+        if (worldFillBtn) {
+            worldFillBtn.onclick = () => {
+                clearModes();
+                worldMode = 'fill';
+                worldFillBtn.style.background = '#3498db'; // Blue
+            };
+        }
+
         worldSelectBtn.onclick = () => {
+            clearModes();
             worldMode = 'select';
             worldSelectBtn.style.background = '#8e44ad'; // Purple
-            worldPaintBtn.style.background = 'rgba(255,255,255,0.1)';
-            tileInspector.style.display = 'none';
-            mapSelectionBox = null;
-
-            // EL FIX: Apagar borrador también si cambiamos a "Select"
-            if (selectedTileId === -1) {
-                selectedTileId = selectedGrid.tiles[0][0] !== undefined ? selectedGrid.tiles[0][0] : 0;
-                eraserBtn.style.borderColor = "transparent";
-            }
         };
 
         // Usamos .onclick en lugar de addEventListener para evitar duplicados
         eraserBtn.onclick = () => {
-            // El borrador siempre forza el modo visual a "Paint"
-            worldMode = 'paint';
-            worldPaintBtn.style.background = '#27ae60';
-            worldSelectBtn.style.background = 'rgba(255,255,255,0.1)';
-            tileInspector.style.display = 'none';
-            mapSelectionBox = null;
+            // Preserve fill mode if active, otherwise default to paint
+            if (worldMode !== 'fill') {
+                clearModes();
+                worldMode = 'paint';
+                worldPaintBtn.style.background = '#27ae60';
+            }
 
             if (selectedTileId === -1) {
                 // APAGAR BORRADOR (Volver al bloque anterior)
@@ -3658,14 +3751,107 @@
             } else {
                 // ENCENDER BORRADOR (-1 significa "vacío")
                 selectedTileId = -1;
-                eraserBtn.style.borderColor = "#f1c40f";
+                eraserBtn.style.borderColor = "red";
             }
-            drawPalette();
         };
 
         // Mostrar/Ocultar el menú de creación y filtros al cambiar de herramientas
         const btnToggleZoneFilters = document.getElementById('btn-toggle-zone-filters');
         const zoneFilterToolbar = document.getElementById('zone-filter-toolbar');
+
+        // Overlay flags and logic
+        let showCollisionOverlay = false;
+        let showLogicOverlay = false;
+        
+        const btnOverlayCollisions = document.getElementById('overlay-collisions-btn');
+        const btnOverlayLogic = document.getElementById('overlay-logic-btn');
+
+        if (btnOverlayCollisions) {
+            btnOverlayCollisions.addEventListener('click', () => {
+                showCollisionOverlay = !showCollisionOverlay;
+                if (showCollisionOverlay) {
+                    btnOverlayCollisions.style.background = 'rgba(255, 0, 0, 0.4)';
+                    btnOverlayCollisions.style.color = 'black';
+                } else {
+                    btnOverlayCollisions.style.background = 'rgba(255, 0, 0, 0.1)';
+                    btnOverlayCollisions.style.color = 'white';
+                }
+            });
+        }
+
+        if (btnOverlayLogic) {
+            btnOverlayLogic.addEventListener('click', () => {
+                showLogicOverlay = !showLogicOverlay;
+                if (showLogicOverlay) {
+                    btnOverlayLogic.style.background = 'rgba(155, 89, 182, 0.6)';
+                    btnOverlayLogic.style.color = 'black';
+                } else {
+                    btnOverlayLogic.style.background = 'rgba(155, 89, 182, 0.1)';
+                    btnOverlayLogic.style.color = 'white';
+                }
+            });
+        }
+
+        const btnOverlayGrid = document.getElementById('overlay-grid-btn');
+        if (btnOverlayGrid) {
+            btnOverlayGrid.addEventListener('click', () => {
+                showGridOverlay = !showGridOverlay;
+                if (showGridOverlay) {
+                    btnOverlayGrid.style.background = 'rgba(255, 255, 255, 0.4)';
+                    btnOverlayGrid.style.color = 'black';
+                } else {
+                    btnOverlayGrid.style.background = 'rgba(255, 255, 255, 0.1)';
+                    btnOverlayGrid.style.color = 'white';
+                }
+            });
+        }
+
+        const btnPrefabs = document.getElementById('prefabs-btn');
+        const prefabsModal = document.getElementById('prefabs-modal');
+        if (btnPrefabs) {
+            btnPrefabs.addEventListener('click', () => {
+                prefabsModal.style.display = 'flex';
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: 'load_blueprints' }));
+                }
+            });
+        }
+
+        const btnSavePrefab = document.getElementById('btn-save-prefab');
+        const prefabSaveName = document.getElementById('prefab-save-name');
+        if (btnSavePrefab) {
+            btnSavePrefab.addEventListener('click', () => {
+                const name = prefabSaveName.value.trim();
+                if (!name) return alert("Ingresa un nombre para el Prefab");
+                if (!mapSelectionBox) return alert("Debes seleccionar un área en el mapa primero con la herramienta de selección");
+                
+                const w = (mapSelectionBox.maxX - mapSelectionBox.minX) + 1;
+                const h = (mapSelectionBox.maxY - mapSelectionBox.minY) + 1;
+                
+                const captured = captureSelection(true); // true = Keep on map
+                
+                // Normalizar coordenadas al 0,0 local de este prefab
+                const normalizedTiles = captured.map(t => ({
+                    ...t,
+                    x: t.x - mapSelectionBox.minX,
+                    y: t.y - mapSelectionBox.minY
+                }));
+
+                const blueprintData = {
+                    name: name,
+                    w: w,
+                    h: h,
+                    isMultiLayer: true,
+                    multiTiles: normalizedTiles
+                };
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: 'save_blueprint', blueprint: blueprintData }));
+                    prefabSaveName.value = '';
+                    mapSelectionBox = null; // ELIMINA EL CUADRO MORADO DESPUES DE GUARDAR
+                }
+            });
+        }
 
         worldSelectBtn.addEventListener('click', () => {
             btnMakeSafeZone.style.display = 'inline-block';
@@ -4193,11 +4379,96 @@
                 mapSelectEnd = gridPos;
                 mapSelectionBox = null;
                 tileInspector.style.display = 'none';
+                updateCoordHelper(gridPos);
                 return;
             }
 
             isPainting = true;
             currentStrokeHistory = [];
+
+            // --- PAINT BUCKET (FILL) ---
+            if (worldMode === 'fill') {
+                isPainting = false; // Turn off dragging for fill mode
+                tileInspector.style.display = 'none';
+
+                // Solo permitimos Fill con un tile de 1x1 o el borrador
+                if (selectedGrid.w > 1 || selectedGrid.h > 1) return;
+
+                const startTile = worldMap.get(centerKey);
+                const targetId = startTile ? startTile.tileId : -1;
+
+                if (targetId === selectedTileId) return; // Nada que hacer
+
+                // BFS Flood Fill
+                const queue = [gridPos];
+                const visited = new Set();
+                visited.add(`${gridPos.x},${gridPos.y}`);
+
+                const bulkNetworkData = [];
+                const currentAction = [];
+
+                let count = 0;
+                const MAX_FILL = 3000;
+
+                while (queue.length > 0 && count < MAX_FILL) {
+                    const curr = queue.shift();
+                    const k = getMapKey(curr.x, curr.y, activeLayer);
+
+                    const t = worldMap.get(k);
+                    const tId = t ? t.tileId : -1;
+
+                    // Si no es del mismo tipo que clickeamos originalmente, stop
+                    if (tId !== targetId) continue;
+
+                    // Modificar este tile
+                    currentAction.push({ x: curr.x, y: curr.y, l: activeLayer, prevId: targetId, newId: selectedTileId });
+                    bulkNetworkData.push({ x: curr.x, y: curr.y, l: activeLayer, tileId: selectedTileId });
+
+                    if (selectedTileId === -1) {
+                        worldMap.delete(k);
+                    } else {
+                        // Respetamos hasCollision antiguo si existía, o false por defecto
+                        const collision = t ? t.hasCollision : false;
+                        worldMap.set(k, { tileId: selectedTileId, l: activeLayer, hasCollision: collision });
+                    }
+
+                    count++;
+
+                    // Expandir a vecinos
+                    const neighbors = [
+                        {x: curr.x + 1, y: curr.y},
+                        {x: curr.x - 1, y: curr.y},
+                        {x: curr.x, y: curr.y + 1},
+                        {x: curr.x, y: curr.y - 1}
+                    ];
+
+                    for (const n of neighbors) {
+                        const nKey = `${n.x},${n.y}`;
+                        if (!visited.has(nKey)) {
+                            visited.add(nKey);
+                            queue.push(n);
+                        }
+                    }
+                }
+
+                if (currentAction.length > 0) {
+                    recordHistory(currentAction);
+                    if (bulkNetworkData.length > 0) {
+                        ws.send(MessagePack.encode({ type: 'place_tiles_bulk', tiles: bulkNetworkData }));
+                    }
+                }
+                
+                // AUTO-REVERT TO PAINT MODE TO PREVENT ACCIDENTAL MASSIVE FILLS
+                worldMode = 'paint';
+                const worldPaintBtn = document.getElementById('world-paint-btn');
+                const worldFillBtn = document.getElementById('world-fill-btn');
+                const worldSelectBtn = document.getElementById('world-select-btn');
+                if (worldFillBtn) worldFillBtn.style.background = 'rgba(255,255,255,0.1)';
+                if (worldSelectBtn) worldSelectBtn.style.background = 'rgba(255,255,255,0.1)';
+                if (worldPaintBtn) worldPaintBtn.style.background = '#27ae60';
+                
+                return;
+            }
 
             // --- SINGLE ERASER ---
             if (selectedTileId === -1) {
@@ -4302,47 +4573,53 @@
             let currentAction = [];
             let bulkNetworkData = [];
 
-            for (let r = 0; r < selectedGrid.h; r++) {
-                for (let c = 0; c < selectedGrid.w; c++) {
-                    const paintX = gridPos.x + c;
-                    const paintY = gridPos.y + r;
+            if (selectedGrid.isMultiLayer) {
+                selectedGrid.multiTiles.forEach(t => {
+                    const paintX = gridPos.x + t.x;
+                    const paintY = gridPos.y + t.y;
+                    const l = t.layer !== undefined ? t.layer : t.l;
+                    const key = getMapKey(paintX, paintY, l);
+                    
+                    const tId = t.tileId !== undefined ? t.tileId : (t.id !== undefined ? t.id : -1);
+                    const rot = t.rotation !== undefined ? t.rotation : (t.rot || 0);
+                    const hasCol = t.hasCollision || false;
 
-                    if (selectedGrid.isMultiLayer) {
-                        const cellLayers = selectedGrid.multiTiles[r][c];
+                    const prevTile = worldMap.get(key);
+                    const prevId = prevTile ? prevTile.tileId : -1;
 
-                        for (let l = 0; l <= 15; l++) {
-                            const key = getMapKey(paintX, paintY, l);
-                            const copiedLayerData = cellLayers.find(layerObj => layerObj.l === l);
-                            const tId = copiedLayerData ? copiedLayerData.id : -1;
-
-                            if (tId === -1) continue;
-
-                            const prevTile = worldMap.get(key);
-                            const prevId = prevTile ? prevTile.tileId : -1;
-
-                            if (prevId !== tId) {
-                                currentAction.push({ x: paintX, y: paintY, l: l, prevId: prevId, newId: tId });
-                                bulkNetworkData.push({ x: paintX, y: paintY, l: l, tileId: tId });
-                                worldMap.set(key, { tileId: tId, l: l, hasCollision: false });
-                            }
+                    if (prevId !== tId || (prevTile && prevTile.rotation !== rot)) {
+                        currentAction.push({ x: paintX, y: paintY, l: l, prevId: prevId, newId: tId });
+                        bulkNetworkData.push({ x: paintX, y: paintY, l: l, tileId: tId, rotation: rot });
+                        
+                        if (tId === -1) {
+                            worldMap.delete(key);
+                        } else {
+                            worldMap.set(key, { tileId: tId, l: l, hasCollision: hasCol, rotation: rot });
                         }
-                    } else {
+                    }
+                });
+            } else {
+                for (let r = 0; r < selectedGrid.h; r++) {
+                    for (let c = 0; c < selectedGrid.w; c++) {
+                        const paintX = gridPos.x + c;
+                        const paintY = gridPos.y + r;
                         const key = getMapKey(paintX, paintY, activeLayer);
-                        const tId = selectedGrid.tiles[r][c];
-
-                        if ((selectedGrid.w > 1 || selectedGrid.h > 1) && tId === -1) continue;
+                        const cellData = selectedGrid.tiles[r][c];
+                        // Compatibilidad hacia atrás si era un número directo en vez de un objeto
+                        const tId = typeof cellData === 'object' ? cellData.id : cellData;
+                        const rot = typeof cellData === 'object' ? cellData.rot : 0;
 
                         const prevTile = worldMap.get(key);
                         const prevId = prevTile ? prevTile.tileId : -1;
 
-                        if (prevId !== tId) {
+                        if (prevId !== tId || (prevTile && prevTile.rotation !== rot)) {
                             currentAction.push({ x: paintX, y: paintY, l: activeLayer, prevId: prevId, newId: tId });
-                            bulkNetworkData.push({ x: paintX, y: paintY, l: activeLayer, tileId: tId });
+                            bulkNetworkData.push({ x: paintX, y: paintY, l: activeLayer, tileId: tId, rotation: rot });
 
                             if (tId === -1) {
                                 worldMap.delete(key);
                             } else {
-                                worldMap.set(key, { tileId: tId, l: activeLayer, hasCollision: false });
+                                worldMap.set(key, { tileId: tId, l: activeLayer, hasCollision: false, rotation: rot });
                             }
                         }
                     }
@@ -4355,12 +4632,41 @@
             }
         }
 
+        function updateCoordHelper(gridPos) {
+            const coordHelper = document.getElementById('coord-helper');
+            if (!coordHelper) return;
+
+            let text = `X: ${gridPos.x} | Y: ${gridPos.y}`;
+
+            if (worldMode === 'select') {
+                let box = mapSelectionBox;
+                if (isDraggingMapBox && mapSelectStart && mapSelectEnd) {
+                    box = {
+                        minX: Math.min(mapSelectStart.x, mapSelectEnd.x),
+                        maxX: Math.max(mapSelectStart.x, mapSelectEnd.x),
+                        minY: Math.min(mapSelectStart.y, mapSelectEnd.y),
+                        maxY: Math.max(mapSelectStart.y, mapSelectEnd.y)
+                    };
+                }
+                
+                if (box) {
+                    const cols = (box.maxX - box.minX) + 1;
+                    const rows = (box.maxY - box.minY) + 1;
+                    const totalTiles = cols * rows;
+                    text += `<br><span style="color: #f1c40f;">Selection: ${cols} cols x ${rows} rows</span>`;
+                    text += `<br><span style="color: #3498db;">Total Tiles: ${totalTiles}</span>`;
+                }
+            }
+            coordHelper.innerHTML = text;
+        }
+
         function handleEditMove(clientX, clientY, e) {
             if (!editMode) return;
 
             if (worldMode === 'select' && isDraggingMapBox) {
                 if (e && e.preventDefault) e.preventDefault();
                 mapSelectEnd = getWorldGridXY(clientX, clientY);
+                updateCoordHelper(mapSelectEnd);
             }
             // FUNCIÓN DE BROCHA: Arrastrar para pintar/borrar continuamente
             else if (worldMode === 'paint' && isPainting) {
@@ -4405,6 +4711,7 @@
                     minY: Math.min(mapSelectStart.y, mapSelectEnd.y),
                     maxY: Math.max(mapSelectStart.y, mapSelectEnd.y)
                 };
+                updateCoordHelper(getWorldGridXY(clientX, clientY));
 
                 // Mostramos TODOS los botones cuando tienes una caja grande seleccionada
                 if (inspectCopyBtn) inspectCopyBtn.style.display = 'block';
@@ -4447,7 +4754,7 @@
             // --- FIX: Actualizar Radar con un solo toque en Móvil ---
             if (editMode && coordHelper && e.touches.length > 0) {
                 const gridPos = getWorldGridXY(e.touches[0].clientX, e.touches[0].clientY);
-                coordHelper.innerText = `X: ${gridPos.x} | Y: ${gridPos.y}`;
+                updateCoordHelper(gridPos);
             }
 
             handleEditStart(e.touches[0].clientX, e.touches[0].clientY);
@@ -4457,7 +4764,7 @@
             // --- NUEVO: Update Radar HUD for Mobile ---
             if (editMode && coordHelper && e.touches.length > 0) {
                 const gridPos = getWorldGridXY(e.touches[0].clientX, e.touches[0].clientY);
-                coordHelper.innerText = `X: ${gridPos.x} | Y: ${gridPos.y}`;
+                updateCoordHelper(gridPos);
             }
             handleEditMove(e.touches[0].clientX, e.touches[0].clientY, e);
         }, { passive: false });
@@ -4484,9 +4791,54 @@
                     dragOffsetX = gridPos.x - mapSelectionBox.minX;
                     dragOffsetY = gridPos.y - mapSelectionBox.minY;
 
-                    draggedTilesBuffer = captureAndClearSelection();
+                    draggedTilesBuffer = captureSelection(false);
                     return;
                 }
+            }
+
+            // --- NUEVO: HERRAMIENTA EYEDROPPER (Pipette) ---
+            if (editMode && (e.button === 1 || (e.button === 0 && e.altKey))) {
+                e.preventDefault();
+                const gridPos = getWorldGridXY(e.clientX, e.clientY);
+                const tileKey = getMapKey(gridPos.x, gridPos.y, activeLayer);
+                const tileData = worldMap.get(tileKey);
+
+                if (tileData && tileData.tileId !== undefined && tileData.tileId !== -1) {
+                    const tId = tileData.tileId;
+                    const c = tId % 30; // cols = 30
+                    const r = Math.floor(tId / 30);
+                    selectStart = { c, r };
+                    selectEnd = { c, r };
+                    selectedGrid.w = 1;
+                    selectedGrid.h = 1;
+                    selectedGrid.isMultiLayer = false;
+                    selectedGrid.tiles = [[tId]];
+                    selectedTileId = tId;
+                    
+                    if (tileData.rotation) {
+                        currentRotation = tileData.rotation;
+                        inspectRotateBtn.innerText = `🔄 Rot: ${currentRotation}`;
+                    } else {
+                        currentRotation = 0;
+                        inspectRotateBtn.innerText = `🔄 Rotate`;
+                    }
+                } else {
+                    // Clic en vacío = Goma
+                    selectedGrid.w = 1;
+                    selectedGrid.h = 1;
+                    selectedGrid.isMultiLayer = false;
+                    selectedGrid.tiles = [[-1]];
+                    selectedTileId = -1;
+                }
+                
+                drawPalette();
+                if (eraserBtn) eraserBtn.style.borderColor = "transparent";
+                
+                // Cambiar a Paint
+                worldMode = 'paint';
+                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('world-paint-btn').classList.add('active');
+                return;
             }
 
             if (e.button !== 0) return;
@@ -4529,7 +4881,9 @@
         window.addEventListener('mousemove', (e) => {
             if (editMode && coordHelper && e.target.id === 'gameCanvas') {
                 const gridPos = getWorldGridXY(e.clientX, e.clientY);
-                coordHelper.innerText = `X: ${gridPos.x} | Y: ${gridPos.y}`;
+                updateCoordHelper(gridPos);
+                editorMouseGridX = gridPos.x;
+                editorMouseGridY = gridPos.y;
             }
 
             // 2. ACTUALIZAR CAJA MIENTRAS ARRASTRAMOS
@@ -4574,36 +4928,61 @@
         const inspectCopyAllBtn = document.getElementById('inspect-copy-all-btn');
         const inspectDeleteAllBtn = document.getElementById('inspect-delete-all-btn');
 
-        // FUNCIÓN MAESTRA: Copiar Capas
+        // --- NUEVO: TABS DEL INSPECTOR ---
+        const tabBtnLogic = document.getElementById('tab-btn-logic');
+        const tabBtnCopy = document.getElementById('tab-btn-copy');
+        const tabBtnDelete = document.getElementById('tab-btn-delete');
+        const tabLogic = document.getElementById('tab-logic');
+        const tabCopy = document.getElementById('tab-copy');
+        const tabDelete = document.getElementById('tab-delete');
+
+        function switchInspectorTab(tabName) {
+            tabBtnLogic.style.background = tabName === 'logic' ? 'rgba(255,255,255,0.1)' : 'transparent';
+            tabBtnLogic.style.color = tabName === 'logic' ? 'white' : 'rgba(255,255,255,0.6)';
+            tabBtnCopy.style.background = tabName === 'copy' ? 'rgba(255,255,255,0.1)' : 'transparent';
+            tabBtnCopy.style.color = tabName === 'copy' ? 'white' : 'rgba(255,255,255,0.6)';
+            tabBtnDelete.style.background = tabName === 'delete' ? 'rgba(255,255,255,0.1)' : 'transparent';
+            tabBtnDelete.style.color = tabName === 'delete' ? 'white' : 'rgba(255,255,255,0.6)';
+
+            tabLogic.style.display = tabName === 'logic' ? 'flex' : 'none';
+            tabCopy.style.display = tabName === 'copy' ? 'flex' : 'none';
+            tabDelete.style.display = tabName === 'delete' ? 'flex' : 'none';
+        }
+
+        if (tabBtnLogic) tabBtnLogic.onclick = () => switchInspectorTab('logic');
+        if (tabBtnCopy) tabBtnCopy.onclick = () => switchInspectorTab('copy');
+        if (tabBtnDelete) tabBtnDelete.onclick = () => switchInspectorTab('delete');
         function copyMultiLayer(startL, endL) {
             if (!mapSelectionBox) return;
-            selectedGrid.isMultiLayer = (startL !== endL);
+            selectedGrid.isMultiLayer = true; // ALWAYS treat copied structures as blueprints so Ghost Preview works
             selectedGrid.w = (mapSelectionBox.maxX - mapSelectionBox.minX) + 1;
             selectedGrid.h = (mapSelectionBox.maxY - mapSelectionBox.minY) + 1;
             selectedGrid.multiTiles = [];
             selectedGrid.tiles = [];
 
             for (let r = 0; r < selectedGrid.h; r++) {
-                let rowArray = [];
                 let singleRowArray = [];
                 for (let c = 0; c < selectedGrid.w; c++) {
-                    let cellLayers = [];
                     for (let l = startL; l <= endL; l++) {
-                        // 🛑 EL FIX: Leer la memoria RAM con el nuevo Map()
                         const key = getMapKey(mapSelectionBox.minX + c, mapSelectionBox.minY + r, l);
                         const tile = worldMap.get(key);
                         if (tile && tile.tileId !== -1) {
-                            cellLayers.push({ l: l, id: tile.tileId });
+                            selectedGrid.multiTiles.push({ 
+                                x: c, y: r, l: l, 
+                                id: tile.tileId, 
+                                rot: tile.rotation || 0,
+                                hasCollision: tile.hasCollision || false
+                            });
+                        } else {
+                            selectedGrid.multiTiles.push({ x: c, y: r, l: l, id: -1, rot: 0, hasCollision: false });
                         }
                     }
-                    rowArray.push(cellLayers);
 
                     // Llenar tiles clásicos por si es solo 1 capa
                     const singleKey = getMapKey(mapSelectionBox.minX + c, mapSelectionBox.minY + r, startL);
                     const singleTile = worldMap.get(singleKey);
-                    singleRowArray.push(singleTile ? singleTile.tileId : -1);
+                    singleRowArray.push(singleTile ? { id: singleTile.tileId, rot: singleTile.rotation || 0 } : { id: -1, rot: 0 });
                 }
-                selectedGrid.multiTiles.push(rowArray);
                 selectedGrid.tiles.push(singleRowArray);
             }
 
@@ -4622,7 +5001,7 @@
                 if (!mapSelectionBox) return;
 
                 // 1. Recogemos los bloques actuales
-                const tiles = captureAndClearSelection();
+                const tiles = captureSelection(false);
 
                 const oldW = (mapSelectionBox.maxX - mapSelectionBox.minX) + 1;
                 const oldH = (mapSelectionBox.maxY - mapSelectionBox.minY) + 1;
@@ -4711,6 +5090,7 @@
 
         function handleInspectorCheckboxChange() {
             if (mapSelectionBox) {
+                let bulkNetworkData = [];
                 for (let r = mapSelectionBox.minY; r <= mapSelectionBox.maxY; r++) {
                     for (let c = mapSelectionBox.minX; c <= mapSelectionBox.maxX; c++) {
                         const key = getMapKey(c, r, activeLayer);
@@ -4719,11 +5099,12 @@
                             tile.hasCollision = inspectCollision.checked;
                             tile.isSit = inspectIsSit.checked;
                             worldMap.set(key, tile);
-                            ws.send(MessagePack.encode({
-                                type: 'update_tile_metadata', x: c, y: r, layer: activeLayer, hasCollision: inspectCollision.checked, isSit: inspectIsSit.checked
-                            }));
+                            bulkNetworkData.push({ x: c, y: r, l: activeLayer, tileId: tile.tileId, rotation: tile.rotation || 0, hasCollision: tile.hasCollision, isSit: tile.isSit });
                         }
                     }
+                }
+                if (bulkNetworkData.length > 0) {
+                    ws.send(MessagePack.encode({ type: 'place_tiles_bulk', tiles: bulkNetworkData }));
                 }
             } else if (inspectingCoord) {
                 const [gx, gy, gl] = inspectingCoord.split(',').map(Number);
@@ -5088,7 +5469,7 @@
 
             if (editMode && coordHelper && e.touches.length > 0) {
                 const gridPos = getWorldGridXY(e.touches[0].clientX, e.touches[0].clientY);
-                coordHelper.innerText = `X: ${gridPos.x} | Y: ${gridPos.y}`;
+                updateCoordHelper(gridPos);
             }
 
             // Si estamos en modo edición, pintar o seleccionar
@@ -10761,6 +11142,49 @@
 
             // === 6. DRAW EDIT MODE UI (SELECTION BOXES) ===
             if (editMode) { // <--- VOLVER A ABRIR PARA TODO EL EDITOR
+                
+                // === 6.1 DRAW EDITOR OVERLAYS (COLLISIONS & LOGIC) ===
+                if (showCollisionOverlay || showLogicOverlay) {
+                    const viewRadius = Math.ceil((Math.max(canvas.width, canvas.height) / (TILE_SIZE * zoomLevel)) / 2) + 2;
+                    const cGridX = Math.floor(player.worldX / TILE_SIZE);
+                    const cGridY = Math.floor(player.worldY / TILE_SIZE);
+                    
+                    const minX = cGridX - viewRadius;
+                    const maxX = cGridX + viewRadius;
+                    const minY = cGridY - viewRadius;
+                    const maxY = cGridY + viewRadius;
+
+                    for (let x = minX; x <= maxX; x++) {
+                        for (let y = minY; y <= maxY; y++) {
+                            // Revisamos todas las capas de 0 a 15 (o solo la activa? Mejor todas para ver los triggers)
+                            for (let l = 0; l <= 15; l++) {
+                                const k = getMapKey(x, y, l);
+                                const t = worldMap.get(k);
+                                if (!t) continue;
+
+                                const drawX = Math.round(screenCenterX + (x * TILE_SIZE - player.worldX) * zoomLevel);
+                                const drawY = Math.round(screenCenterY + (y * TILE_SIZE - player.worldY) * zoomLevel);
+                                const drawSize = TILE_SIZE * zoomLevel;
+
+                                if (showCollisionOverlay && t.hasCollision) {
+                                    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+                                    ctx.fillRect(drawX, drawY, drawSize, drawSize);
+                                }
+
+                                if (showLogicOverlay && (
+                                    (t.triggerType && t.triggerType !== 'none') || 
+                                    t.requiresClick || 
+                                    (t.gameType && t.gameType !== 'none') || 
+                                    (t.destX !== undefined && t.destX !== null && t.destX !== "") || 
+                                    (t.itemId && t.itemId !== "")
+                                )) {
+                                    ctx.fillStyle = 'rgba(155, 89, 182, 0.5)';
+                                    ctx.fillRect(drawX, drawY, drawSize, drawSize);
+                                }
+                            }
+                        }
+                    }
+                }
                 let box = mapSelectionBox;
 
                 if (worldMode === 'select' && isDraggingMapBox && mapSelectStart && mapSelectEnd) {
@@ -10809,7 +11233,99 @@
                         });
                         ctx.globalAlpha = 1.0;
                     }
-                } else if (inspectingCoord && !mapSelectionBox) {
+                } // END of if(box)
+
+                // 👇 NUEVO: EFECTO FANTASMA AL PINTAR MULTIPLES TILES (BLUEPRINT PREVIEW) 👇
+                if (worldMode === 'paint' && selectedGrid && (selectedGrid.w > 1 || selectedGrid.h > 1 || selectedGrid.isMultiLayer)) {
+                    ctx.globalAlpha = 0.5; // Fantasma semitransparente
+                    const sGridX = editorMouseGridX;
+                    const sGridY = editorMouseGridY;
+
+                    if (selectedGrid.isMultiLayer && selectedGrid.multiTiles) {
+                        selectedGrid.multiTiles.forEach(t => {
+                            const l = t.layer !== undefined ? t.layer : t.l;
+                            if (hiddenLayers.has(l)) return; // No preview hidden layers
+                            const tId = t.tileId !== undefined ? t.tileId : (t.id !== undefined ? t.id : -1);
+                            if (tId === -1) return;
+                            const tsData = getTilesetData(tId);
+                            if (!tsData || !tsData.img) return;
+
+                            const drawX = Math.round(screenCenterX + (((sGridX + t.x) * TILE_SIZE) - player.worldX) * zoomLevel);
+                            const drawY = Math.round(screenCenterY + (((sGridY + t.y) * TILE_SIZE) - player.worldY) * zoomLevel);
+                            const tilesPerRow = Math.floor(tsData.img.width / TILE_SIZE);
+                            const sx = (tsData.localId % tilesPerRow) * TILE_SIZE;
+                            const sy = Math.floor(tsData.localId / tilesPerRow) * TILE_SIZE;
+                            const scaledDrawSize = TILE_SIZE * zoomLevel;
+
+                            const rot = t.rotation !== undefined ? t.rotation : (t.rot || 0);
+                            if (rot && rot !== 0) {
+                                ctx.save();
+                                ctx.translate(drawX + scaledDrawSize / 2, drawY + scaledDrawSize / 2);
+                                ctx.rotate(rot * Math.PI / 180);
+                                ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, -scaledDrawSize / 2, -scaledDrawSize / 2, scaledDrawSize, scaledDrawSize);
+                                ctx.restore();
+                            } else {
+                                ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, drawX, drawY, scaledDrawSize, scaledDrawSize);
+                            }
+                        });
+                    } else if (selectedGrid.tiles) {
+                        for (let r = 0; r < selectedGrid.h; r++) {
+                            for (let c = 0; c < selectedGrid.w; c++) {
+                                const tileId = selectedGrid.tiles[r][c];
+                                if (tileId < 0) continue;
+                                const tsData = getTilesetData(tileId);
+                                if (!tsData || !tsData.img) continue;
+
+                                const drawX = Math.round(screenCenterX + (((sGridX + c) * TILE_SIZE) - player.worldX) * zoomLevel);
+                                const drawY = Math.round(screenCenterY + (((sGridY + r) * TILE_SIZE) - player.worldY) * zoomLevel);
+                                const tilesPerRow = Math.floor(tsData.img.width / TILE_SIZE);
+                                const sx = (tsData.localId % tilesPerRow) * TILE_SIZE;
+                                const sy = Math.floor(tsData.localId / tilesPerRow) * TILE_SIZE;
+                                const scaledDrawSize = TILE_SIZE * zoomLevel;
+
+                                if (currentRotation !== 0) {
+                                    ctx.save();
+                                    ctx.translate(drawX + scaledDrawSize / 2, drawY + scaledDrawSize / 2);
+                                    ctx.rotate(currentRotation * Math.PI / 180);
+                                    ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, -scaledDrawSize / 2, -scaledDrawSize / 2, scaledDrawSize, scaledDrawSize);
+                                    ctx.restore();
+                                } else {
+                                    ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, drawX, drawY, scaledDrawSize, scaledDrawSize);
+                                }
+                            }
+                        }
+                    }
+                    ctx.globalAlpha = 1.0;
+                }
+
+                // 👇 NUEVO: GRID OVERLAY 👇
+                if (showGridOverlay) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.lineWidth = 1;
+                    
+                    const viewRadius = Math.ceil((Math.max(canvas.width, canvas.height) / (TILE_SIZE * zoomLevel)) / 2) + 2;
+                    const cGridX = Math.floor(player.worldX / TILE_SIZE);
+                    const cGridY = Math.floor(player.worldY / TILE_SIZE);
+                    const minX = cGridX - viewRadius;
+                    const maxX = cGridX + viewRadius;
+                    const minY = cGridY - viewRadius;
+                    const maxY = cGridY + viewRadius;
+
+                    ctx.beginPath();
+                    for (let x = minX; x <= maxX; x++) {
+                        const drawX = Math.round(screenCenterX + (x * TILE_SIZE - player.worldX) * zoomLevel);
+                        ctx.moveTo(drawX, 0);
+                        ctx.lineTo(drawX, canvas.height);
+                    }
+                    for (let y = minY; y <= maxY; y++) {
+                        const drawY = Math.round(screenCenterY + (y * TILE_SIZE - player.worldY) * zoomLevel);
+                        ctx.moveTo(0, drawY);
+                        ctx.lineTo(canvas.width, drawY);
+                    }
+                    ctx.stroke();
+                }
+
+                if (inspectingCoord && !mapSelectionBox) {
                     const [gx, gy, gl] = inspectingCoord.split(',').map(Number);
                     if (gl === activeLayer) {
                         const bx = Math.round(screenCenterX + (gx * TILE_SIZE - player.worldX) * zoomLevel);
