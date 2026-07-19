@@ -683,8 +683,8 @@
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 130px;
-            /* Aún más estrecha */
+            width: max-content;
+            /* Se expande dinámicamente */
             height: 26px;
             /* Ultra delgada (antes 36px) */
             background-color: #000;
@@ -702,7 +702,7 @@
             /* -- SISTEMA DE TRANSPARENCIA -- */
             opacity: 0.3;
             /* Traslúcida por defecto */
-            transition: width 0.4s cubic-bezier(0.25, 1.5, 0.5, 1), height 0.4s, opacity 0.5s ease;
+            transition: width 0.4s cubic-bezier(0.25, 1.5, 0.5, 1), height 0.4s, opacity 0.5s ease, box-shadow 0.4s ease-in-out;
             z-index: 1000;
             pointer-events: auto;
             /* Para detectar toques */
@@ -732,21 +732,7 @@
             background-color: #555;
         }
 
-        /* El puntito rojo de alerta ajustado a la nueva escala */
-        #notif-badge {
-            position: absolute;
-            top: -1px;
-            /* Más pegado al botón */
-            right: -1px;
-            /* Más pegado al botón */
-            width: 4px;
-            /* Un poco más pequeño */
-            height: 4px;
-            /* Un poco más pequeño */
-            background-color: #e74c3c;
-            border-radius: 50%;
-            border: 1px solid #000;
-        }
+
 
         /* Clase mágica que la despierta */
         #dynamic-island.active {
@@ -755,7 +741,8 @@
 
         #island-hp-container {
             position: relative;
-            flex-grow: 1;
+            flex-grow: 0;
+            width: 80px;
             height: 12px;
             /* Píldora súper delgada */
             background-color: #333;
@@ -1215,3 +1202,14 @@
             margin-bottom: env(safe-area-inset-bottom, 0px);
             margin-right: env(safe-area-inset-right, 0px);
         }
+
+@keyframes iconPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.icon-pop-anim {
+    animation: iconPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
