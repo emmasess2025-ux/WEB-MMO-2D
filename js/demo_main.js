@@ -1039,6 +1039,19 @@
         const confirmSignoutBtn = document.getElementById('confirm-signout-btn');
         const cancelSignoutBtn = document.getElementById('cancel-signout-btn');
 
+        // --- FEEDBACK UI ELEMENTS ---
+        const appFeedbackBtn = document.getElementById('app-feedback');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const closeFeedbackModalBtn = document.getElementById('close-feedback-modal');
+        const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+        const feedbackInput = document.getElementById('feedback-input');
+        const feedbackCategoryBtns = document.querySelectorAll('.feedback-category-btn');
+        const feedbackSuccessModal = document.getElementById('feedback-success-modal');
+        const closeFeedbackSuccessBtn = document.getElementById('close-feedback-success-btn');
+        const feedbackSuccessMsg = document.getElementById('feedback-success-msg');
+        
+        let selectedFeedbackCategory = "Ideas"; // default
+
         // --- 🧠 MEMORIA INTELIGENTE DEL APP TRAY ---
         let isTrayWaitingInBg = false;
 
@@ -1077,6 +1090,198 @@
                 authSignoutView.style.display = 'block';
             }
         });
+
+        // 2.5 Click Feedback App -> Opens Feedback Modal
+        if (appFeedbackBtn) {
+            appFeedbackBtn.addEventListener('click', () => {
+                hideTrayForModal();
+                if (!isLoggedIn) {
+                    alert("You must be logged in to submit feedback!");
+                    restoreTrayAfterModal();
+                    return;
+                }
+                feedbackModal.style.display = 'flex';
+            });
+        }
+
+        // --- FEEDBACK CATEGORY TOGGLES ---
+        feedbackCategoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Reset all
+                feedbackCategoryBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = 'rgba(0,0,0,0.5)';
+                    b.style.border = '1px solid rgba(255,255,255,0.2)';
+                    b.style.color = '#aaa';
+                });
+                // Set active
+                btn.classList.add('active');
+                btn.style.background = 'rgba(255,154,158,0.2)';
+                btn.style.border = '1px solid #ff9a9e';
+                btn.style.color = 'white';
+                selectedFeedbackCategory = btn.getAttribute('data-category');
+            });
+        });
+
+        if (closeFeedbackModalBtn) {
+            closeFeedbackModalBtn.addEventListener('click', () => {
+                feedbackModal.style.display = 'none';
+                feedbackInput.value = ''; // clear input
+                restoreTrayAfterModal();
+            });
+        }
+
+        // --- CLOSE SUCCESS MODAL ---
+        if (closeFeedbackSuccessBtn) {
+            closeFeedbackSuccessBtn.addEventListener('click', () => {
+                feedbackSuccessModal.style.display = 'none';
+                restoreTrayAfterModal();
+            });
+        }
+
+        if (submitFeedbackBtn) {
+            submitFeedbackBtn.addEventListener('click', () => {
+                const text = feedbackInput.value.trim();
+                if (!text) return;
+                
+                // Efecto visual
+                submitFeedbackBtn.innerText = "Sending...";
+                submitFeedbackBtn.disabled = true;
+
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ 
+                        type: 'submit_feedback', 
+                        category: selectedFeedbackCategory,
+                        message: text 
+                    }));
+                }
+            });
+        }
+
+        // --- TUTORIAL LOGIC ---
+        const tutorialSteps = [
+            {
+                title: "Welcome to the Game",
+                desc: "Welcome! Survive, build, and fight in a persistent world. Here is how you can get started.",
+                icon: "items/icons/Info.png"
+            },
+            {
+                title: "Movement & Combat",
+                desc: "Use the on-screen joysticks (or WASD/Mouse) to move and aim. Click or tap the aim joystick to attack.",
+                icon: "items/icons/ghost_gun.png"
+            },
+            {
+                title: "Economy & Loot",
+                desc: "Find loot in the world! Visit the Jeweler or the Junkyard NPCs to sell your items and earn coins.",
+                icon: "items/icons/bag.png"
+            },
+            {
+                title: "Build & Socialize",
+                desc: "Use your coins to buy weapons and building materials. Team up with other players by joining a Squad and take down and held bases for rewards on the long run!",
+                icon: "items/icons/squads.png"
+            }
+        ];
+        
+        let currentTutorialStep = 0;
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const tutorialTitle = document.getElementById('tutorial-title');
+        const tutorialContent = document.getElementById('tutorial-content');
+        const tutorialDots = document.getElementById('tutorial-dots');
+        const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+        const tutorialSkipBtn = document.getElementById('tutorial-skip-btn');
+        const appGuideBtn = document.getElementById('app-guide');
+
+        function renderTutorialStep() {
+            const step = tutorialSteps[currentTutorialStep];
+            tutorialTitle.innerText = step.title;
+            
+            tutorialContent.innerHTML = `
+                <img src="${step.icon}" style="width: 64px; height: 64px; margin-bottom: 15px; image-rendering: pixelated;">
+                <p style="font-size: 15px; line-height: 1.5; color: #ccc; margin: 0;">${step.desc}</p>
+            `;
+            
+            // Draw Dots
+            tutorialDots.innerHTML = '';
+            for (let i = 0; i < tutorialSteps.length; i++) {
+                const dot = document.createElement('div');
+                dot.style.width = '8px';
+                dot.style.height = '8px';
+                dot.style.borderRadius = '50%';
+                dot.style.background = (i === currentTutorialStep) ? '#38ef7d' : 'rgba(255,255,255,0.3)';
+                tutorialDots.appendChild(dot);
+            }
+            
+            if (currentTutorialStep === tutorialSteps.length - 1) {
+                tutorialNextBtn.innerText = "Finish ➔";
+            } else {
+                tutorialNextBtn.innerText = "Next ➔";
+            }
+        }
+
+        function closeTutorial() {
+            tutorialModal.style.display = 'none';
+            restoreTrayAfterModal();
+            // Send flag to server
+            if (ws.readyState === WebSocket.OPEN && isLoggedIn) {
+                ws.send(MessagePack.encode({ type: 'tutorial_completed' }));
+                player.hasSeenTutorial = true; // Update local state so it doesn't pop up again
+            }
+        }
+
+        if (tutorialNextBtn) {
+            tutorialNextBtn.addEventListener('click', () => {
+                if (currentTutorialStep < tutorialSteps.length - 1) {
+                    currentTutorialStep++;
+                    renderTutorialStep();
+                } else {
+                    closeTutorial();
+                }
+            });
+        }
+
+        if (tutorialSkipBtn) {
+            tutorialSkipBtn.addEventListener('click', closeTutorial);
+        }
+
+        if (appGuideBtn) {
+            appGuideBtn.addEventListener('click', () => {
+                hideTrayForModal();
+                currentTutorialStep = 0;
+                renderTutorialStep();
+                tutorialModal.style.display = 'flex';
+            });
+        }
+
+        // === NUEVO: ARGEMS PREMIUM STORE LOGIC ===
+        const appArgemsBtn = document.getElementById('app-argems');
+        const argemsModal = document.getElementById('argems-modal');
+        const closeArgemsModalBtn = document.getElementById('close-argems-modal');
+        const argemsBalanceDisplay = document.getElementById('argems-balance-display');
+        const argemsStoreGrid = document.getElementById('argems-store-grid');
+
+        if (appArgemsBtn) {
+            appArgemsBtn.addEventListener('click', () => {
+                if (!player || !player.accountId) return alert("⚠️ You must log in to buy Argems.");
+                hideTrayForModal();
+                argemsModal.style.display = 'flex';
+                
+                // Update header balance
+                argemsBalanceDisplay.innerText = `${player.gems || 0} 💎`;
+                argemsStoreGrid.innerHTML = '<div style="color: white; text-align: center; width: 100%; grid-column: 1 / -1;">Loading packages...</div>';
+
+                // Fetch packages from server
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: 'get_argem_packages' }));
+                }
+            });
+        }
+        if (closeArgemsModalBtn) {
+            closeArgemsModalBtn.addEventListener('click', () => {
+                argemsModal.style.display = 'none';
+                restoreTrayAfterModal();
+            });
+        }
+        // ==========================================
 
         // --- Sign Out Confirmation Buttons ---
         confirmSignoutBtn.addEventListener('click', () => {
@@ -1168,6 +1373,17 @@
             }, duration);
         }
 
+        let islandGlowTimeout = null;
+        function triggerIslandGlow(color) {
+            const island = document.getElementById('dynamic-island');
+            if (!island) return;
+            island.style.boxShadow = `0 0 15px ${color}, inset 0 0 10px ${color}`;
+            if (islandGlowTimeout) clearTimeout(islandGlowTimeout);
+            islandGlowTimeout = setTimeout(() => {
+                island.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.1)';
+            }, 3500);
+        }
+
         // --- SISTEMA DE BANDEJA DE ENTRADA (ISLA DINÁMICA) ---
         let unreadPMs = []; // Guarda los nombres de quienes nos escriben
 
@@ -1180,6 +1396,55 @@
 
             const notifBtn = document.getElementById('island-notif-btn');
             const notifBadge = document.getElementById('notif-badge');
+            
+            const announceBtn = document.getElementById('island-announce-btn');
+            const announceBadge = document.getElementById('announce-badge');
+            const closeAnnounceBtn = document.getElementById('close-announcement-btn');
+
+            if (announceBtn) {
+                const openAnnouncements = (e) => {
+                    e.stopPropagation();
+                    wakeUpIsland(5000);
+                    
+                    if (window.serverAnnouncementsQueue && window.serverAnnouncementsQueue.length > 0) {
+                        const msg = window.serverAnnouncementsQueue[0];
+                        const banner = document.getElementById('global-announcement-banner');
+                        const textEl = document.getElementById('global-announcement-text');
+                        if (banner && textEl) {
+                            textEl.innerText = msg;
+                            banner.style.animation = 'none';
+                            banner.offsetHeight;
+                            banner.style.display = 'block';
+                            banner.style.animation = 'slideDownFade 0.5s ease-out forwards';
+                        }
+                    }
+                };
+                announceBtn.addEventListener('mousedown', openAnnouncements);
+                announceBtn.addEventListener('touchstart', openAnnouncements, { passive: false });
+            }
+
+            if (closeAnnounceBtn) {
+                closeAnnounceBtn.addEventListener('click', () => {
+                    const banner = document.getElementById('global-announcement-banner');
+                    
+                    if (window.serverAnnouncementsQueue && window.serverAnnouncementsQueue.length > 0) {
+                        window.serverAnnouncementsQueue.shift(); // Remove the one we just read
+                    }
+                    
+                    if (window.serverAnnouncementsQueue && window.serverAnnouncementsQueue.length > 0) {
+                        // Show next immediately
+                        const msg = window.serverAnnouncementsQueue[0];
+                        const textEl = document.getElementById('global-announcement-text');
+                        if (textEl) textEl.innerText = msg;
+                        
+                        if (announceBadge) announceBadge.innerText = window.serverAnnouncementsQueue.length;
+                    } else {
+                        // Close banner and hide button
+                        if (banner) banner.style.display = 'none';
+                        if (announceBtn) announceBtn.style.display = 'none';
+                    }
+                });
+            }
 
             // Ocultar el puntito rojo al inicio
             if (notifBadge) notifBadge.style.display = 'none';
@@ -1306,6 +1571,15 @@
                     }
                 }
             }
+            else if (data.type === 'delete_minigame') {
+                if (window.soccerMinigame) {
+                    window.soccerMinigame.ball.active = false;
+                }
+                const sb = document.getElementById('soccer-scoreboard');
+                if (sb) {
+                    sb.style.display = 'none';
+                }
+            }
             else if (data.type === 'inventory_update') {
                 player.inventory = data.inventory;
                 updateInventoryUI();
@@ -1325,6 +1599,86 @@
                 alert("❌ No se pudo reclamar: " + (data.message || "Error desconocido"));
                 // Forzamos a repintar para quitar el estado de "Procesando..."
                 if(typeof renderTasksModal === 'function') renderTasksModal();
+            } else if (data.type === 'argem_packages_data') {
+                const grid = document.getElementById('argems-store-grid');
+                if (!grid) return;
+                grid.innerHTML = '';
+                
+                data.packages.forEach(pkg => {
+                    const card = document.createElement('div');
+                    card.style.cssText = `background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.3);`;
+                    card.onmouseover = () => { card.style.transform = 'translateY(-5px)'; card.style.boxShadow = `0 10px 25px ${pkg.color}33, inset 0 0 15px ${pkg.color}33`; card.style.borderColor = pkg.color; };
+                    card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)'; card.style.borderColor = 'rgba(255,255,255,0.1)'; };
+
+                    if (pkg.badge) {
+                        const badge = document.createElement('div');
+                        badge.innerText = pkg.badge;
+                        badge.style.cssText = `position: absolute; top: -10px; right: -10px; background: ${pkg.color}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5);`;
+                        card.appendChild(badge);
+                    }
+
+                    card.innerHTML += `
+                        <div style="font-size: 48px; margin-bottom: 10px; filter: drop-shadow(0 0 10px ${pkg.color}88);">💎</div>
+                        <h3 style="color: white; margin: 0 0 5px 0; font-size: 16px;">${pkg.title}</h3>
+                        <div style="color: #f1c40f; font-weight: bold; font-size: 24px; margin-bottom: 15px; text-shadow: 0 0 5px rgba(241,196,15,0.5);">${pkg.gemsAmount}</div>
+                    `;
+
+                    const btn = document.createElement('button');
+                    btn.innerText = pkg.priceString + ' USD';
+                    btn.style.cssText = `background: ${pkg.color}; border: none; color: white; padding: 10px 0; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);`;
+                    btn.onmouseover = () => { btn.style.filter = 'brightness(1.2)'; };
+                    btn.onmouseout = () => { btn.style.filter = 'brightness(1)'; };
+                    
+                    btn.onclick = () => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            btn.innerText = "Processing...";
+                            ws.send(MessagePack.encode({ type: 'request_purchase_gems', packageId: pkg.id }));
+                        }
+                    };
+                    card.appendChild(btn);
+                    grid.appendChild(card);
+                });
+
+            } else if (data.type === 'stripe_checkout_url') {
+                // Open the Stripe Checkout page in a new secure tab
+                window.open(data.url, '_blank');
+                
+                // Refetch packages to reset the buttons back from "Processing..."
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: 'get_argem_packages' }));
+                }
+
+            } else if (data.type === 'gems_purchase_success') {
+                player.gems = data.newGems;
+                const balanceDisplay = document.getElementById('argems-balance-display');
+                if (balanceDisplay) {
+                    balanceDisplay.innerText = `${player.gems} 💎`;
+                    // Animación de flash visual
+                    balanceDisplay.style.color = '#fff';
+                    balanceDisplay.style.transform = 'scale(1.5)';
+                    setTimeout(() => {
+                        balanceDisplay.style.color = '#f1c40f';
+                        balanceDisplay.style.transform = 'scale(1)';
+                    }, 300);
+                }
+                
+                // Show floating text
+                damageTexts.push({
+                    x: player.worldX + (Math.random() * 20 - 10),
+                    y: player.worldY - 20,
+                    text: data.message,
+                    color: '#f1c40f',
+                    life: 80,
+                    maxLife: 80,
+                    scale: 1,
+                    velY: -0.5
+                });
+                
+                // Refetch packages to reset the buttons from "Processing..."
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: 'get_argem_packages' }));
+                }
+                
             } else if (data.type === 'buy_success') {
                 // Actualizar billetera e inventario localmente
                 player.coins = data.newCoins;
@@ -1356,6 +1710,29 @@
             } else if (data.type === 'register_success') {
                 authMessage.style.color = '#4cd137'; // Green
                 authMessage.innerText = data.message;
+            } else if (data.type === 'trigger_tutorial') {
+                // If they haven't seen the tutorial, open it automatically!
+                setTimeout(() => {
+                    if (tutorialModal) {
+                        currentTutorialStep = 0;
+                        renderTutorialStep();
+                        tutorialModal.style.display = 'flex';
+                    }
+                }, 500); // Pequeño retraso para que no sea súper agresivo
+            } else if (data.type === 'feedback_success') {
+                // Restaurar botón
+                if (submitFeedbackBtn) {
+                    submitFeedbackBtn.innerText = "Submit";
+                    submitFeedbackBtn.disabled = false;
+                }
+                if (feedbackModal) feedbackModal.style.display = 'none';
+                if (feedbackInput) feedbackInput.value = '';
+                
+                // Mostrar el nuevo Modal de Éxito en lugar de alert()
+                if (feedbackSuccessMsg) feedbackSuccessMsg.innerText = data.message;
+                if (feedbackSuccessModal) feedbackSuccessModal.style.display = 'flex';
+                
+                spawnDamageText(player.worldX, player.worldY, "Feedback Sent!", true);
             }// --- RECIBIR LISTA DE TODOS MIS SQUADS ---
             else if (data.type === 'my_squads_list_data') {
                 squadsListContainer.innerHTML = "";
@@ -1652,10 +2029,17 @@
                     const badge = document.getElementById('notif-badge');
                     if (badge) {
                         badge.style.display = 'flex';
-                        // 🛑 EL FIX: El Badge ahora dice CUÁNTAS personas distintas te han hablado (O suma con peticiones pendientes)
+                        // 🛠️ EL FIX: El Badge ahora dice CUÁNTAS personas distintas te han hablado (O suma con peticiones pendientes)
                         badge.innerText = unreadPMs.length + pendingRequests.length;
                     }
-                    wakeUpIsland(5000);
+                    const notifBtn = document.getElementById('island-notif-btn');
+                    if (notifBtn) {
+                        notifBtn.classList.remove('icon-pop-anim');
+                        void notifBtn.offsetWidth; // Trigger reflow
+                        notifBtn.classList.add('icon-pop-anim');
+                    }
+                    if (typeof wakeUpIsland === 'function') wakeUpIsland(5000);
+                    if (typeof triggerIslandGlow === 'function') triggerIslandGlow('#3498db'); // Blue glow for PM
                 }
             }// --- SQUAD CHAT (RADIO) ---
             else if (data.type === 'squad_chat_history') {
@@ -1830,6 +2214,7 @@
                 player.username = data.players[myId].username;
                 player.accountId = data.players[myId].accountId;
                 player.coins = data.players[myId].coins || 0; // <--- ¡AÑADE ESTA LÍNEA!
+                player.gems = data.players[myId].gems || 0;
                 player.squadName = data.players[myId].squadName;
                 player.squadLogo = data.players[myId].squadLogo;
                 player.squad = data.players[myId].squad;
@@ -1898,6 +2283,7 @@
                 });
             }// 🗣️ NUEVO: ESCUCHAR MENSAJES DEL SISTEMA (SERVER ALERTAS)
             else if (data.type === 'system_message') {
+                if (data.isAlert) alert("System: " + data.text);
                 // Inyectamos el texto directamente en el sistema de daño flotante
                 let dt = {
                     x: player.worldX + (Math.random() * 20 - 10),
@@ -1909,6 +2295,34 @@
                 };
                 damageTexts.push(dt);
             }// (Pon esto junto a tus otros else if, por ejemplo debajo de 'shoot' o 'hp_update')
+            else if (data.type === 'global_announcement') {
+                window.serverAnnouncementsQueue = window.serverAnnouncementsQueue || [];
+                window.serverAnnouncementsQueue.push(data.message);
+                
+                const announceBtn = document.getElementById('island-announce-btn');
+                const announceBadge = document.getElementById('announce-badge');
+                
+                if (announceBtn) {
+                    announceBtn.style.display = 'flex';
+                    // Trigger animation
+                    announceBtn.classList.remove('icon-pop-anim');
+                    void announceBtn.offsetWidth; // Trigger reflow
+                    announceBtn.classList.add('icon-pop-anim');
+                    
+                    if (announceBadge) {
+                        announceBadge.style.display = 'flex';
+                        announceBadge.innerText = window.serverAnnouncementsQueue.length;
+                    }
+                }
+                
+                // Wake up the island to make sure it's visible
+                if (typeof wakeUpIsland === 'function') {
+                    wakeUpIsland(5000);
+                }
+                if (typeof triggerIslandGlow === 'function') {
+                    triggerIslandGlow('#f1c40f'); // Gold glow for server announcements
+                }
+            }
             else if (data.type === 'spawn_item') {
                 groundItems[data.id] = data.item;
             }
@@ -2307,7 +2721,7 @@
 
                     // Update wardrobe and stats
                     op.equippedWeapon = data.player.equippedWeapon;
-                    op.isDead = data.player.isDead;
+                    op.isDead = data.player.isDead; op.invisibleEnabled = data.player.invisibleEnabled;
                     op.equipped = data.player.equipped || { head: 'head_default', body: 'body_default', hands: 'none' };
                     op.squadName = data.player.squadName;
                     op.squadLogo = data.player.squadLogo;
@@ -2406,7 +2820,7 @@
                 const authBg = appAuth.querySelector('.app-bg');
                 const authText = appAuth.querySelector('span');
 
-                authBg.innerText = '🚪';
+                authBg.innerHTML = '<img src="items/icons/door.png" class="pixel-icon" alt="Sign Out">';
                 authBg.style.background = 'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)'; // Red logout gradient
                 authText.innerText = 'Sign Out';
 
@@ -2415,6 +2829,7 @@
                 player.worldX = data.player.worldX;
                 player.worldY = data.player.worldY;
                 player.coins = data.player.coins || 0;
+                player.gems = data.player.gems || 0;
                 player.kills = data.player.kills || 0;
                 player.losses = data.player.losses || 0;
                 player.elo = data.player.elo || 1000;
@@ -3286,13 +3701,94 @@
                     canvas.style.cursor = 'default';
                 }
             });
+
+            // --- ADMIN TOOLS LOGIC ---
+            const adminTargetIdInput = document.getElementById('admin-target-id');
+            const adminSummonBtn = document.getElementById('admin-summon-btn');
+            const adminTeleportBtn = document.getElementById('admin-teleport-btn');
+            const adminKickBtn = document.getElementById('admin-kick-btn');
+            const adminRespawnBtn = document.getElementById('admin-respawn-btn');
+
+            const adminAnnounceBtn = document.getElementById('admin-announce-btn');
+            const adminAnnounceInput = document.getElementById('admin-announce-input');
+
+            function sendAdminCommand(type) {
+                if (!adminTargetIdInput) return;
+                const targetGameId = adminTargetIdInput.value.trim().toUpperCase();
+                if (!targetGameId) {
+                    alert("Please enter a target Player ID.");
+                    return;
+                }
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(MessagePack.encode({ type: type, targetGameId: targetGameId }));
+                }
+            }
+
+            if (adminSummonBtn) adminSummonBtn.addEventListener('click', () => sendAdminCommand('admin_summon'));
+            if (adminTeleportBtn) adminTeleportBtn.addEventListener('click', () => sendAdminCommand('admin_teleport'));
+            if (adminKickBtn) adminKickBtn.addEventListener('click', () => sendAdminCommand('admin_kick'));
+            if (adminRespawnBtn) adminRespawnBtn.addEventListener('click', () => sendAdminCommand('admin_respawn'));
+
+            if (adminAnnounceBtn && adminAnnounceInput) {
+                adminAnnounceBtn.addEventListener('click', () => {
+                    const msg = adminAnnounceInput.value.trim();
+                    if (!msg) return;
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(MessagePack.encode({ type: 'admin_announce', message: msg }));
+                        adminAnnounceInput.value = "";
+                    }
+                });
+            }
+
+            // --- ADMIN TOOLS TOGGLES ---
+            const adminInvisBtn = document.getElementById('admin-invis-btn');
+            const adminNoclipBtn = document.getElementById('admin-noclip-btn');
+
+            if (adminInvisBtn) {
+                adminInvisBtn.addEventListener('click', () => {
+                    window.adminInvisible = !window.adminInvisible;
+                    adminInvisBtn.innerText = `Toggle Invisible (${window.adminInvisible ? 'ON' : 'OFF'})`;
+                    adminInvisBtn.style.background = window.adminInvisible ? 'rgba(46, 204, 113, 0.4)' : 'rgba(255,255,255,0.1)';
+                    adminInvisBtn.style.borderColor = window.adminInvisible ? '#2ecc71' : '#aaa';
+                    
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(MessagePack.encode({ type: 'admin_invisible', enabled: window.adminInvisible }));
+                    }
+                });
+            }
+
+            if (adminNoclipBtn) {
+                adminNoclipBtn.addEventListener('click', () => {
+                    window.adminNoclip = !window.adminNoclip;
+                    adminNoclipBtn.innerText = `Toggle Noclip (${window.adminNoclip ? 'ON' : 'OFF'})`;
+                    adminNoclipBtn.style.background = window.adminNoclip ? 'rgba(46, 204, 113, 0.4)' : 'rgba(255,255,255,0.1)';
+                    adminNoclipBtn.style.borderColor = window.adminNoclip ? '#2ecc71' : '#aaa';
+                    
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(MessagePack.encode({ type: 'admin_noclip', enabled: window.adminNoclip }));
+                    }
+                });
+            }
+
+            const adminClearArenasBtn = document.getElementById('admin-clearenas-btn');
+            if (adminClearArenasBtn) {
+                adminClearArenasBtn.addEventListener('click', () => {
+                    if (confirm("Are you sure you want to nuke all minigame arenas? This will clear all ghost minigames.")) {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(MessagePack.encode({ type: 'admin_clearenas' }));
+                        }
+                    }
+                });
+            }
         }
 
-        // Interceptar clics en el juego cuando el puntero está activo
+        // Interceptar clics en el juego cuando el god mode esta abierto
         canvas.addEventListener('mousedown', (e) => {
-            if (godPointerActive && player.role === 'admin' && e.button === 0) {
-                e.stopPropagation();
+            if (e.button !== 0) return;
 
+            // 1. Si el puntero magico esta activo (Event Maker)
+            if (godPointerActive && (player.role || '').toLowerCase() === 'admin') {
+                e.stopPropagation();
                 const gridPos = getWorldGridXY(e.clientX, e.clientY);
 
                 for (let l = 15; l >= 0; l--) {
@@ -3308,6 +3804,31 @@
                         }));
 
                         spawnDamageText(gridPos.x * TILE_SIZE, gridPos.y * TILE_SIZE, newCollisionState ? "LOCKED" : "OPEN", newCollisionState);
+                        break;
+                    }
+                }
+                return; // Stop here if pointer is active
+            }
+
+            // 2. Si el panel de dios esta abierto y hacemos click normal, detectar jugador
+            if (godModal && godModal.style.display !== 'none' && (player.role || '').toLowerCase() === 'admin') {
+                const screenCenterX = window.innerWidth / 2;
+                const screenCenterY = window.innerHeight / 2;
+
+                for (let id in otherPlayers) {
+                    const enemy = otherPlayers[id];
+                    if (!enemy || enemy.worldX === undefined) continue;
+
+                    const eScreenX = screenCenterX + ((enemy.worldX - player.worldX) * zoomLevel);
+                    const eScreenY = screenCenterY + ((enemy.worldY - player.worldY) * zoomLevel);
+
+                    const dist = Math.hypot(e.clientX - eScreenX, e.clientY - eScreenY);
+                    if (dist < 40 * zoomLevel) { // 40px hit radius
+                        const adminTargetInput = document.getElementById('admin-target-id');
+                        if (adminTargetInput && enemy.gameId) {
+                            adminTargetInput.value = enemy.gameId;
+                            spawnDamageText(enemy.worldX, enemy.worldY, "TARGET ACQUIRED", true);
+                        }
                         break;
                     }
                 }
@@ -4479,6 +5000,7 @@
                 if (prevId !== -1) {
                     recordHistory([{ x: gridPos.x, y: gridPos.y, l: activeLayer, prevId: prevId, newId: -1 }]);
                     worldMap.delete(centerKey);
+                    markChunkDirty(gridPos.x, gridPos.y);
                     ws.send(MessagePack.encode({ type: 'place_tile', x: gridPos.x, y: gridPos.y, l: activeLayer, tileId: -1 }));
                 }
                 return;
@@ -4596,6 +5118,7 @@
                         } else {
                             worldMap.set(key, { tileId: tId, l: l, hasCollision: hasCol, rotation: rot });
                         }
+                        markChunkDirty(paintX, paintY);
                     }
                 });
             } else {
@@ -4621,6 +5144,7 @@
                             } else {
                                 worldMap.set(key, { tileId: tId, l: activeLayer, hasCollision: false, rotation: rot });
                             }
+                            markChunkDirty(paintX, paintY);
                         }
                     }
                 }
@@ -4681,6 +5205,7 @@
                         // --- EL FIX: Agrupar el borrado en vez de enviarlo al stack suelto ---
                         currentStrokeHistory.push({ x: gridPos.x, y: gridPos.y, l: activeLayer, prevId: prevId, newId: -1 });
                         delete worldMap[centerKey];
+                        markChunkDirty(gridPos.x, gridPos.y);
                         ws.send(MessagePack.encode({ type: 'place_tile', x: gridPos.x, y: gridPos.y, l: activeLayer, tileId: -1 }));
                     }
                 }
@@ -5392,7 +5917,7 @@
 
             for (let id in otherPlayers) {
                 const p = otherPlayers[id];
-                if (!p || p.worldX === undefined || !p.username) continue;
+                if (!p || p.worldX === undefined || !p.username || p.invisibleEnabled) continue;
                 const hId = p.equipped ? p.equipped.head : 'head_default';
                 drawMinimapPlayer(p.worldX, p.worldY, p.frameY, hId, getColorForString(p.username), p.accountId);
             }
@@ -9778,7 +10303,7 @@
             const screenCenterX = Math.floor(cachedScreenWidth  / 2);
             const screenCenterY = Math.floor(cachedScreenHeight / 2);
             // --- NEW: SLIDING COLLISION CHECK ---
-            const checkWall = (x, y) => {
+            const checkWall = (x, y) => { if (window.adminNoclip) return false;
                 // 👇 NUEVO: COLISIÓN LOCAL DE LA BASE (Mismo código que en el servidor) 👇
                 if (centralBase) {
                     const bx = centralBase.worldX + (centralBase.hitboxOffsetX || 0);
@@ -10446,8 +10971,6 @@
             ctx.imageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
 
-            drawGrid(-player.worldX, -player.worldY);
-
             // HELPER FUNCTION: Draws a specific range of layers (CON CULLING Y MULTI-TILESET)
             function drawWorldLayers(startLayer, endLayer) {
                 const screenWidthWorld = cachedScreenWidth / zoomLevel;
@@ -10828,7 +11351,7 @@
             // === A. DRAW OTHER PLAYERS ===
             for (let id in otherPlayers) {
                 const p = otherPlayers[id];
-                if (!p || p.worldX === undefined || !p.username) continue;
+                if (!p || p.worldX === undefined || !p.username || p.invisibleEnabled) continue;
 
                 // 🛑 THE PERFECT MOVEMENT FIX v3 (DELTA-TIME LERP) 🛑
                 let dx = p.targetX - p.worldX;
@@ -11271,7 +11794,8 @@
                     } else if (selectedGrid.tiles) {
                         for (let r = 0; r < selectedGrid.h; r++) {
                             for (let c = 0; c < selectedGrid.w; c++) {
-                                const tileId = selectedGrid.tiles[r][c];
+                                const cellData = selectedGrid.tiles[r][c];
+                                const tileId = typeof cellData === 'object' ? cellData.id : cellData;
                                 if (tileId < 0) continue;
                                 const tsData = getTilesetData(tileId);
                                 if (!tsData || !tsData.img) continue;
@@ -11283,10 +11807,12 @@
                                 const sy = Math.floor(tsData.localId / tilesPerRow) * TILE_SIZE;
                                 const scaledDrawSize = TILE_SIZE * zoomLevel;
 
-                                if (currentRotation !== 0) {
+                                const rot = typeof cellData === 'object' ? cellData.rot : 0;
+
+                                if (rot !== 0) {
                                     ctx.save();
                                     ctx.translate(drawX + scaledDrawSize / 2, drawY + scaledDrawSize / 2);
-                                    ctx.rotate(currentRotation * Math.PI / 180);
+                                    ctx.rotate(rot * Math.PI / 180);
                                     ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, -scaledDrawSize / 2, -scaledDrawSize / 2, scaledDrawSize, scaledDrawSize);
                                     ctx.restore();
                                 } else {
@@ -11436,7 +11962,7 @@
             const scaledHeight = FRAME_HEIGHT * zoomLevel; // 64 px de alto (EL FIX PRINCIPAL)
             for (let id in otherPlayers) {
                 const p = otherPlayers[id];
-                if (!p || p.worldX === undefined || !p.username) continue;
+                if (!p || p.worldX === undefined || !p.username || p.invisibleEnabled) continue;
 
                 // Centro exacto del otro jugador
                 const pCenterX = Math.floor(screenCenterX + ((p.worldX - renderWorldX) * zoomLevel));
