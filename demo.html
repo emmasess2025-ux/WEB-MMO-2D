@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/demo_styles.css">
+    <link rel="stylesheet" href="css/demo_styles.css?v=2">
 </head>
 
 <body>
@@ -40,8 +40,11 @@
     <div id="damage-overlay"></div>
 
     <!-- SOCCER MINIGAME UI -->
-    <div id="soccer-scoreboard" style="display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0, 0, 0, 0.7); padding: 5px 20px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px);">
-        <h2 id="soccer-score-text" style="color: white; margin: 0; font-size: 24px; font-weight: bold; text-shadow: 0 2px 4px black;">🔵 0 - 0 🔴</h2>
+    <div id="soccer-scoreboard"
+        style="display: none; position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0, 0, 0, 0.7); padding: 5px 20px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px);">
+        <h2 id="soccer-score-text"
+            style="color: white; margin: 0; font-size: 24px; font-weight: bold; text-shadow: 0 2px 4px black;">🔵 0 - 0
+            🔴</h2>
     </div>
 
     <div id="safezone-ui"
@@ -58,11 +61,14 @@
     </div>
 
     <div id="dynamic-island">
-        
+
         <!-- 🌟 BOTÓN DE TAREAS/LOGROS 🌟 -->
-        <div id="tasks-btn" class="map-ctrl-btn" style="position: absolute; top: 0px; left: calc(100% + 10px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div id="tasks-btn" class="map-ctrl-btn"
+            style="position: absolute; top: 0px; left: calc(100% + 10px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000;">
             <span style="font-size: 14px;">⭐</span>
-            <div id="tasks-badge" style="display: none; position: absolute; top: -2px; right: -2px; background: red; width: 8px; height: 8px; border-radius: 50%; border: 1px solid black;"></div>
+            <div id="tasks-badge"
+                style="display: none; position: absolute; top: -2px; right: -2px; background: red; width: 8px; height: 8px; border-radius: 50%; border: 1px solid black;">
+            </div>
         </div>
 
         <!-- 🛑 BOTÓN DE CHAT DE SQUAD (VERDE) ACTUALIZADO -->
@@ -80,12 +86,26 @@
         </div>
 
         <!-- Botón de Notificaciones (Privados y Solicitudes) -->
-        <div id="island-notif-btn">
+        <div id="island-notif-btn"
+            style="display: flex; position: relative; width: 16px; height: 16px; background-color: #3498db; border-radius: 4px; align-items: center; justify-content: center; margin-right: 6px; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); pointer-events: auto; transition: 0.2s;">
             <svg viewBox="0 0 24 24" fill="white" width="8" height="8">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
             </svg>
             <!-- 🛑 EL FIX: Convertimos el punto en una burbuja numerada idéntica a la del Squad -->
             <div id="notif-badge"
+                style="display: none; position: absolute; top: -6px; right: -8px; background-color: #e74c3c; border-radius: 10px; border: 1px solid #000; color: white; font-size: 9px; font-weight: bold; padding: 2px 4px; justify-content: center; align-items: center; z-index: 10; min-width: 8px;">
+            </div>
+        </div>
+
+        <!-- Botón de Anuncios del Servidor (Oro) -->
+        <div id="island-announce-btn"
+            style="display: none; position: relative; width: 16px; height: 16px; background-color: #f1c40f; border-radius: 4px; align-items: center; justify-content: center; margin-right: 6px; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); pointer-events: auto; transition: 0.2s;">
+            <svg viewBox="0 0 24 24" fill="black" width="10" height="10">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+                </path>
+            </svg>
+            <div id="announce-badge"
                 style="display: none; position: absolute; top: -6px; right: -8px; background-color: #e74c3c; border-radius: 10px; border: 1px solid #000; color: white; font-size: 9px; font-weight: bold; padding: 2px 4px; justify-content: center; align-items: center; z-index: 10; min-width: 8px;">
             </div>
         </div>
@@ -227,7 +247,7 @@
     <div id="app-tray">
         <div class="app-icon" id="app-auth">
             <div class="app-bg" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
-                <img src="items/icons/Person.png" class="pixel-icon" alt="Login">
+                <img src="items/icons/door.png" class="pixel-icon" alt="Login">
             </div>
             <span>Log In</span>
         </div>
@@ -268,6 +288,27 @@
             <span>Updates</span>
         </div>
 
+        <div class="app-icon" id="app-feedback">
+            <div class="app-bg" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                <img src="items/icons/Message-Three-Dots.png" class="pixel-icon" alt="Feedback">
+            </div>
+            <span style="color: #ff9a9e;">Feedback</span>
+        </div>
+
+        <div class="app-icon" id="app-guide">
+            <div class="app-bg" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                <img src="items/icons/question.png" class="pixel-icon" alt="Guide">
+            </div>
+            <span>Guide</span>
+        </div>
+
+        <div class="app-icon" id="app-argems">
+            <div class="app-bg" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border: 2px solid #f1c40f; box-shadow: 0 0 10px rgba(241,196,15,0.5);">
+                <span style="font-size: 24px;">💎</span>
+            </div>
+            <span style="color: #f1c40f; font-weight: bold; text-shadow: 0 0 5px rgba(241,196,15,0.5);">Argems</span>
+        </div>
+
         <div class="app-icon" id="app-edit-mode" style="display: none;">
             <div class="app-bg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <img src="items/icons/edit-mode.png" class="pixel-icon" alt="Edit Mode">
@@ -291,6 +332,100 @@
         </div>
     </div>
 
+    <!-- FEEDBACK MODAL -->
+    <div id="feedback-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px);">
+        <div
+            style="width: 350px; background: rgba(25, 25, 25, 0.95); border: 1px solid rgba(255,154,158,0.5); border-radius: 15px; padding: 20px; color: white; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(255,154,158,0.2);">
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; font-family: sans-serif; color: #ff9a9e;">Submit Feedback</h3>
+                <button id="close-feedback-modal"
+                    style="background: none; border: none; color: white; cursor: pointer; padding: 0;">
+                    <img src="items/icons/x.png" class="pixel-icon" style="width: 20px; height: 20px;" alt="Cerrar">
+                </button>
+            </div>
+
+            <p style="font-size: 13px; color: #aaa; margin-bottom: 15px; font-family: sans-serif; line-height: 1.4;">
+                Found a bug? Have a suggestion? Let us know! (Your Game ID will be attached automatically).
+            </p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="feedback-category-btn active" data-category="Ideas"
+                    style="flex: 1; padding: 8px; background: rgba(255,154,158,0.2); border: 1px solid #ff9a9e; color: white; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-size: 12px; font-weight: bold; transition: 0.2s;">Ideas</button>
+                <button class="feedback-category-btn" data-category="Bugs & Errors"
+                    style="flex: 1; padding: 8px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #aaa; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-size: 12px; transition: 0.2s;">Bugs</button>
+                <button class="feedback-category-btn" data-category="Help"
+                    style="flex: 1; padding: 8px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #aaa; border-radius: 8px; cursor: pointer; font-family: sans-serif; font-size: 12px; transition: 0.2s;">Help</button>
+            </div>
+
+            <textarea id="feedback-input" rows="5" placeholder="Type your feedback here..."
+                style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; padding: 10px; font-family: sans-serif; resize: none; outline: none; margin-bottom: 15px;"></textarea>
+
+            <button id="submit-feedback-btn"
+                style="width: 100%; padding: 12px; background: #ff9a9e; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                Submit
+            </button>
+        </div>
+    </div>
+
+    <!-- FEEDBACK SUCCESS MODAL -->
+    <div id="feedback-success-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(5px);">
+        <div
+            style="width: 300px; background: rgba(20, 25, 20, 0.95); border: 2px solid #2ecc71; border-radius: 15px; padding: 30px 20px; color: white; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 40px rgba(46, 204, 113, 0.3); text-align: center;">
+
+            <div style="font-size: 50px; margin-bottom: 15px;">✨</div>
+            <h3 style="margin: 0 0 10px 0; font-family: sans-serif; color: #2ecc71;">Feedback Sent!</h3>
+            <p id="feedback-success-msg"
+                style="font-size: 13px; color: #aaa; margin-bottom: 20px; font-family: sans-serif; line-height: 1.5;">
+                Thanks for your feedback! If reviewed and useful we will reward you with an item.
+            </p>
+
+            <button id="close-feedback-success-btn"
+                style="width: 100%; padding: 10px; background: #2ecc71; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                Awesome!
+            </button>
+        </div>
+    </div>
+
+    <!-- TUTORIAL MODAL -->
+    <div id="tutorial-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 4000; backdrop-filter: blur(8px);">
+        <div
+            style="width: 400px; max-width: 90%; background: rgba(20, 20, 25, 0.95); border: 2px solid #38ef7d; border-radius: 15px; padding: 25px; color: white; display: flex; flex-direction: column; box-shadow: 0 10px 50px rgba(56, 239, 125, 0.3);">
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 239, 125, 0.3); padding-bottom: 10px; margin-bottom: 20px;">
+                <h3 id="tutorial-title" style="margin: 0; font-family: sans-serif; color: #38ef7d; font-size: 22px;">How
+                    to Play</h3>
+            </div>
+
+            <div id="tutorial-content"
+                style="text-align: center; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <!-- Icon and Description inserted via JS -->
+            </div>
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;">
+                <div id="tutorial-dots" style="display: flex; gap: 8px;">
+                    <!-- Dots inserted via JS -->
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="tutorial-skip-btn"
+                        style="padding: 10px 15px; background: transparent; color: #aaa; border: 1px solid #aaa; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        Skip
+                    </button>
+                    <button id="tutorial-next-btn"
+                        style="padding: 10px 20px; background: #38ef7d; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                        Next ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="god-modal"
         style="display: none; position: absolute; top: 150px; left: 20px; width: 280px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px); border: 2px solid #38ef7d; border-radius: 12px; color: white; box-shadow: 0 10px 40px rgba(56, 239, 125, 0.4); z-index: 2800; flex-direction: column; overflow: hidden;">
 
@@ -306,7 +441,7 @@
 
         <div style="padding: 15px;">
             <div
-                style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2); text-align: center;">
+                style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2); text-align: center; margin-bottom: 15px;">
                 <h4 style="margin: 0 0 8px 0; color: #f1c40f; font-family: sans-serif;">Live Event Maker</h4>
                 <p style="font-size: 11px; color: #aaa; margin: 0 0 12px 0; font-family: sans-serif;">Haz clic en las
                     paredes para desaparecer sus colisiones en tiempo real.</p>
@@ -315,6 +450,59 @@
                     🪄 Puntero Mágico
                 </button>
             </div>
+
+            <div
+                style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid rgba(56, 239, 125, 0.4); text-align: center;">
+                <h4 style="margin: 0 0 10px 0; color: #38ef7d; font-family: sans-serif;">Player Management</h4>
+                <input type="text" id="admin-target-id" placeholder="Target ID (e.g. A1000)"
+                    style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; text-align: center;">
+
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; gap: 8px;">
+                        <button id="admin-summon-btn"
+                            style="flex: 1; padding: 8px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Bring</button>
+                        <button id="admin-teleport-btn"
+                            style="flex: 1; padding: 8px; background: #9b59b6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Goto</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button id="admin-respawn-btn"
+                            style="flex: 1; padding: 8px; background: #f39c12; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Send
+                            to Spawn</button>
+                        <button id="admin-kick-btn"
+                            style="flex: 1; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Kick
+                            Player</button>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-top: 15px; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="font-size: 11px; color: #aaa; margin-bottom: 5px; text-transform: uppercase;">Global
+                        Announce</div>
+                    <textarea id="admin-announce-input" placeholder="Type message for all players..."
+                        style="width: 100%; padding: 8px; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 6px; color: white; font-family: 'Courier New', monospace; resize: vertical; min-height: 40px; margin-bottom: 8px; font-size: 13px;"
+                        spellcheck="false"></textarea>
+                    <button id="admin-announce-btn"
+                        style="width: 100%; padding: 8px; background: #e67e22; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Shout
+                        to Server</button>
+                </div>
+            </div>
+
+            <!-- ADMIN TOOLS -->
+            <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #e74c3c; text-align: center; margin-top: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #e74c3c; font-family: sans-serif;">Admin Tools</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="admin-invis-btn" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aaa; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                        Toggle Invisible (OFF)
+                    </button>
+                    <button id="admin-noclip-btn" style="padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #aaa; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                        Toggle Noclip (OFF)
+                    </button>
+                    <button id="admin-clearenas-btn" style="padding: 8px; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                        Clear All Arenas (Nuke)
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -339,9 +527,15 @@
 
             <div
                 style="position: absolute; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 8px;">
-                <button id="map-recenter" class="map-ctrl-btn"><img src="items/icons/recenter.png" style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;" alt="Recenter"></button>
-                <button id="map-zoom-in" class="map-ctrl-btn"><img src="items/icons/Plus.png" style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;" alt="Zoom In"></button>
-                <button id="map-zoom-out" class="map-ctrl-btn"><img src="items/icons/Minus.png" style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;" alt="Zoom Out"></button>
+                <button id="map-recenter" class="map-ctrl-btn"><img src="items/icons/recenter.png"
+                        style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;"
+                        alt="Recenter"></button>
+                <button id="map-zoom-in" class="map-ctrl-btn"><img src="items/icons/Plus.png"
+                        style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;"
+                        alt="Zoom In"></button>
+                <button id="map-zoom-out" class="map-ctrl-btn"><img src="items/icons/Minus.png"
+                        style="width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated;"
+                        alt="Zoom Out"></button>
             </div>
 
             <canvas id="minimap-canvas" width="500" height="300"></canvas>
@@ -654,7 +848,8 @@
                         <input type="range" id="sl-bgm-volume" min="0" max="100" value="15" style="width: 100%;">
                     </div>
                     <!-- ⚡ RENDIMIENTO: nueva sección -->
-                    <h4 style="color:#e74c3c; margin:0 0 15px 0; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                    <h4
+                        style="color:#e74c3c; margin:0 0 15px 0; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
                         ⚡ Rendimiento
                     </h4>
 
@@ -674,7 +869,8 @@
                     <!-- Escala de render manual -->
                     <div style="margin-bottom:14px;">
                         <label style="color:#aaa;font-size:12px;">
-                            Escala de Render: <span id="val-render-scale" style="color:white;font-weight:bold;">100</span>%
+                            Escala de Render: <span id="val-render-scale"
+                                style="color:white;font-weight:bold;">100</span>%
                             <span style="color:#666;font-size:10px;"> (⬇ más suave, ⬆ más nítido)</span>
                         </label>
                         <input type="range" id="sl-render-scale" min="50" max="100" value="100" style="width:100%;">
@@ -692,7 +888,8 @@
 
                     <!-- Deshabilitar sombras -->
                     <div style="margin-bottom:14px;">
-                        <label style="color:#aaa;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <label
+                            style="color:#aaa;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;">
                             <input type="checkbox" id="chk-disable-shadows"
                                 style="width:18px;height:18px;accent-color:#e74c3c;">
                             Deshabilitar Sombras de Canvas
@@ -701,7 +898,9 @@
                     </div>
 
                     <!-- Info de impacto -->
-                    <div id="perf-preset-info" style="background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:10px;font-size:11px;color:#e74c3c;margin-bottom:8px;display:none;"></div>
+                    <div id="perf-preset-info"
+                        style="background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:10px;font-size:11px;color:#e74c3c;margin-bottom:8px;display:none;">
+                    </div>
 
                 </div>
 
@@ -1360,33 +1559,7 @@
         </div>
     </div>
 
-    <div id="god-modal"
-        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;  justify-content: center; align-items: center; z-index: 2800;">
-        <div
-            style="width: 320px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px); border: 2px solid #38ef7d; border-radius: 20px; padding: 25px; color: white; box-shadow: 0 10px 40px rgba(56, 239, 125, 0.3); text-align: center;">
 
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(56, 239, 125, 0.3); padding-bottom: 10px;">
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 20px; color: #38ef7d;">⚡ God Tools</h3>
-                <button id="close-god-modal"
-                    style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
-                    <img src="items/icons/x.png" class="pixel-icon" style="width: 20px; height: 20px;"
-                        alt="Cerrar"></button>
-            </div>
-
-            <div
-                style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.2); margin-bottom: 15px;">
-                <h4 style="margin: 0 0 10px 0; color: #f1c40f;">Live Event Maker</h4>
-                <p style="font-size: 12px; color: #aaa; margin: 0 0 15px 0;">Activa el puntero mágico para hacer clic en
-                    las paredes y desaparecer sus colisiones en tiempo real.</p>
-                <button id="god-pointer-btn"
-                    style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #34495e; color: white; font-weight: bold; cursor: pointer; transition: 0.2s;">
-                    🪄 Activar Puntero Mágico
-                </button>
-            </div>
-
-        </div>
-    </div>
 
     <div id="junkyard-modal"
         style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(18, 25, 33, 0.95); backdrop-filter: blur(15px) saturate(180%); border-radius: 15px; border: 1px solid rgba(230, 126, 34, 0.3); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9); color: white; z-index: 2500; width: 600px; max-width: 95vw; height: 80vh; max-height: 550px; font-family: 'Segoe UI', sans-serif; overflow: hidden; flex-direction: column;">
@@ -1705,7 +1878,8 @@
                 <input id="turf-spawn-y" type="number" placeholder="Tile Y" step="1"
                     style="width:68px; background:#111; color:#f1c40f; border:1px solid #f1c40f; border-radius:4px; padding:4px 6px; font-size:12px; font-family:monospace;">
                 <button id="turf-use-pos-btn" title="Usar mi posición actual"
-                    style="background:#e67e22; color:white; border:none; border-radius:4px; padding:4px 7px; font-size:11px; cursor:pointer;">📌 Mi pos</button>
+                    style="background:#e67e22; color:white; border:none; border-radius:4px; padding:4px 7px; font-size:11px; cursor:pointer;">📌
+                    Mi pos</button>
             </span>
 
             <button id="btn-make-safezone" class="tool-btn"
@@ -1715,12 +1889,21 @@
                 style="background: transparent; border: 1px solid #2ecc71; color: #2ecc71; font-weight: bold; display: none; margin-left: 5px;">👁️
                 Ver Zonas</button>
 
-            <button id="overlay-collisions-btn" class="tool-btn" style="background: rgba(255, 0, 0, 0.1); border: 1px solid red; color: white; font-weight: bold; margin-left: 5px;">🟥 Collisions</button>
-            <button id="overlay-logic-btn" class="tool-btn" style="background: rgba(155, 89, 182, 0.1); border: 1px solid #9b59b6; color: white; font-weight: bold; margin-left: 5px;">🟪 Logic</button>
-            <button id="overlay-grid-btn" class="tool-btn" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; margin-left: 5px;">📐 Grid</button>
-            <button id="prefabs-btn" class="tool-btn" style="background: rgba(41, 128, 185, 0.5); border: 1px solid #3498db; color: white; font-weight: bold; margin-left: 5px;">💾 Prefabs</button>
+            <button id="overlay-collisions-btn" class="tool-btn"
+                style="background: rgba(255, 0, 0, 0.1); border: 1px solid red; color: white; font-weight: bold; margin-left: 5px;">🟥
+                Collisions</button>
+            <button id="overlay-logic-btn" class="tool-btn"
+                style="background: rgba(155, 89, 182, 0.1); border: 1px solid #9b59b6; color: white; font-weight: bold; margin-left: 5px;">🟪
+                Logic</button>
+            <button id="overlay-grid-btn" class="tool-btn"
+                style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.4); color: white; font-weight: bold; margin-left: 5px;">📐
+                Grid</button>
+            <button id="prefabs-btn" class="tool-btn"
+                style="background: rgba(41, 128, 185, 0.5); border: 1px solid #3498db; color: white; font-weight: bold; margin-left: 5px;">💾
+                Prefabs</button>
 
-            <button id="eraser-btn" class="tool-btn" style="background: rgba(255, 107, 107, 0.4); margin-left: 10px;">🗑️ Erase</button>
+            <button id="eraser-btn" class="tool-btn"
+                style="background: rgba(255, 107, 107, 0.4); margin-left: 10px;">🗑️ Erase</button>
             <div class="toolbar-divider"></div>
 
             <button class="layer-btn active" data-layer="0">L0 ⬇</button>
@@ -1799,10 +1982,17 @@
 
     <div id="tile-inspector" style="flex-direction: column; align-items: stretch; padding: 10px;">
         <!-- TABS HEADER -->
-        <div style="display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; justify-content: center;">
-            <button id="tab-btn-logic" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">⚙️ Lógica</button>
-            <button id="tab-btn-copy" style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">📋 Copiar</button>
-            <button id="tab-btn-delete" style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">🗑️ Borrar</button>
+        <div
+            style="display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; justify-content: center;">
+            <button id="tab-btn-logic"
+                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">⚙️
+                Lógica</button>
+            <button id="tab-btn-copy"
+                style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">📋
+                Copiar</button>
+            <button id="tab-btn-delete"
+                style="background: transparent; border: 1px solid transparent; color: rgba(255,255,255,0.6); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">🗑️
+                Borrar</button>
         </div>
 
         <!-- TAB 1: LOGICA -->
@@ -1813,8 +2003,7 @@
                 <input type="checkbox" id="inspect-issit" style="margin-left:8px;"> Sentarse
             </label>
 
-            <div id="teleport-settings"
-                style="display: none; align-items: center; gap: 5px;">
+            <div id="teleport-settings" style="display: none; align-items: center; gap: 5px;">
 
                 <label
                     style="color: #3498db; font-size: 11px; display: flex; align-items: center; gap: 3px; cursor: pointer; border-right: 1px dashed rgba(255,255,255,0.2); padding-right: 5px; margin-right: 5px; font-weight: bold;">
@@ -1839,8 +2028,9 @@
                     style="display:none; flex-wrap: wrap; gap:5px; margin-left: 5px; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); width: 220px;">
                     <input type="text" id="ins-arena-name" placeholder="Nombre de sala"
                         style="width: 100%; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;">
-                    
-                    <select id="ins-minigame-type" style="width: 100%; background: #222; color: white; border: 1px solid #555; padding: 3px; font-size: 11px;">
+
+                    <select id="ins-minigame-type"
+                        style="width: 100%; background: #222; color: white; border: 1px solid #555; padding: 3px; font-size: 11px;">
                         <option value="spar">🥊 Sparring (Combat)</option>
                         <option value="soccer">⚽ Soccer</option>
                         <option value="battle_royale">🪂 Battle Royale</option>
@@ -1861,37 +2051,83 @@
                     </div>
 
                     <!-- SPAR SETTINGS -->
-                    <div id="arena-fields-spar" style="width: 100%; display:flex; gap: 5px; margin-top: 5px;">
-                        <input type="number" id="ins-arena-p1x" placeholder="P1 X" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-arena-p1y" placeholder="P1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-arena-p2x" placeholder="P2 X" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-arena-p2y" placeholder="P2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;">
+                    <div id="arena-fields-spar" style="width: 100%; display:flex; flex-direction: column; gap: 5px; margin-top: 5px;">
+                        <div style="display:flex; gap: 5px; align-items: center; border-left: 2px solid #3498db; padding-left: 5px;">
+                            <span style="color: #3498db; font-size: 10px; width: 60px;" title="Where the Blue Team players will spawn">Blue Spawn:</span>
+                            <input type="number" id="ins-arena-p1x" placeholder="X"
+                                style="width: 40px; background: #111; color: #3498db; border: 1px solid #3498db; padding: 3px; font-size:11px;"
+                                title="Blue Team Spawn X">
+                            <input type="number" id="ins-arena-p1y" placeholder="Y"
+                                style="width: 40px; background: #111; color: #3498db; border: 1px solid #3498db; padding: 3px; font-size:11px;"
+                                title="Blue Team Spawn Y">
+                        </div>
+                        <div style="display:flex; gap: 5px; align-items: center; border-left: 2px solid #e74c3c; padding-left: 5px;">
+                            <span style="color: #e74c3c; font-size: 10px; width: 60px;" title="Where the Red Team players will spawn">Red Spawn:</span>
+                            <input type="number" id="ins-arena-p2x" placeholder="X"
+                                style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px; font-size:11px;"
+                                title="Red Team Spawn X">
+                            <input type="number" id="ins-arena-p2y" placeholder="Y"
+                                style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px; font-size:11px;"
+                                title="Red Team Spawn Y">
+                        </div>
                     </div>
 
                     <!-- SOCCER SETTINGS -->
-                    <div id="arena-fields-soccer" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-                        <div style="width:100%; display:flex; gap: 5px;">
-                            <input type="number" id="ins-soccer-bx" placeholder="Ball X" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn X">
-                            <input type="number" id="ins-soccer-by" placeholder="Ball Y" style="width: 40px; background: #111; color: white; border: 1px solid #555; padding: 3px; font-size:11px;" title="Ball Spawn Y">
+                    <div id="arena-fields-soccer"
+                        style="width: 100%; display:none; flex-direction: column; gap: 5px; margin-top: 5px;">
+                        
+                        <div style="display:flex; gap: 5px; align-items: center; border-left: 2px solid #f1c40f; padding-left: 5px;">
+                            <span style="color: #f1c40f; font-size: 10px; width: 60px;" title="Where the Soccer Ball will spawn">Ball Spawn:</span>
+                            <input type="number" id="ins-soccer-bx" placeholder="X"
+                                style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #f1c40f; padding: 3px; font-size:11px;"
+                                title="Ball Spawn X">
+                            <input type="number" id="ins-soccer-by" placeholder="Y"
+                                style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #f1c40f; padding: 3px; font-size:11px;"
+                                title="Ball Spawn Y">
                         </div>
-                        <div style="width:100%; display:flex; gap: 5px;">
-                            <input type="number" id="ins-soccer-g1x1" placeholder="G1 X1" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Start X">
-                            <input type="number" id="ins-soccer-g1x2" placeholder="G1 X2" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue End X">
-                            <input type="number" id="ins-soccer-g1y" placeholder="G1 Y" style="width: 40px; background: #111; color: #3498db; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Blue Row Y">
+
+                        <div style="display:flex; flex-direction: column; gap: 5px; border-left: 2px solid #3498db; padding-left: 5px; margin-top: 2px;">
+                            <span style="color: #3498db; font-size: 10px;" title="The Net defended by Blue Team (Red scores here)">Blue Team Net (G1):</span>
+                            <div style="display:flex; gap: 5px;">
+                                <input type="number" id="ins-soccer-g1x1" placeholder="StartX"
+                                    style="width: 45px; background: #111; color: #3498db; border: 1px solid #3498db; padding: 3px; font-size:11px;"
+                                    title="Blue Net Start X">
+                                <input type="number" id="ins-soccer-g1x2" placeholder="EndX"
+                                    style="width: 45px; background: #111; color: #3498db; border: 1px solid #3498db; padding: 3px; font-size:11px;"
+                                    title="Blue Net End X">
+                                <input type="number" id="ins-soccer-g1y" placeholder="Y"
+                                    style="width: 40px; background: #111; color: #3498db; border: 1px solid #3498db; padding: 3px; font-size:11px;"
+                                    title="Blue Net Y Coordinate">
+                            </div>
                         </div>
-                        <div style="width:100%; display:flex; gap: 5px;">
-                            <input type="number" id="ins-soccer-g2x1" placeholder="G2 X1" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Start X">
-                            <input type="number" id="ins-soccer-g2x2" placeholder="G2 X2" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red End X">
-                            <input type="number" id="ins-soccer-g2y" placeholder="G2 Y" style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #555; padding: 3px; font-size:11px;" title="Goal Red Row Y">
+
+                        <div style="display:flex; flex-direction: column; gap: 5px; border-left: 2px solid #e74c3c; padding-left: 5px; margin-top: 2px;">
+                            <span style="color: #e74c3c; font-size: 10px;" title="The Net defended by Red Team (Blue scores here)">Red Team Net (G2):</span>
+                            <div style="display:flex; gap: 5px;">
+                                <input type="number" id="ins-soccer-g2x1" placeholder="StartX"
+                                    style="width: 45px; background: #111; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px; font-size:11px;"
+                                    title="Red Net Start X">
+                                <input type="number" id="ins-soccer-g2x2" placeholder="EndX"
+                                    style="width: 45px; background: #111; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px; font-size:11px;"
+                                    title="Red Net End X">
+                                <input type="number" id="ins-soccer-g2y" placeholder="Y"
+                                    style="width: 40px; background: #111; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px; font-size:11px;"
+                                    title="Red Net Y Coordinate">
+                            </div>
                         </div>
                     </div>
 
                     <!-- BR SETTINGS -->
-                    <div id="arena-fields-br" style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
-                        <input type="number" id="ins-br-minx" placeholder="MinX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-br-maxx" placeholder="MaxX" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-br-miny" placeholder="MinY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
-                        <input type="number" id="ins-br-maxy" placeholder="MaxY" style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                    <div id="arena-fields-br"
+                        style="width: 100%; display:none; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                        <input type="number" id="ins-br-minx" placeholder="MinX"
+                            style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-maxx" placeholder="MaxX"
+                            style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-miny" placeholder="MinY"
+                            style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
+                        <input type="number" id="ins-br-maxy" placeholder="MaxY"
+                            style="width: 40px; background: #111; color: #f1c40f; border: 1px solid #555; padding: 3px; font-size:11px;">
                     </div>
 
                     <div style="width: 100%; margin-top: 5px;">
@@ -1960,18 +2196,28 @@
             <button id="inspect-rotate-btn" class="tool-btn"
                 style="background: #e67e22; border: none; color: white; font-weight: bold;">🔄 Rotate</button>
             <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
-            <button id="inspect-copy-btn" class="tool-btn" style="background: #3498db; border: none; color: white;">📋 Copy L<span id="copy-layer-num"></span></button>
-            <button id="inspect-copy-below-btn" class="tool-btn" style="background: #2980b9; border: none; color: white;">👇 Copy Below</button>
-            <button id="inspect-copy-above-btn" class="tool-btn" style="background: #e67e22; border: none; color: white;">👆 Copy Above</button>
-            <button id="inspect-copy-all-btn" class="tool-btn" style="background: #9b59b6; border: none; color: white;">📚 Copy ALL</button>
+            <button id="inspect-copy-btn" class="tool-btn" style="background: #3498db; border: none; color: white;">📋
+                Copy L<span id="copy-layer-num"></span></button>
+            <button id="inspect-copy-below-btn" class="tool-btn"
+                style="background: #2980b9; border: none; color: white;">👇 Copy Below</button>
+            <button id="inspect-copy-above-btn" class="tool-btn"
+                style="background: #e67e22; border: none; color: white;">👆 Copy Above</button>
+            <button id="inspect-copy-all-btn" class="tool-btn"
+                style="background: #9b59b6; border: none; color: white;">📚 Copy ALL</button>
         </div>
+
 
         <!-- TAB 3: BORRAR -->
         <div id="tab-delete" style="display: none; align-items: center; gap: 5px; justify-content: center;">
-            <button id="inspect-delete-btn" class="tool-btn" style="background: #e74c3c; border: none; color: white;">🗑️ Del L<span id="del-layer-num"></span></button>
-            <button id="inspect-delete-below-btn" class="tool-btn" style="background: #c0392b; border: none; color: white;">👇 Del Below</button>
-            <button id="inspect-delete-above-btn" class="tool-btn" style="background: #d35400; border: none; color: white;">👆 Del Above</button>
-            <button id="inspect-delete-all-btn" class="tool-btn" style="background: #8e44ad; border: none; color: white;">☢️ Del ALL</button>
+            <button id="inspect-delete-btn" class="tool-btn"
+                style="background: #e74c3c; border: none; color: white;">🗑️ Del L<span
+                    id="del-layer-num"></span></button>
+            <button id="inspect-delete-below-btn" class="tool-btn"
+                style="background: #c0392b; border: none; color: white;">👇 Del Below</button>
+            <button id="inspect-delete-above-btn" class="tool-btn"
+                style="background: #d35400; border: none; color: white;">👆 Del Above</button>
+            <button id="inspect-delete-all-btn" class="tool-btn"
+                style="background: #8e44ad; border: none; color: white;">☢️ Del ALL</button>
         </div>
 
     </div>
@@ -1986,43 +2232,62 @@
     </div>
 
     <!-- 💾 MODAL DE PREFABS -->
-    <div id="prefabs-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 6000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
-        <div style="background: rgba(15, 15, 20, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; width: 90%; max-width: 500px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); color: white;">
-            
-            <h2 style="margin: 0 0 15px 0; color: #3498db; text-align: center; font-family: monospace;">💾 Blueprint Library</h2>
-            
+    <div id="prefabs-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 6000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div
+            style="background: rgba(15, 15, 20, 0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; width: 90%; max-width: 500px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); color: white;">
+
+            <h2 style="margin: 0 0 15px 0; color: #3498db; text-align: center; font-family: monospace;">💾 Blueprint
+                Library</h2>
+
             <!-- Guardar Nueva -->
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px;">
-                <input type="text" id="prefab-save-name" placeholder="Nombre (Ej: Casa Grande)" style="flex: 1; background: #111; color: white; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 14px;">
-                <button id="btn-save-prefab" style="background: #2ecc71; color: black; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Guardar Selección</button>
+            <div
+                style="display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px;">
+                <input type="text" id="prefab-save-name" placeholder="Nombre (Ej: Casa Grande)"
+                    style="flex: 1; background: #111; color: white; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 14px;">
+                <button id="btn-save-prefab"
+                    style="background: #2ecc71; color: black; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Guardar
+                    Selección</button>
             </div>
 
             <!-- Lista de Prefabs -->
-            <div id="prefabs-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+            <div id="prefabs-list"
+                style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                 <!-- Items se inyectan acá -->
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
-                <button onclick="document.getElementById('prefabs-modal').style.display='none';" style="background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar</button>
+                <button onclick="document.getElementById('prefabs-modal').style.display='none';"
+                    style="background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar</button>
             </div>
         </div>
     </div>
 
     <!-- 🌟 MODAL DE TAREAS Y LOGROS 🌟 -->
-    <div id="tasks-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
-        <div style="background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
+    <div id="tasks-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+        <div
+            style="background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="color: white; margin: 0; font-family: sans-serif; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;">⭐ Achievements</h2>
-                <button id="close-tasks-modal" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+                <h2
+                    style="color: white; margin: 0; font-family: sans-serif; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                    ⭐ Achievements</h2>
+                <button id="close-tasks-modal"
+                    style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
             </div>
-            
-            <div id="tasks-tabs" style="display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                <button class="task-tab-btn" data-category="daily" style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid #2ecc71; opacity: 1;">Daily</button>
-                <button class="task-tab-btn" data-category="milestone" style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Milestones</button>
-                <button class="task-tab-btn" data-category="squad" style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Squad</button>
+
+            <div id="tasks-tabs"
+                style="display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <button class="task-tab-btn" data-category="daily"
+                    style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid #2ecc71; opacity: 1;">Daily</button>
+                <button class="task-tab-btn" data-category="milestone"
+                    style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Milestones</button>
+                <button class="task-tab-btn" data-category="squad"
+                    style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Squad</button>
             </div>
-            
-            <div id="tasks-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+
+            <div id="tasks-list"
+                style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
                 <!-- JS will inject tasks here -->
             </div>
         </div>
@@ -2030,7 +2295,80 @@
 
     <script src="js/ui_modals.js"></script>
     <script src="js/minigames/soccer.js"></script>
-    <script src="js/demo_main.js"></script>
+
+    <!-- GLOBAL ANNOUNCEMENT BANNER (MOBILE FRIENDLY) -->
+    <div id="global-announcement-banner"
+        style="display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; text-align: center; z-index: 10000; pointer-events: auto; animation: slideDownFade 0.5s ease-out forwards;">
+        <div
+            style="background: rgba(0, 0, 0, 0.85); border: 2px solid #f1c40f; border-radius: 8px; padding: 15px 25px 15px 15px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.4), inset 0 0 10px rgba(241, 196, 15, 0.2); display: inline-block; width: 100%; box-sizing: border-box; position: relative;">
+            <img id="close-announcement-btn" src="items/icons/x.png"
+                style="position: absolute; top: 8px; right: 8px; width: 14px; height: 14px; cursor: pointer; filter: brightness(0) invert(1); opacity: 0.8;"
+                alt="X">
+            <div
+                style="color: #f1c40f; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px; text-shadow: 0 0 5px #f1c40f;">
+                SERVER ANNOUNCEMENT</div>
+            <div id="global-announcement-text"
+                style="color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); line-height: 1.2;">
+                Welcome to the server!</div>
+        </div>
+    </div>
+
+    <!-- === NUEVO: ARGEMS PREMIUM STORE MODAL === -->
+    <div id="argems-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 2000;">
+        
+        <div style="background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); width: 800px; max-width: 95%; max-height: 90vh; border-radius: 20px; border: 2px solid rgba(241,196,15,0.3); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 50px rgba(155,89,182,0.1);">
+            
+            <!-- HEADER -->
+            <div style="background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 0 15px rgba(241,196,15,0.3);">💎</div>
+                    <div>
+                        <h2 style="margin: 0; color: white; font-family: sans-serif; font-size: 24px;">Argems Store</h2>
+                        <p style="margin: 5px 0 0 0; color: #aaa; font-family: sans-serif; font-size: 14px;">Purchase premium currency to unlock exclusive cosmetics.</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(241,196,15,0.3); border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #aaa; font-family: sans-serif; font-size: 14px; font-weight: bold;">YOUR BALANCE:</span>
+                        <span id="argems-balance-display" style="color: #f1c40f; font-family: monospace; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(241,196,15,0.5);">0 💎</span>
+                    </div>
+                    <button id="close-argems-modal" style="background: transparent; border: none; color: #aaa; font-size: 28px; cursor: pointer; transition: 0.2s;">×</button>
+                </div>
+            </div>
+
+            <!-- STORE CARDS GRID -->
+            <div id="argems-store-grid" style="padding: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; overflow-y: auto;">
+                <!-- Filled dynamically by JS -->
+                <div style="color: white; text-align: center; width: 100%; grid-column: 1 / -1;">Loading packages...</div>
+            </div>
+            
+            <!-- FOOTER -->
+            <div style="background: rgba(0,0,0,0.6); padding: 15px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+                <span style="color: #666; font-family: sans-serif; font-size: 12px;">Payments are processed securely via Stripe. MOCK SANDBOX MODE IS ACTIVE.</span>
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideDownFade {
+            0% {
+                top: -50px;
+                opacity: 0;
+                transform: translateX(-50%) scale(0.95);
+            }
+
+            100% {
+                top: 10px;
+                opacity: 1;
+                transform: translateX(-50%) scale(1);
+            }
+        }
+    </style>
+    
+    <script src="js/demo_main.js?v=14"></script>
 </body>
 
 </html>
