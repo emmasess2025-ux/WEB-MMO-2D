@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Exitoso - Argems</title>
+    <style>
+        body { 
+            background: #1e272e; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            text-align: center; 
+        }
+        h1 { color: #0be881; font-size: 2.5rem; margin-bottom: 10px; }
+        p { color: #d2dae2; font-size: 1.2rem; max-width: 400px; line-height: 1.5; }
+        .loader {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #0be881;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>¡Pago Completado! 💎</h1>
+    <p>Tus Argems han sido enviadas a tu cuenta. Esta ventana se cerrará automáticamente en unos segundos.</p>
+    <div class="loader"></div>
+    <script>
+        // Intentar cerrar la ventana automáticamente después de 3 segundos
+        setTimeout(() => {
+            window.close();
+        }, 3000);
+    </script>
+</body>
+</html>
