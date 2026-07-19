@@ -1266,7 +1266,7 @@ if (appArgemsBtn) {
         argemsModal.style.display = 'flex';
 
         // Update header balance
-        argemsBalanceDisplay.innerText = `${player.gems || 0} 💎`;
+        argemsBalanceDisplay.innerHTML = `${player.gems || 0} <img src="items/icons/argem.png" alt="Argem" style="height: 1.2em; vertical-align: text-bottom; filter: drop-shadow(0 0 5px rgba(241,196,15,0.5)); image-rendering: pixelated; image-rendering: crisp-edges;">`;
         argemsStoreGrid.innerHTML = '<div style="color: white; text-align: center; width: 100%; grid-column: 1 / -1;">Loading packages...</div>';
 
         // Fetch packages from server
@@ -1618,7 +1618,7 @@ ws.onmessage = (event) => {
             }
 
             card.innerHTML += `
-                        <div style="font-size: 48px; margin-bottom: 10px; filter: drop-shadow(0 0 10px ${pkg.color}88);">💎</div>
+                        <div style="font-size: 48px; margin-bottom: 10px; filter: drop-shadow(0 0 10px ${pkg.color}88);"><img src="items/icons/argem.png" alt="Argem" style="height: 1.2em; vertical-align: text-bottom; filter: drop-shadow(0 0 5px rgba(241,196,15,0.5)); image-rendering: pixelated; image-rendering: crisp-edges;"></div>
                         <h3 style="color: white; margin: 0 0 5px 0; font-size: 16px;">${pkg.title}</h3>
                         <div style="color: #f1c40f; font-weight: bold; font-size: 24px; margin-bottom: 15px; text-shadow: 0 0 5px rgba(241,196,15,0.5);">${pkg.gemsAmount}</div>
                     `;
@@ -1657,14 +1657,19 @@ ws.onmessage = (event) => {
         player.gems = data.newGems;
         const balanceDisplay = document.getElementById('argems-balance-display');
         if (balanceDisplay) {
-            balanceDisplay.innerText = `${player.gems} 💎`;
-            // Animación de flash visual
+            balanceDisplay.innerHTML = `${player.gems} <img src="items/icons/argem.png" alt="Argem" style="height: 1.2em; vertical-align: text-bottom; filter: drop-shadow(0 0 5px rgba(241,196,15,0.5)); image-rendering: pixelated; image-rendering: crisp-edges;">`;
+            // Premium Glow Animation
+            balanceDisplay.style.transition = 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             balanceDisplay.style.color = '#fff';
-            balanceDisplay.style.transform = 'scale(1.5)';
+            balanceDisplay.style.transform = 'scale(1.4)';
+            balanceDisplay.style.textShadow = '0 0 20px #f1c40f, 0 0 40px #fff';
+            
             setTimeout(() => {
+                balanceDisplay.style.transition = 'all 1.5s cubic-bezier(0.25, 1, 0.5, 1)';
                 balanceDisplay.style.color = '#f1c40f';
                 balanceDisplay.style.transform = 'scale(1)';
-            }, 300);
+                balanceDisplay.style.textShadow = '0 0 10px rgba(241,196,15,0.5)';
+            }, 150);
         }
 
         // Show floating text
