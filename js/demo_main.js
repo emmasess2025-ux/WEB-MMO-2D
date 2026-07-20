@@ -2521,11 +2521,17 @@ ws.onmessage = (event) => {
         let spawnX = data.x;
         let spawnY = data.y;
 
-        if (otherPlayers[data.id]) {
-            otherPlayers[data.id].lastShotTime = Date.now(); // 🛑 EL FIX: Levanta el arma del enemigo
-
-            // 🔫 EL FIX VISUAL: Sincronizar bala con el cañón interpolado
+                if (otherPlayers[data.id]) {
+            otherPlayers[data.id].lastShotTime = Date.now();
             const enemy = otherPlayers[data.id];
+
+            // FIX VISUAL: Forzar al enemigo a mirar hacia donde disparo instantaneamente
+            let deg = data.angle * (180 / Math.PI);
+            if (deg > 45 && deg <= 135) enemy.frameY = 0;
+            else if (deg > 135 || deg <= -135) enemy.frameY = 1;
+            else if (deg > -45 && deg <= 45) enemy.frameY = 2;
+            else if (deg > -135 && deg <= -45) enemy.frameY = 3;
+
             const wStats = window.loadedWeaponsDB ? window.loadedWeaponsDB[data.weaponId] : null;
             if (wStats) {
                 const dir = enemy.frameY || 0;
@@ -2535,7 +2541,7 @@ ws.onmessage = (event) => {
             }
         }
         // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
-        const bulletLag = data.t ? Math.min(Date.now() - data.t, 200) : 0;
+        const bulletLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 200)) : 0;
         spawnProjectile(spawnX, spawnY, data.angle, data.id, data.weaponId, bulletLag);
         // 🔊 NUEVO: Play the sound!
         const isMe = (data.id === myId);
@@ -12531,4 +12537,3 @@ function updateTaskTimers() {
 }
 
 update();
-
