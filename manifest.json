@@ -1,7 +1,7 @@
 {
     "short_name": "MMOARGON",
     "name": "MMOARGON Alpha",
-    "start_url": "/game/demo.html",
+    "start_url": "/demo.html",
     "background_color": "#222222",
     "display": "fullscreen",
     "theme_color": "#222222",
