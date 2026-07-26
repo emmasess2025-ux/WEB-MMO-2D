@@ -63,12 +63,18 @@
     <div id="dynamic-island">
 
         <!-- 🌟 BOTÓN DE TAREAS/LOGROS 🌟 -->
-        <div id="tasks-btn" class="map-ctrl-btn"
+                <div id="tasks-btn" class="map-ctrl-btn"
             style="position: absolute; top: 0px; left: calc(100% + 10px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000;">
-            <span style="font-size: 14px;">⭐</span>
+            <span style="font-size: 14px;">📜</span>
             <div id="tasks-badge"
                 style="display: none; position: absolute; top: -2px; right: -2px; background: red; width: 8px; height: 8px; border-radius: 50%; border: 1px solid black;">
             </div>
+        </div>
+
+        <!-- 🎟️ BOTÓN DE BATTLE PASS 🎟️ -->
+        <div id="bp-btn" class="map-ctrl-btn"
+            style="position: absolute; top: 0px; left: calc(100% + 42px); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);">
+            <span style="font-size: 14px;">🎟️</span>
         </div>
 
         <!-- 🛑 BOTÓN DE CHAT DE SQUAD (VERDE) ACTUALIZADO -->
@@ -2284,6 +2290,8 @@
                     style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Milestones</button>
                 <button class="task-tab-btn" data-category="squad"
                     style="background: none; border: none; color: white; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.5;">Squad</button>
+                <button class="task-tab-btn" data-category="battle_pass"
+                    style="background: none; border: none; color: #ffcc00; font-weight: bold; font-family: sans-serif; cursor: pointer; padding-bottom: 5px; border-bottom: 2px solid transparent; opacity: 0.8; text-shadow: 0 0 5px #ffcc00;">⭐ BP Quests</button>
             </div>
 
             <div id="tasks-list"
@@ -2368,7 +2376,39 @@
         }
     </style>
     
-    <script src="js/demo_main.js?v=14"></script>
+    
+    <!-- BATTLE PASS MODAL -->
+    <div id="bp-modal" style="display: none; position: fixed; top: 10%; left: 10%; width: 80%; height: 80%; background: rgba(10, 10, 20, 0.95); border: 2px solid #ffcc00; border-radius: 10px; z-index: 2000; flex-direction: column; color: white; font-family: 'Press Start 2P', monospace; box-shadow: 0 0 20px #ffcc00;">
+        <div style="padding: 15px; border-bottom: 2px solid #444; display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="bp-title" style="margin: 0; color: #ffcc00; font-size: 16px; text-shadow: 0 0 10px #ffcc00;">BATTLE PASS</h2>
+            <button id="close-bp-btn" style="background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; font-family: 'Press Start 2P'; border-radius: 4px;">X</button>
+        </div>
+        
+        <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5);">
+            <div>
+                <div style="font-size: 12px; margin-bottom: 5px;">Season XP: <span id="bp-xp-text" style="color: #00ffcc;">0</span></div>
+                <div style="width: 200px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; border: 1px solid #444;">
+                    <div id="bp-xp-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00ffcc, #0066ff); transition: width 0.3s;"></div>
+                </div>
+            </div>
+            <button id="buy-premium-btn" style="background: linear-gradient(90deg, #ffcc00, #ff6600); color: black; border: none; padding: 10px 15px; cursor: pointer; font-family: 'Press Start 2P'; border-radius: 4px; font-size: 12px; box-shadow: 0 0 10px #ffcc00;">
+                UPGRADE PASS
+            </button>
+        </div>
+
+        <div id="bp-track-container" style="flex: 1; overflow-x: auto; overflow-y: hidden; padding: 20px; display: flex; gap: 10px; align-items: center; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');">
+            <!-- BP Items will be injected here via JS -->
+        </div>
+    </div>
+
+    <!-- AUDIO ELEMENT FOR ADMIN VOICE CHAT -->
+    <audio id="admin-voice-audio" autoplay></audio>
+
+    </div>
+
+<script src="js/demo_main.js?v=14"></script>
 </body>
 
 </html>
+
+
