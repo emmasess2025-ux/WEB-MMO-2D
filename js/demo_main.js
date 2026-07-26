@@ -1,16 +1,16 @@
 // --- SEPARAMOS EL ANCHO Y EL ALTO ---
-const FRAME_SIZE = 48; // Regresamos a 48 porque es el tamaño real de cada celda de tu sprite
+const FRAME_SIZE = 48; // Regresamos a 48 porque es el tamaÃ±o real de cada celda de tu sprite
 // --- SEPARAMOS EL ANCHO Y EL ALTO ---
 const FRAME_WIDTH = 48;
 const FRAME_HEIGHT = 64;
 let centralBase = null;
 let RANKS = [];
 let unreadGlobalMessages = 0;
-// --- MEMORIA DE NAVEGACIÓN DE MODALES ---
+// --- MEMORIA DE NAVEGACIÃ“N DE MODALES ---
 let lastProfileSource = 'game'; // Puede ser 'game', 'friends', 'squad'
 let lastPmSource = 'inbox';     // Puede ser 'inbox', 'profile'
 
-// Le dice al código en qué FILA empieza cada animación
+// Le dice al cÃ³digo en quÃ© FILA empieza cada animaciÃ³n
 const SKELETON_DATA = {
     states: {
         "idle": 0,           // Filas 0 a 3
@@ -21,11 +21,11 @@ const SKELETON_DATA = {
     anchors: {}
 };
 
-// Función para obtener la llave de un anclaje específico
+// FunciÃ³n para obtener la llave de un anclaje especÃ­fico
 function getFrameKey(state, dir, frameX) {
     return `${state}_${dir}_${frameX}`;
 }
-// 🚀 EL FIX DE RENDIMIENTO: Lluvia reciclable (Object Pool)
+// ðŸš€ EL FIX DE RENDIMIENTO: Lluvia reciclable (Object Pool)
 const MAX_RAIN = 150;
 window.rainParticles = Array.from({ length: MAX_RAIN }, () => ({
     active: false, x: 0, y: 0, targetY: 0, len: 0, vx: 0, vy: 0, isSplashing: false, splashLife: 0
@@ -33,10 +33,10 @@ window.rainParticles = Array.from({ length: MAX_RAIN }, () => ({
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// --- NUEVO: LIENZO INVISIBLE PARA EL FLASH DE DAÑO ---
+// --- NUEVO: LIENZO INVISIBLE PARA EL FLASH DE DAÃ‘O ---
 const flashCanvas = document.createElement('canvas');
 const flashCtx = flashCanvas.getContext('2d');
-const safeZoneUI = document.getElementById('safezone-ui'); // <--- PEGA ESTA LÍNEA AQUÍ
+const safeZoneUI = document.getElementById('safezone-ui'); // <--- PEGA ESTA LÃNEA AQUÃ
 
 // --- VARIABLES DE LA PANTALLA DE CARGA ---
 let isCinematicLoading = true;
@@ -54,9 +54,9 @@ function updateLoadingBar(text) {
         fill.style.width = pct + '%';
     }
 
-    // Si ya cargó todo, quitamos la barra de carga Y ENTRAMOS DIRECTO AL JUEGO
+    // Si ya cargÃ³ todo, quitamos la barra de carga Y ENTRAMOS DIRECTO AL JUEGO
     if (totalAssetsToLoad > 0 && assetsLoaded >= totalAssetsToLoad) {
-        if (txt) txt.innerText = "¡Mundo Listo!";
+        if (txt) txt.innerText = "Â¡Mundo Listo!";
         setTimeout(() => {
             const screen = document.getElementById('loading-screen');
             if (screen) screen.style.opacity = '0';
@@ -64,11 +64,11 @@ function updateLoadingBar(text) {
             setTimeout(() => {
                 if (screen) screen.style.display = 'none';
 
-                // 👇 LA MAGIA: Apagamos el dron y devolvemos el control al instante 👇
+                // ðŸ‘‡ LA MAGIA: Apagamos el dron y devolvemos el control al instante ðŸ‘‡
                 isCinematicLoading = false;
                 floorDirty = false;
 
-                // Asegurarnos de que la ventana de Login esté escondida
+                // Asegurarnos de que la ventana de Login estÃ© escondida
                 if (authOverlay) {
                     authOverlay.style.display = 'none';
                     authOverlay.style.opacity = '0';
@@ -79,12 +79,12 @@ function updateLoadingBar(text) {
     }
 }
 
-// --- 0. MULTI-TILESET SYSTEM (DINÁMICO DESDE MONGODB) ---
+// --- 0. MULTI-TILESET SYSTEM (DINÃMICO DESDE MONGODB) ---
 let TILESET_CONFIG = [];
 const loadedTilesets = {};
 let currentTilesetIndex = 0;
 
-// El traductor mágico
+// El traductor mÃ¡gico
 function getTilesetData(globalTileId) {
     if (globalTileId === -1 || globalTileId === undefined) return null;
     for (let i = TILESET_CONFIG.length - 1; i >= 0; i--) {
@@ -98,7 +98,7 @@ function getTilesetData(globalTileId) {
     return null;
 }
 
-// El traductor mágico: Convierte un Global ID (ej. 10005) en su imagen y su ID local (5)
+// El traductor mÃ¡gico: Convierte un Global ID (ej. 10005) en su imagen y su ID local (5)
 function getTilesetData(globalTileId) {
     if (globalTileId === -1 || globalTileId === undefined) return null;
     for (let i = TILESET_CONFIG.length - 1; i >= 0; i--) {
@@ -119,8 +119,8 @@ let showGridOverlay = false;
 let hiddenLayers = new Set();
 let selectedTileId = 0;
 const TILE_SIZE = 16; // Your tileset looks like a 16px grid
-// 🚀 EL FIX DE RENDIMIENTO MÁXIMO: TILEMAP CHUNKING ARCHITECTURE
-const CHUNK_SIZE = 32; // 32x32 tiles por chunk (512x512 píxeles de mundo)
+// ðŸš€ EL FIX DE RENDIMIENTO MÃXIMO: TILEMAP CHUNKING ARCHITECTURE
+const CHUNK_SIZE = 32; // 32x32 tiles por chunk (512x512 pÃ­xeles de mundo)
 const floorChunks = new Map();
 const overheadChunks = new Map();
 const dirtyChunks = new Set();
@@ -142,7 +142,7 @@ function rebakeChunk(cx, cy) {
 
     const chunkPixelSize = CHUNK_SIZE * TILE_SIZE;
 
-    // 🛑 OPTIMIZACIÓN: Solo crear oCanvas si de verdad hay tiles aéreos en este chunk
+    // ðŸ›‘ OPTIMIZACIÃ“N: Solo crear oCanvas si de verdad hay tiles aÃ©reos en este chunk
     let hasOverhead = false;
     const startX = cx * CHUNK_SIZE;
     const startY = cy * CHUNK_SIZE;
@@ -225,7 +225,7 @@ function rebakeChunk(cx, cy) {
     }
 }
 
-// 🚀 EL FIX FÍSICO: Map() y Claves Numéricas
+// ðŸš€ EL FIX FÃSICO: Map() y Claves NumÃ©ricas
 const worldMap = new Map();
 
 function getMapKey(x, y, l) {
@@ -234,18 +234,18 @@ function getMapKey(x, y, l) {
 let safeZones = [];   // <--- NUEVO: MEMORIA DE ZONAS SEGURAS
 // 1. PRIMERO declaramos la variable para saber si es celular
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-// 🚀 EL FIX DE RENDIMIENTO MÁXIMO: OFFSCREEN CANVAS (CACHE DEL SUELO)
+// ðŸš€ EL FIX DE RENDIMIENTO MÃXIMO: OFFSCREEN CANVAS (CACHE DEL SUELO)
 const floorCanvas = document.createElement('canvas');
 const floorCtx = floorCanvas.getContext('2d');
-const overheadCanvas = document.createElement('canvas'); // 🌟 NUEVO
-const overheadCtx = overheadCanvas.getContext('2d');     // 🌟 NUEVO
+const overheadCanvas = document.createElement('canvas'); // ðŸŒŸ NUEVO
+const overheadCtx = overheadCanvas.getContext('2d');     // ðŸŒŸ NUEVO
 let floorDirty = true; // Nos dice si necesitamos tomar una nueva "foto"
 let floorBufferBox = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-// 🚀 FIX JITTER MÓVIL: currentBufferMargin dinámico calculado según la VRAM
+// ðŸš€ FIX JITTER MÃ“VIL: currentBufferMargin dinÃ¡mico calculado segÃºn la VRAM
 let currentBufferMargin = isTouchDevice ? 6 : 12;
 
-// 📱 PRE-BAKED ZOOM: the floor canvas is drawn at zoomLevel resolution so the main
-// ctx.drawImage is always 1:1 (no scaling) — this is the Safari/iOS killer fix.
+// ðŸ“± PRE-BAKED ZOOM: the floor canvas is drawn at zoomLevel resolution so the main
+// ctx.drawImage is always 1:1 (no scaling) â€” this is the Safari/iOS killer fix.
 let floorBakedZoom = 0; // Track what zoom the buffer was baked at
 
 function updateFloorBuffer() {
@@ -261,7 +261,7 @@ function updateFloorBuffer() {
     floorBufferBox.minY = centerRow - halfRows - currentBufferMargin;
     floorBufferBox.maxY = centerRow + halfRows + currentBufferMargin;
 
-    // 📱 PRE-BAKE AT ZOOM: canvas is sized in screen pixels, not world pixels.
+    // ðŸ“± PRE-BAKE AT ZOOM: canvas is sized in screen pixels, not world pixels.
     // This makes the final drawImage a 1:1 blit (zero scaling cost on Safari).
     const bakeZoom = zoomLevel;
     const tilesW = (floorBufferBox.maxX - floorBufferBox.minX);
@@ -297,7 +297,7 @@ function updateFloorBuffer() {
                 const tilesPerRow = Math.floor(tsData.img.width / TILE_SIZE);
                 const sx = (tsData.localId % tilesPerRow) * TILE_SIZE;
                 const sy = Math.floor(tsData.localId / tilesPerRow) * TILE_SIZE;
-                // 🧱 THE WOBBLE FIX: Calculate pixels anchored to the Absolute World, not the Buffer.
+                // ðŸ§± THE WOBBLE FIX: Calculate pixels anchored to the Absolute World, not the Buffer.
                 // This guarantees tile widths NEVER oscillate when the buffer moves.
                 const exactX = c * tileDrawSize;
                 const exactY = r * tileDrawSize;
@@ -383,11 +383,11 @@ canvas.addEventListener('touchend', (e) => {
     }
 });
 
-// 🚀 EL FIX: Cachear la pantalla en RAM
+// ðŸš€ EL FIX: Cachear la pantalla en RAM
 let cachedScreenWidth = window.innerWidth;
 let cachedScreenHeight = window.innerHeight;
 
-// --- SISTEMA MULTIPLATAFORMA (PC vs MÓVIL) ---
+// --- SISTEMA MULTIPLATAFORMA (PC vs MÃ“VIL) ---
 // Variables para los controles de PC
 const keys = { w: false, a: false, s: false, d: false };
 let mouseX = window.innerWidth / 2;
@@ -397,7 +397,7 @@ let isMouseDown = false;
 // Ocultar los joysticks si estamos en PC
 window.addEventListener('DOMContentLoaded', () => {
     if (!isTouchDevice) {
-        // AQUÍ ESTÁ LA CORRECCIÓN DE LOS IDs:
+        // AQUÃ ESTÃ LA CORRECCIÃ“N DE LOS IDs:
         const leftJoy = document.getElementById('joystick-zone');
         const rightJoy = document.getElementById('aim-zone');
 
@@ -408,15 +408,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- ESCUCHAR TECLADO (WASD, TAB-CHAT Y ANTI-BUGS) ---
 window.addEventListener('keydown', (e) => {
-    // 🛑 EL FIX 1: Usar TAB para activar el chat público
+    // ðŸ›‘ EL FIX 1: Usar TAB para activar el chat pÃºblico
     if (e.key === 'Tab') {
         e.preventDefault(); // Evita que el navegador seleccione botones locamente
 
-        // Si el chat ya está abierto, lo cerramos (enviamos o cancelamos)
+        // Si el chat ya estÃ¡ abierto, lo cerramos (enviamos o cancelamos)
         if (chatContainer.classList.contains('expanded')) {
             sendMessage();
         } else {
-            // Si está cerrado, simulamos el clic en el botón de chat
+            // Si estÃ¡ cerrado, simulamos el clic en el botÃ³n de chat
             chatToggle.click();
         }
     }
@@ -424,7 +424,7 @@ window.addEventListener('keydown', (e) => {
 
 if (!isTouchDevice) {
     window.addEventListener('keydown', (e) => {
-        // 🛑 EL FIX 2: Bloquear WASD si estamos escribiendo en el chat o cualquier input
+        // ðŸ›‘ EL FIX 2: Bloquear WASD si estamos escribiendo en el chat o cualquier input
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
             // Si presionamos ENTER dentro del chat, enviamos mensaje
             if (e.key === 'Enter') sendMessage();
@@ -445,7 +445,7 @@ if (!isTouchDevice) {
     });
 }
 
-// --- ESCUCHAR RATÓN (APUNTAR Y DISPARAR) ---
+// --- ESCUCHAR RATÃ“N (APUNTAR Y DISPARAR) ---
 if (!isTouchDevice) {
     window.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
@@ -453,7 +453,7 @@ if (!isTouchDevice) {
     });
 
     window.addEventListener('mousedown', (e) => {
-        // Solo disparamos si hicieron clic en el juego, no en un botón de la interfaz
+        // Solo disparamos si hicieron clic en el juego, no en un botÃ³n de la interfaz
         if (e.target.tagName.toLowerCase() === 'canvas') {
             isMouseDown = true;
         }
@@ -496,23 +496,23 @@ const player = {
     maxHp: 100,
     coins: 0, // <--- NUEVO
     ammo: 0,
-    weaponAmmo: {}, // 💾 ¡NUEVO! Memoria de los cargadores
+    weaponAmmo: {}, // ðŸ’¾ Â¡NUEVO! Memoria de los cargadores
     isReloading: false,
     lastShotX: 0,
     lastShotY: 0,
-    lastHitTime: 0, // <--- ¡NUEVO!
-    isDead: false // <--- ¡NUEVO ESTADO!
+    lastHitTime: 0, // <--- Â¡NUEVO!
+    isDead: false // <--- Â¡NUEVO ESTADO!
 
 };
 
 // ==========================================
-// 🔊 SOUND ENGINE (WEB AUDIO API - ZERO LAG)
+// ðŸ”Š SOUND ENGINE (WEB AUDIO API - ZERO LAG)
 // ==========================================
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
-const audioBuffers = {}; // Aquí guardamos los MP3 ya decodificados en RAM pura
+const audioBuffers = {}; // AquÃ­ guardamos los MP3 ya decodificados en RAM pura
 
-// Función para descargar el sonido y convertirlo en datos crudos
+// FunciÃ³n para descargar el sonido y convertirlo en datos crudos
 async function preloadSound(url) {
     if (!url || audioBuffers[url]) return;
     try {
@@ -531,14 +531,14 @@ function playSound(soundUrl, volume = 0.5) {
 
     const buffer = audioBuffers[soundUrl];
     if (!buffer) {
-        // Si disparas y aún no bajaba de internet, lo baja y luego suena
+        // Si disparas y aÃºn no bajaba de internet, lo baja y luego suena
         preloadSound(soundUrl).then(() => {
             if (audioBuffers[soundUrl]) playSound(soundUrl, volume);
         });
         return;
     }
 
-    // Reproducción ultrarrápida nivel C++
+    // ReproducciÃ³n ultrarrÃ¡pida nivel C++
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
     const gainNode = audioCtx.createGain();
@@ -558,7 +558,7 @@ function playItemSound(itemId, soundType = 'use', volume = 0.5) {
 }
 
 // ==========================================
-// 💿 BACKGROUND MUSIC ENGINE (BGM)
+// ðŸ’¿ BACKGROUND MUSIC ENGINE (BGM)
 // ==========================================
 let bgmPlaylist = [];
 let currentBgmIndex = 0;
@@ -568,7 +568,7 @@ const bgmPlayer = new Audio();
 bgmPlayer.volume = 0.15; // Volumen bajo de fondo (Ajusta al gusto)
 bgmPlayer.loop = false;  // False para que pase a la siguiente al terminar
 
-// Cuando la canción termina, pasa a la siguiente
+// Cuando la canciÃ³n termina, pasa a la siguiente
 bgmPlayer.addEventListener('ended', () => {
     if (bgmPlaylist.length === 0) return;
     currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
@@ -581,15 +581,15 @@ function startBGM() {
 
     bgmPlayer.src = bgmPlaylist[currentBgmIndex];
 
-    // Los navegadores bloquean el audio si no hay interacción, manejamos la promesa
+    // Los navegadores bloquean el audio si no hay interacciÃ³n, manejamos la promesa
     bgmPlayer.play().then(() => {
         isBgmPlaying = true;
     }).catch(e => {
-        console.warn("BGM bloqueado por el navegador. Esperando interacción...");
+        console.warn("BGM bloqueado por el navegador. Esperando interacciÃ³n...");
     });
 }
 
-// 🛑 EL FIX DEL NAVEGADOR: El audio inicia con el primer toque o clic del jugador en la pantalla
+// ðŸ›‘ EL FIX DEL NAVEGADOR: El audio inicia con el primer toque o clic del jugador en la pantalla
 document.body.addEventListener('click', () => {
     if (!isBgmPlaying && bgmPlaylist.length > 0) {
         startBGM();
@@ -604,14 +604,14 @@ document.body.addEventListener('touchstart', () => {
 
 
 // --- NEW: PROJECTILE DATA & WEAPONS DB ---
-let WEAPONS = {}; // ¡El servidor llenará esto mágicamente al conectar!
-// 🚀 EL FIX DE RENDIMIENTO: Pool de 100 Balas pre-fabricadas
+let WEAPONS = {}; // Â¡El servidor llenarÃ¡ esto mÃ¡gicamente al conectar!
+// ðŸš€ EL FIX DE RENDIMIENTO: Pool de 100 Balas pre-fabricadas
 const MAX_PROJECTILES = 100;
 const projectiles = Array.from({ length: MAX_PROJECTILES }, () => ({
-    active: false, // ¡La bandera mágica!
+    active: false, // Â¡La bandera mÃ¡gica!
     x: 0, y: 0, vx: 0, vy: 0, life: 0, owner: null, weapon: null, color: "#f1c40f"
 }));
-// 🚀 EL FIX DE RENDIMIENTO (OBJECT POOLS): Textos y Chispas reciclables
+// ðŸš€ EL FIX DE RENDIMIENTO (OBJECT POOLS): Textos y Chispas reciclables
 const MAX_FX = 30;
 const damageTexts = Array.from({ length: MAX_FX }, () => ({
     active: false, x: 0, y: 0, text: "", color: "", life: 0, maxLife: 0
@@ -620,7 +620,7 @@ const hitSparks = Array.from({ length: MAX_FX }, () => ({
     active: false, x: 0, y: 0, life: 0, maxLife: 0, color: ""
 }));
 
-// 💥 NUEVA FUNCIÓN PARA RECICLAR CHISPAS
+// ðŸ’¥ NUEVA FUNCIÃ“N PARA RECICLAR CHISPAS
 function spawnSpark(x, y, life, color) {
     for (let i = 0; i < MAX_FX; i++) {
         if (!hitSparks[i].active) {
@@ -643,10 +643,10 @@ let digHoles = []; // Memoria temporal para los hoyos en el piso
 let CLIENT_METALS_CATALOG = [];
 
 let groundItems = {};
-const baseSpriteCache = {}; // <--- 🌟 CACHÉ DE LA BASE MÁGICA 🌟
+const baseSpriteCache = {}; // <--- ðŸŒŸ CACHÃ‰ DE LA BASE MÃGICA ðŸŒŸ
 const trashSpritesheet = new Image();
 trashSpritesheet.src = "items/jobs/junkyard/trash.png"; // Tu PNG custom de 128x32
-// Este arreglo asume que la animación tiene 8 frames.
+// Este arreglo asume que la animaciÃ³n tiene 8 frames.
 
 const bodyImg = new Image();
 bodyImg.src = 'items/players/body/B_D.png'; // Tu archivo de cuerpo
@@ -655,7 +655,7 @@ const headImg = new Image();
 headImg.src = 'items/players/head/H_D.png'; // Tu archivo de cabezas
 
 // =========================================================
-//  SISTEMA DE CONFIGURACIÓN LOCAL (LOCALSTORAGE)
+//  SISTEMA DE CONFIGURACIÃ“N LOCAL (LOCALSTORAGE)
 // =========================================================
 let gameSettings = {
     joySize: 120,
@@ -672,12 +672,12 @@ let gameSettings = {
     fxVignette: 0,
     bgmEnabled: true,
     bgmVolume: 15,
-    // ⚡ NUEVAS OPCIONES DE RENDIMIENTO
+    // âš¡ NUEVAS OPCIONES DE RENDIMIENTO
     renderPreset: 'high',    // ultra | high | medium | low | potato
-    renderScale: 100,        // 50–100 (% del DPR nativo)
+    renderScale: 100,        // 50â€“100 (% del DPR nativo)
     fpsCap: 60,              // 30 | 60 (frames per second cap)
     disableShadows: false,   // apaga sombras CSS y canvas
-    nametag3D: true,         // avatares 3D en nametags (pesados en móvil)
+    nametag3D: true,         // avatares 3D en nametags (pesados en mÃ³vil)
 };
 
 function loadSettings() {
@@ -700,12 +700,12 @@ function loadSettings() {
         document.getElementById('val-joy-x').innerText = gameSettings.joyX;
         document.getElementById('val-joy-y').innerText = gameSettings.joyY;
         document.getElementById('val-name-opacity').innerText = Math.round(gameSettings.nameOpacity * 100);
-        // Sync Labels (Pégalo debajo de los otros)
+        // Sync Labels (PÃ©galo debajo de los otros)
         document.getElementById('chk-show-perf').checked = gameSettings.showPerformance;
         document.getElementById('sl-perf-opacity').value = Math.round(gameSettings.perfOpacity * 100);
         document.getElementById('val-perf-opacity').innerText = Math.round(gameSettings.perfOpacity * 100);
 
-        // ⛅ SYNC WEATHER UI
+        // â›… SYNC WEATHER UI
         const selTime = document.getElementById('sel-time-mode');
         if (selTime) selTime.value = gameSettings.timeMode || 'auto';
         const chkRain = document.getElementById('chk-rain');
@@ -732,7 +732,7 @@ function loadSettings() {
             document.getElementById('chk-bgm-enabled').checked = gameSettings.bgmEnabled;
         }
 
-        // ⚡ SYNC RENDIMIENTO UI
+        // âš¡ SYNC RENDIMIENTO UI
         const selPresetEl = document.getElementById('sel-render-preset');
         if (selPresetEl) selPresetEl.value = gameSettings.renderPreset || 'high';
         const slScaleEl = document.getElementById('sl-render-scale');
@@ -776,7 +776,7 @@ function applySettingsToGame() {
         rightJoy.style.bottom = `${gameSettings.joyY}px`;
     }
 
-    // 👇 EL MEZCLADOR GRÁFICO (HARDWARE ACCELERATED) 👇
+    // ðŸ‘‡ EL MEZCLADOR GRÃFICO (HARDWARE ACCELERATED) ðŸ‘‡
     const canvasEl = document.getElementById('gameCanvas');
     const fxVignette = document.getElementById('fx-vignette');
     const fxGloom = document.getElementById('fx-gloom');
@@ -788,14 +788,14 @@ function applySettingsToGame() {
         const saturate = 1.0 + (0.8 * bloomPct); // Max 1.8x Saturation
         const brightness = 1.0 + (0.2 * bloomPct); // Max 1.2x Brightness
 
-        // Si está en 0%, quitamos el filtro para ahorrar batería
+        // Si estÃ¡ en 0%, quitamos el filtro para ahorrar baterÃ­a
         if (bloomPct === 0) {
             canvasEl.style.filter = 'none';
         } else {
             canvasEl.style.filter = `contrast(${contrast}) saturate(${saturate}) brightness(${brightness})`;
         }
 
-        // 2. Gloom Engine (Ajusta la opacidad del div de neón/haze)
+        // 2. Gloom Engine (Ajusta la opacidad del div de neÃ³n/haze)
         const gloomPct = gameSettings.fxGloom / 100;
         fxGloom.style.opacity = gloomPct;
 
@@ -809,7 +809,7 @@ function applySettingsToGame() {
             fxVignette.style.boxShadow = `inset 0 0 ${vigSpread}px rgba(0,0,0,${vigPct * 0.9})`;
         }
     }
-    // 👇 APLICAR VOLUMEN Y REPRODUCCIÓN EN VIVO 👇
+    // ðŸ‘‡ APLICAR VOLUMEN Y REPRODUCCIÃ“N EN VIVO ðŸ‘‡
     if (typeof bgmPlayer !== 'undefined') {
         bgmPlayer.volume = gameSettings.bgmVolume / 100; // HTML Audio usa de 0.0 a 1.0
 
@@ -817,10 +817,10 @@ function applySettingsToGame() {
             bgmPlayer.pause();
             isBgmPlaying = false;
         } else if (gameSettings.bgmEnabled && !isBgmPlaying && bgmPlaylist.length > 0) {
-            // Si lo prendieron desde el menú, como fue un clic explícito, el navegador nos dejará arrancar
+            // Si lo prendieron desde el menÃº, como fue un clic explÃ­cito, el navegador nos dejarÃ¡ arrancar
             startBGM();
         }
-    }// 👇 APLICAR VOLUMEN Y REPRODUCCIÓN EN VIVO 👇
+    }// ðŸ‘‡ APLICAR VOLUMEN Y REPRODUCCIÃ“N EN VIVO ðŸ‘‡
     if (typeof bgmPlayer !== 'undefined') {
         bgmPlayer.volume = gameSettings.bgmVolume / 100; // HTML Audio usa de 0.0 a 1.0
 
@@ -828,12 +828,12 @@ function applySettingsToGame() {
             bgmPlayer.pause();
             isBgmPlaying = false;
         } else if (gameSettings.bgmEnabled && !isBgmPlaying && bgmPlaylist.length > 0) {
-            // Si lo prendieron desde el menú, como fue un clic explícito, el navegador nos dejará arrancar
+            // Si lo prendieron desde el menÃº, como fue un clic explÃ­cito, el navegador nos dejarÃ¡ arrancar
             startBGM();
         }
     }
 
-    // 👇 APLICAR TRANSPARENCIA DEL MONITOR DE RENDIMIENTO 👇
+    // ðŸ‘‡ APLICAR TRANSPARENCIA DEL MONITOR DE RENDIMIENTO ðŸ‘‡
     if (uiPerfMonitor) {
         // Modificamos el fondo para que acepte la opacidad dictada
         uiPerfMonitor.style.background = `rgba(15, 15, 20, ${gameSettings.perfOpacity})`;
@@ -893,7 +893,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (selGraphic) {
         selGraphic.addEventListener('change', (e) => {
             gameSettings.graphicFilter = e.target.value;
-            saveSettings(); // Esto llamará a applySettingsToGame automáticamente
+            saveSettings(); // Esto llamarÃ¡ a applySettingsToGame automÃ¡ticamente
         });
     }
     // Enlazar los nuevos inputs
@@ -903,7 +903,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (chkBgm) {
         chkBgm.addEventListener('change', (e) => {
             gameSettings.bgmEnabled = e.target.checked;
-            saveSettings(); // Esto llamará a applySettings automáticamente y apagará la música
+            saveSettings(); // Esto llamarÃ¡ a applySettings automÃ¡ticamente y apagarÃ¡ la mÃºsica
         });
     }
 
@@ -918,13 +918,13 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ⚡ BINDINGS DE RENDIMIENTO
+    // âš¡ BINDINGS DE RENDIMIENTO
     const PRESET_CONFIGS = {
         ultra: { renderScale: 100, fpsCap: 60, disableShadows: false, nametag3D: true, info: null },
         high: { renderScale: 100, fpsCap: 60, disableShadows: false, nametag3D: true, info: null },
-        medium: { renderScale: 75, fpsCap: 60, disableShadows: false, nametag3D: true, info: '🟡 Resolución al 75%.' },
-        low: { renderScale: 60, fpsCap: 30, disableShadows: true, nametag3D: false, info: '🟠 60% res, cap 30fps, sin sombras.' },
-        potato: { renderScale: 50, fpsCap: 30, disableShadows: true, nametag3D: false, info: '🥔 Modo Patata: mínimo absoluto para correr en cualquier teléfono.' },
+        medium: { renderScale: 75, fpsCap: 60, disableShadows: false, nametag3D: true, info: 'ðŸŸ¡ ResoluciÃ³n al 75%.' },
+        low: { renderScale: 60, fpsCap: 30, disableShadows: true, nametag3D: false, info: 'ðŸŸ  60% res, cap 30fps, sin sombras.' },
+        potato: { renderScale: 50, fpsCap: 30, disableShadows: true, nametag3D: false, info: 'ðŸ¥” Modo Patata: mÃ­nimo absoluto para correr en cualquier telÃ©fono.' },
     };
 
     function applyRenderPreset(preset) {
@@ -952,7 +952,7 @@ window.addEventListener('DOMContentLoaded', () => {
             infoDiv.innerText = cfg.info || '';
         }
 
-        // Aplicar escala dinámica al canvas
+        // Aplicar escala dinÃ¡mica al canvas
         dynamicRenderScale = cfg.renderScale / 100;
         resize();
         saveSettings();
@@ -994,7 +994,7 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSettings(); // Call on boot
 });
 
-// --- DICCIONARIO DINÁMICO DE ARMAS ---
+// --- DICCIONARIO DINÃMICO DE ARMAS ---
 const loadedWeaponSprites = {};
 
 // Add equipped weapon to local player state
@@ -1006,7 +1006,7 @@ let myId = null;
 // --- BASE DE DATOS DE ARMAS EN EL CLIENTE ---
 let weaponsDB = {};
 
-// 🌟 SISTEMA DE LOGROS Y TAREAS 🌟
+// ðŸŒŸ SISTEMA DE LOGROS Y TAREAS ðŸŒŸ
 
 // Auth UI Elements
 const authOverlay = document.getElementById('auth-overlay');
@@ -1017,7 +1017,7 @@ const authMessage = document.getElementById('auth-message');
 const loginBtn = document.getElementById('login-btn');
 const registerBtn = document.getElementById('register-btn');
 // ==========================================
-// 🚀 CACHÉ DE ELEMENTOS PARA RENDIMIENTO 🚀
+// ðŸš€ CACHÃ‰ DE ELEMENTOS PARA RENDIMIENTO ðŸš€
 // ==========================================
 const uiLoadingScreen = document.getElementById('loading-screen');
 const uiFadeOverlay = document.getElementById('fade-overlay');
@@ -1052,7 +1052,7 @@ const feedbackSuccessMsg = document.getElementById('feedback-success-msg');
 
 let selectedFeedbackCategory = "Ideas"; // default
 
-// --- 🧠 MEMORIA INTELIGENTE DEL APP TRAY ---
+// --- ðŸ§  MEMORIA INTELIGENTE DEL APP TRAY ---
 let isTrayWaitingInBg = false;
 
 function hideTrayForModal() {
@@ -1212,9 +1212,9 @@ function renderTutorialStep() {
     }
 
     if (currentTutorialStep === tutorialSteps.length - 1) {
-        tutorialNextBtn.innerText = "Finish ➔";
+        tutorialNextBtn.innerText = "Finish âž”";
     } else {
-        tutorialNextBtn.innerText = "Next ➔";
+        tutorialNextBtn.innerText = "Next âž”";
     }
 }
 
@@ -1261,7 +1261,7 @@ const argemsStoreGrid = document.getElementById('argems-store-grid');
 
 if (appArgemsBtn) {
     appArgemsBtn.addEventListener('click', () => {
-        if (!player || !player.accountId) return alert("⚠️ You must log in to buy Argems.");
+        if (!player || !player.accountId) return alert("âš ï¸ You must log in to buy Argems.");
         hideTrayForModal();
         argemsModal.style.display = 'flex';
 
@@ -1305,7 +1305,7 @@ closeAuthBtn.addEventListener('click', () => {
     authOverlay.style.display = 'none';
     authOverlay.style.opacity = '0';
     authOverlay.style.pointerEvents = 'none';
-    // 👇 NUEVO: Aterrizar el dron si entras como invitado 👇
+    // ðŸ‘‡ NUEVO: Aterrizar el dron si entras como invitado ðŸ‘‡
     isCinematicLoading = false;
     restoreTrayAfterModal();
 });
@@ -1324,16 +1324,16 @@ canvas.addEventListener('touchstart', (e) => {
 // Connect locally for testing the database
 //const ws = new WebSocket('ws://localhost:8080');
 
-// --- CONEXIÓN INTELIGENTE (LOCAL vs PRODUCCIÓN) ---
-// Si estás en tu PC (localhost), usa tu servidor local. 
-// Si estás en GitHub Pages o LirosMusic, usa el servidor de la nube (Render).
+// --- CONEXIÃ“N INTELIGENTE (LOCAL vs PRODUCCIÃ“N) ---
+// Si estÃ¡s en tu PC (localhost), usa tu servidor local. 
+// Si estÃ¡s en GitHub Pages o LirosMusic, usa el servidor de la nube (Render).
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 // RECUERDA: Cambia la URL de Render por la de tu servidor real cuando lo subas
 const wsUrl = isLocal ? 'ws://localhost:8080' : 'wss://my-chat-server-ihxw.onrender.com';
 
 const ws = new WebSocket(wsUrl);
-ws.binaryType = "arraybuffer"; // ⚡ THIS IS CRITICAL FOR MESSAGEPACK
+ws.binaryType = "arraybuffer"; // âš¡ THIS IS CRITICAL FOR MESSAGEPACK
 
 // --- WEBSOCKET CONNECTION STATE ---
 authMessage.style.color = '#f1c40f'; // Yellow
@@ -1354,7 +1354,7 @@ ws.onopen = () => {
     }
 };
 
-// --- CONTROL DE LA ISLA DINÁMICA ---
+// --- CONTROL DE LA ISLA DINÃMICA ---
 let islandTimeout = null;
 
 function wakeUpIsland(duration) {
@@ -1384,7 +1384,7 @@ function triggerIslandGlow(color) {
     }, 3500);
 }
 
-// --- SISTEMA DE BANDEJA DE ENTRADA (ISLA DINÁMICA) ---
+// --- SISTEMA DE BANDEJA DE ENTRADA (ISLA DINÃMICA) ---
 let unreadPMs = []; // Guarda los nombres de quienes nos escriben
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1460,7 +1460,7 @@ window.addEventListener('DOMContentLoaded', () => {
             // Le pedimos al servidor nuestra lista de chats
             ws.send(MessagePack.encode({ type: 'get_inbox' }));
 
-            // Borramos la notificación roja
+            // Borramos la notificaciÃ³n roja
             unreadPMs = [];
             if (notifBadge) notifBadge.style.display = 'none';
         };
@@ -1469,25 +1469,25 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 👇 NUEVO: DETECTOR DE CIERRE DE CONEXIÓN 👇
+// ðŸ‘‡ NUEVO: DETECTOR DE CIERRE DE CONEXIÃ“N ðŸ‘‡
 ws.onclose = () => {
-    console.error('El servidor ha cerrado la conexión (Render Sleep Mode).');
+    console.error('El servidor ha cerrado la conexiÃ³n (Render Sleep Mode).');
     document.getElementById('disconnect-screen').style.display = 'flex';
 };
 
 ws.onmessage = (event) => {
     const data = MessagePack.decode(new Uint8Array(event.data));
-    // --- NUEVO: SISTEMA UNIFICADO DE REPOSICIÓN (KNOCKBACK Y ANTI-HACK) ---
+    // --- NUEVO: SISTEMA UNIFICADO DE REPOSICIÃ“N (KNOCKBACK Y ANTI-HACK) ---
     if (data.type === 'force_position') {
         if (data.reason === 'knockback') {
             player.kbX = (data.x - player.worldX) / 3;
             player.kbY = (data.y - player.worldY) / 3;
 
-            // 🛑 EL FIX 1: Arrancamos el cronómetro de tambaleo
+            // ðŸ›‘ EL FIX 1: Arrancamos el cronÃ³metro de tambaleo
             player.staggerTimer = Date.now();
             return;
         }
-        // 1. Regresar físicamente al personaje
+        // 1. Regresar fÃ­sicamente al personaje
         player.worldX = data.x;
         player.worldY = data.y;
 
@@ -1508,8 +1508,8 @@ ws.onmessage = (event) => {
                 }, 100);
             }
         }
-        // reason:'wall' = colisión limpia, sin flash ni penalti
-        return; // Detenemos la ejecución
+        // reason:'wall' = colisiÃ³n limpia, sin flash ni penalti
+        return; // Detenemos la ejecuciÃ³n
     }
 
     // --- NEW: BLUEPRINTS (PREFABS) ---
@@ -1583,20 +1583,36 @@ ws.onmessage = (event) => {
     else if (data.type === 'inventory_update') {
         player.inventory = data.inventory;
         updateInventoryUI();
+    } else if (data.type === 'bp_xp_added') {
+        bpXP = data.totalXP;
+        showNotification(`â­ +${data.amount} BP XP!`);
+        renderBattlePass();
+    } else if (data.type === 'bp_premium_unlocked') {
+        bpPremium = true;
+        showNotification(`â­ PREMIUM PASS UNLOCKED!`);
+        renderBattlePass();
+    } else if (data.type === 'bp_reward_claimed') {
+        bpClaimedFree = data.bpClaimedFree;
+        bpClaimedPremium = data.bpClaimedPremium;
+        
+        let rw = data.reward;
+        let rewardName = rw.type === 'item' ? rw.id : `${rw.amount} ${rw.type}`;
+        showNotification(`â­ Claimed: ${rewardName}`);
+        renderBattlePass();
     } else if (data.type === 'task_claimed') {
         myClaimedTasks = data.claimedTasks;
         if (typeof renderTasksModal === 'function') renderTasksModal();
         if (typeof checkTaskBadge === 'function') checkTaskBadge();
 
-        // Texto flotante de éxito
-        spawnDamageText(player.worldX, player.worldY, "¡RECOMPENSA!", true);
+        // Texto flotante de Ã©xito
+        spawnDamageText(player.worldX, player.worldY, "Â¡RECOMPENSA!", true);
     } else if (data.type === 'coins_update') {
         player.coins = data.coins;
         const coinsDisplay = document.getElementById('profile-coins-display');
         if (coinsDisplay) coinsDisplay.innerText = player.coins;
     } else if (data.type === 'claim_error') {
-        // NUNCA silencies un error en desarrollo. Si falla, el jugador debe saber por qué.
-        alert("❌ No se pudo reclamar: " + (data.message || "Error desconocido"));
+        // NUNCA silencies un error en desarrollo. Si falla, el jugador debe saber por quÃ©.
+        alert("âŒ No se pudo reclamar: " + (data.message || "Error desconocido"));
         // Forzamos a repintar para quitar el estado de "Procesando..."
         if (typeof renderTasksModal === 'function') renderTasksModal();
     } else if (data.type === 'argem_packages_data') {
@@ -1694,29 +1710,29 @@ ws.onmessage = (event) => {
         player.coins = data.newCoins;
         player.inventory = data.newInventory;
 
-        // Efectos visuales de éxito
+        // Efectos visuales de Ã©xito
         shopModal.style.display = 'none';
         isShopOpen = false;
 
-        spawnDamageText(player.worldX, player.worldY, "¡COMPRADO!", true); // Texto verde flotante
+        spawnDamageText(player.worldX, player.worldY, "Â¡COMPRADO!", true); // Texto verde flotante
 
         // Actualizar el perfil y la UI
         const coinsDisplay = document.getElementById('profile-coins-display');
         if (coinsDisplay) coinsDisplay.innerText = player.coins;
 
-        // Resetear el botón
+        // Resetear el botÃ³n
         const rawData = weaponsDB[currentShopItemId] || window.MASTER_CATALOG[currentShopItemId];
-        buyItemBtn.innerHTML = ` <span style="font-size: 18px;">🪙</span> <span id="shop-item-price">${rawData.price}</span>`;
+        buyItemBtn.innerHTML = ` <span style="font-size: 18px;">ðŸª™</span> <span id="shop-item-price">${rawData.price}</span>`;
         buyItemBtn.style.background = "#2ecc71";
     }
     else if (data.type === 'buy_error') {
-        // Resetear el botón y mostrar el error (ej: No tienes dinero)
+        // Resetear el botÃ³n y mostrar el error (ej: No tienes dinero)
         const rawData = weaponsDB[currentShopItemId] || window.MASTER_CATALOG[currentShopItemId];
-        buyItemBtn.innerHTML = ` <span style="font-size: 18px;">🪙</span> <span id="shop-item-price">${rawData.price}</span>`;
+        buyItemBtn.innerHTML = ` <span style="font-size: 18px;">ðŸª™</span> <span id="shop-item-price">${rawData.price}</span>`;
         buyItemBtn.style.background = "#2ecc71";
 
-        // Usamos una alerta rápida (o puedes cambiarlo por tu sistema de notificaciones en el futuro)
-        alert("❌ " + data.message);
+        // Usamos una alerta rÃ¡pida (o puedes cambiarlo por tu sistema de notificaciones en el futuro)
+        alert("âŒ " + data.message);
     } else if (data.type === 'register_success') {
         authMessage.style.color = '#4cd137'; // Green
         authMessage.innerText = data.message;
@@ -1728,9 +1744,9 @@ ws.onmessage = (event) => {
                 renderTutorialStep();
                 tutorialModal.style.display = 'flex';
             }
-        }, 500); // Pequeño retraso para que no sea súper agresivo
+        }, 500); // PequeÃ±o retraso para que no sea sÃºper agresivo
     } else if (data.type === 'feedback_success') {
-        // Restaurar botón
+        // Restaurar botÃ³n
         if (submitFeedbackBtn) {
             submitFeedbackBtn.innerText = "Submit";
             submitFeedbackBtn.disabled = false;
@@ -1738,7 +1754,7 @@ ws.onmessage = (event) => {
         if (feedbackModal) feedbackModal.style.display = 'none';
         if (feedbackInput) feedbackInput.value = '';
 
-        // Mostrar el nuevo Modal de Éxito en lugar de alert()
+        // Mostrar el nuevo Modal de Ã‰xito en lugar de alert()
         if (feedbackSuccessMsg) feedbackSuccessMsg.innerText = data.message;
         if (feedbackSuccessModal) feedbackSuccessModal.style.display = 'flex';
 
@@ -1764,16 +1780,16 @@ ws.onmessage = (event) => {
                             ${logoHtml}
                             <div>
                                 <div style="color: ${sq.isLeader ? '#f1c40f' : 'white'}; font-weight: bold; font-family: sans-serif; font-size: 16px;">
-                                    ${sq.isLeader ? '' : ''}${escapeHTML(sq.name)}
+                                    ${sq.isLeader ? '👑 ' : ''}${escapeHTML(sq.name)}
                                 </div>
                                 <div style="color: #aaa; font-size: 12px; font-family: sans-serif; margin-top: 4px;">${sq.memberCount} Miembros</div>
                             </div>
                         </div>
-                        <span style="color: #777; font-size: 20px;">➔</span>
+                        <span style="color: #777; font-size: 20px;">➜</span>
                     `;
 
             row.onclick = () => {
-                lastSquadMenu = 'list'; // <--- 🌟 ¡NUEVO! Memorizamos que vinimos de Mis Squads
+                lastSquadMenu = 'list'; // <--- ✨ ¡NUEVO! Memorizamos que vinimos de Mis Squads
                 ws.send(MessagePack.encode({ type: 'get_squad_details', squadId: sq.id }));
             }; squadsListContainer.appendChild(row);
         });
@@ -1781,8 +1797,34 @@ ws.onmessage = (event) => {
     } else if (data.type === 'squad_search_results') {
         renderSquadSearchResults(data.results);
     }
+    // --- RECIBIR DETALLES DE UN SQUAD DE FORMA SILENCIOSA (Background) ---
+    else if (data.type === 'my_squad_data_silent') {
+        window.mySquadData = data.squad; // Solo guarda en RAM sin abrir la UI
+    }
+    // --- RECEIVE ADMIN VOICE CHAT ---
+    else if (data.type === 'admin_voice_status') {
+        if (data.playerId && otherPlayers[data.playerId]) {
+            otherPlayers[data.playerId].isSpeaking = data.isSpeaking;
+        }
+        if (data.isSpeaking) {
+            if (typeof resetVoiceMediaSource === 'function') resetVoiceMediaSource();
+        }
+    }
+    else if (data.type === 'admin_voice_chunk') {
+        if (typeof handleAdminVoiceChunk === 'function') {
+            handleAdminVoiceChunk(data.audio, data.adminX, data.adminY);
+        }
+    }
     // --- RECIBIR DETALLES DE UN SQUAD AL HACER CLIC ---
     else if (data.type === 'my_squad_data') {
+        // 🔮 FIX: Ocultar todas las listas previas y Mostrar la pantalla de Detalles
+        if (typeof squadListModal !== 'undefined') squadListModal.style.display = 'none';
+        const searchModal = document.getElementById('squad-search-modal');
+        if (searchModal) searchModal.style.display = 'none';
+        const lbModal = document.getElementById('squad-leaderboard-modal');
+        if (lbModal) lbModal.style.display = 'none';
+        if (typeof mySquadModal !== 'undefined') mySquadModal.style.display = 'flex';
+
         const sq = data.squad;
         window.mySquadData = sq; // Save for tasks menu
         document.getElementById('my-squad-title').innerText = sq.name;
@@ -1793,10 +1835,10 @@ ws.onmessage = (event) => {
         if (sq.logo) {
             logoContainer.innerHTML = `<img src="${sq.logo}" style="width: 100%; height: 100%; object-fit: cover;">`;
         } else {
-            logoContainer.innerHTML = `🏴‍☠️`;
+            logoContainer.innerHTML = `ðŸ´â€â˜ ï¸`;
         }
 
-        // Mostrar botón de "Editar" SOLO si soy el líder
+        // Mostrar botÃ³n de "Editar" SOLO si soy el lÃ­der
         const editBtn = document.getElementById('edit-squad-btn');
         if (sq.leader.name === player.username) {
             editBtn.style.display = 'block';
@@ -1814,11 +1856,11 @@ ws.onmessage = (event) => {
             editBtn.style.display = 'none';
         }
 
-        // --- NUEVO: LÓGICA DEL BOTÓN DE TAG ---
+        // --- NUEVO: LÃ“GICA DEL BOTÃ“N DE TAG ---
         const toggleTagBtn = document.getElementById('toggle-squad-tag-btn');
         toggleTagBtn.style.display = 'block';
 
-        // ¿El ID de este clan es igual al que tengo en mi memoria RAM?
+        // Â'El ID de este clan es igual al que tengo en mi memoria RAM?
         const isTagEquipped = (player.squad === sq.id);
 
         if (isTagEquipped) {
@@ -1848,7 +1890,7 @@ ws.onmessage = (event) => {
             squads: data.squads,
             liveBases: data.liveBases
         };
-        renderLeaderboard(); // Dibuja la pestaña actualmente seleccionada
+        renderLeaderboard(); // Dibuja la pestaÃ±a actualmente seleccionada
     }// --- RESPUESTA: TAG EQUIPADO / DESEQUIPADO ---
     else if (data.type === 'toggle_squad_success') {
         if (document.getElementById('island-squad-chat-btn')) {
@@ -1859,7 +1901,7 @@ ws.onmessage = (event) => {
         player.squadName = data.squadName;
         player.squadLogo = data.squadLogo;
 
-        // Recargar los detalles del squad para que el botón se redibuje con el color correcto
+        // Recargar los detalles del squad para que el botÃ³n se redibuje con el color correcto
         ws.send(MessagePack.encode({ type: 'get_squad_details', squadId: data.squadId }));
         updateSquadChatButton();
     }
@@ -1872,10 +1914,10 @@ ws.onmessage = (event) => {
         player.squadName = data.squadName;
         player.squadLogo = data.squadLogo;
 
-        // 🛑 EL FIX: Sin alert(). El botón muta a verde por 1 segundo y cierra.
+        // ðŸ›‘ EL FIX: Sin alert(). El botÃ³n muta a verde por 1 segundo y cierra.
         const btnEdit = document.getElementById('confirm-edit-squad');
         if (btnEdit) {
-            btnEdit.innerText = "¡Guardado con Éxito!";
+            btnEdit.innerText = "Â¡Guardado con Ã‰xito!";
             btnEdit.style.background = "#2ecc71";
             setTimeout(() => {
                 squadEditModal.style.display = 'none';
@@ -1884,7 +1926,7 @@ ws.onmessage = (event) => {
             }, 1200);
         }
 
-        // Volvemos a pedir los detalles para que la imagen se actualice mágicamente
+        // Volvemos a pedir los detalles para que la imagen se actualice mÃ¡gicamente
         ws.send(MessagePack.encode({ type: 'get_squad_details', squadId: data.squadId }));
     }
     else if (data.type === 'edit_squad_error') {
@@ -1893,11 +1935,11 @@ ws.onmessage = (event) => {
     }
     // --- NO TIENE SQUADS ---
     else if (data.type === 'no_squads_found') {
-        alert("Aún no perteneces a ningún Squad. ¡Crea uno o busca uno al cual unirte!");
+        alert("AÃºn no perteneces a ningÃºn Squad. Â¡Crea uno o busca uno al cual unirte!");
     }
     else if (data.type === 'no_squad') {
-        alert("Aún no perteneces a ningún Squad. ¡Crea uno o busca uno al cual unirte!");
-    }// --- ÉXITO DE CLAN (CREAR, ACEPTAR O INVITAR) ---
+        alert("AÃºn no perteneces a ningÃºn Squad. Â¡Crea uno o busca uno al cual unirte!");
+    }// --- Ã‰XITO DE CLAN (CREAR, ACEPTAR O INVITAR) ---
     else if (data.type === 'squad_success') {
         if (data.newCoins !== undefined) {
             player.coins = data.newCoins;
@@ -1911,29 +1953,29 @@ ws.onmessage = (event) => {
             player.squad = data.squadId;
         }
 
-        // 1. ¿Viene del botón de invitar en el perfil?
+        // 1. Â¿Viene del botÃ³n de invitar en el perfil?
         const inviteBtn = document.getElementById('invite-squad-btn');
-        if (inviteBtn && inviteBtn.innerText === "⏳ Enviando...") {
-            inviteBtn.innerText = "✓ Invitación Enviada";
+        if (inviteBtn && inviteBtn.innerText === "â³ Enviando...") {
+            inviteBtn.innerText = "âœ“ InvitaciÃ³n Enviada";
             inviteBtn.style.background = "#2ecc71";
             inviteBtn.style.borderColor = "#27ae60";
             inviteBtn.style.color = "black";
             return;
         }
 
-        // 2. 🛑 EL FIX: ¿Viene de fundar un clan nuevo? Mutamos el botón.
+        // 2. ðŸ›‘ EL FIX: Â¿Viene de fundar un clan nuevo? Mutamos el botÃ³n.
         const createBtn = document.getElementById('confirm-create-squad');
         if (createBtn && createBtn.innerText === "Creando...") {
-            createBtn.style.display = "none"; // Adiós botón azul
+            createBtn.style.display = "none"; // AdiÃ³s botÃ³n azul
 
             const goBtn = document.getElementById('go-to-new-squad-btn');
             if (goBtn) {
-                goBtn.style.display = "block"; // Hola botón verde
+                goBtn.style.display = "block"; // Hola botÃ³n verde
                 goBtn.onclick = () => {
-                    // Al hacer clic, cerramos la creación y abrimos el clan
+                    // Al hacer clic, cerramos la creaciÃ³n y abrimos el clan
                     document.getElementById('squad-create-modal').style.display = 'none';
 
-                    // Reseteamos botones para la próxima vez
+                    // Reseteamos botones para la prÃ³xima vez
                     createBtn.style.display = "block";
                     createBtn.innerText = "2000 Argons";
                     goBtn.style.display = "none";
@@ -1945,8 +1987,8 @@ ws.onmessage = (event) => {
             return;
         }
 
-        // 3. Fallback silencioso (Ej. Aceptaste un invite de la Isla Dinámica)
-        spawnDamageText(player.worldX, player.worldY, "¡Clan Actualizado!", true);
+        // 3. Fallback silencioso (Ej. Aceptaste un invite de la Isla DinÃ¡mica)
+        spawnDamageText(player.worldX, player.worldY, "Â¡Clan Actualizado!", true);
         updateSquadChatButton();
     }
     else if (data.type === 'squad_error') {
@@ -1959,34 +2001,34 @@ ws.onmessage = (event) => {
         const confirmBtn = document.getElementById('confirm-create-squad');
         if (confirmBtn) confirmBtn.innerText = "2000 Argons";
 
-        // 2. 🛑 EL FIX: Botón de Invitación de Perfil (Inyectar el error en el botón)
+        // 2. ðŸ›‘ EL FIX: BotÃ³n de InvitaciÃ³n de Perfil (Inyectar el error en el botÃ³n)
         const inviteBtn = document.getElementById('invite-squad-btn');
-        if (inviteBtn && inviteBtn.innerText === "⏳ Enviando...") {
+        if (inviteBtn && inviteBtn.innerText === "â³ Enviando...") {
 
-            inviteBtn.innerText = "❌ " + data.message; // Ej: "❌ El jugador no está en línea"
+            inviteBtn.innerText = "âŒ " + data.message; // Ej: "âŒ El jugador no estÃ¡ en lÃ­nea"
             inviteBtn.style.fontSize = "12px"; // Achicamos letra por si el error es largo
             inviteBtn.style.background = "#e74c3c"; // Rojo fallo
             inviteBtn.style.borderColor = "#c0392b";
 
             // Restaurarlo a su forma normal en 2.5 segundos
             setTimeout(() => {
-                inviteBtn.innerText = "🏴‍☠️ Invitar al Clan";
+                inviteBtn.innerText = "ðŸ´â€â˜ ï¸ Invitar al Clan";
                 inviteBtn.style.fontSize = "15px";
                 inviteBtn.style.background = "rgba(155, 89, 182, 0.2)";
                 inviteBtn.style.borderColor = "#9b59b6";
                 inviteBtn.disabled = false;
             }, 2500);
         }
-    }// 🛑 NUEVO: Si el admin me da/quita permisos en vivo
+    }// ðŸ›‘ NUEVO: Si el admin me da/quita permisos en vivo
     else if (data.type === 'update_permissions') {
         player.squadCanInvite = data.canInvite;
     }
-    // 🛑 NUEVO: Actualizar permisos al ponerme/quitarme la placa
+    // ðŸ›‘ NUEVO: Actualizar permisos al ponerme/quitarme la placa
     else if (data.type === 'toggle_squad_success') {
         player.squad = data.isActive ? data.squadId : null;
         player.squadName = data.squadName;
         player.squadLogo = data.squadLogo;
-        player.squadCanInvite = data.squadCanInvite; // <-- Agregamos esta línea
+        player.squadCanInvite = data.squadCanInvite; // <-- Agregamos esta lÃ­nea
         ws.send(MessagePack.encode({ type: 'get_squad_details', squadId: data.squadId }));
     }/// --- RECIBIR HISTORIAL DE PM ---
     else if (data.type === 'pm_history') {
@@ -1997,7 +2039,7 @@ ws.onmessage = (event) => {
             // Extraemos la cabeza de forma segura
             currentChatTargetHead = (data.targetEquipped && data.targetEquipped.head) ? data.targetEquipped.head : 'head_default';
 
-            // 👇 NUEVO: Dibujar el Avatar del encabezado (Header) con la cabeza correcta
+            // ðŸ‘‡ NUEVO: Dibujar el Avatar del encabezado (Header) con la cabeza correcta
             const pmHeaderAvatar = document.getElementById('pm-header-avatar');
             if (pmHeaderAvatar) {
                 pmHeaderAvatar.innerHTML = "";
@@ -2010,7 +2052,7 @@ ws.onmessage = (event) => {
     else if (data.type === 'friends_list_data') {
         renderFriendsList(data.friends);
     }
-    // 👇 PEGA ESTO NUEVO AQUÍ 👇
+    // ðŸ‘‡ PEGA ESTO NUEVO AQUÃ ðŸ‘‡
     // --- RESPUESTA: AMIGO ELIMINADO ---
     else if (data.type === 'friend_removed') {
         if (player.friends) {
@@ -2018,17 +2060,17 @@ ws.onmessage = (event) => {
             player.friends = player.friends.filter(id => id !== data.targetId);
         }
         alert("Amigo eliminado de tu lista.");
-        // Actualizamos la ventana gráfica pidiéndole la nueva lista al servidor
+        // Actualizamos la ventana grÃ¡fica pidiÃ©ndole la nueva lista al servidor
         ws.send(MessagePack.encode({ type: 'get_friends_list' }));
-    }// --- RECIBIR RESULTADOS DE LA BÚSQUEDA ---
+    }// --- RECIBIR RESULTADOS DE LA BÃšSQUEDA ---
     else if (data.type === 'search_players_results') {
         renderSearchResults(data.results);
     }
-    // 👆 HASTA AQUÍ 👆// --- RECIBIR LISTA DEL INBOX ---
+    // ðŸ‘† HASTA AQUÃ ðŸ‘†// --- RECIBIR LISTA DEL INBOX ---
     else if (data.type === 'inbox_data') {
         renderInbox(data.inbox);
     }
-    // --- RECIBIR NUEVO PM (NOTIFICACIÓN) ---
+    // --- RECIBIR NUEVO PM (NOTIFICACIÃ“N) ---
     else if (data.type === 'receive_pm') {
         if (currentChatTargetId === data.senderAccountId && document.getElementById('pm-modal').style.display === 'flex') {
             renderPMHistory(data.history);
@@ -2039,7 +2081,7 @@ ws.onmessage = (event) => {
             const badge = document.getElementById('notif-badge');
             if (badge) {
                 badge.style.display = 'flex';
-                // 🛠️ EL FIX: El Badge ahora dice CUÁNTAS personas distintas te han hablado (O suma con peticiones pendientes)
+                // ðŸ› ï¸ EL FIX: El Badge ahora dice CUÃNTAS personas distintas te han hablado (O suma con peticiones pendientes)
                 badge.innerText = unreadPMs.length + pendingRequests.length;
             }
             const notifBtn = document.getElementById('island-notif-btn');
@@ -2067,7 +2109,7 @@ ws.onmessage = (event) => {
         const sqChatModal = document.getElementById('squad-chat-modal');
         const sqBadge = document.getElementById('squad-notif-badge');
 
-        // 1. Detectar la prioridad de la mención
+        // 1. Detectar la prioridad de la menciÃ³n
         const textLower = data.message.text.toLowerCase();
         let incomingMention = 'none';
 
@@ -2075,17 +2117,17 @@ ws.onmessage = (event) => {
         else if (textLower.includes('@important')) incomingMention = 'important';
         else if (textLower.includes('@everyone')) incomingMention = 'everyone';
 
-        // Si la ventana está abierta, lo añadimos a la plática
+        // Si la ventana estÃ¡ abierta, lo aÃ±adimos a la plÃ¡tica
         if (sqChatModal.style.display === 'flex') {
             if (sqHistoryContainer.innerHTML.includes("Radio silenciosa")) sqHistoryContainer.innerHTML = "";
             sqHistoryContainer.appendChild(buildSquadChatBubble(data.message));
             sqHistoryContainer.scrollTop = sqHistoryContainer.scrollHeight;
         }
-        // Si la ventana está cerrada, gestionamos el Badge Dinámico
+        // Si la ventana estÃ¡ cerrada, gestionamos el Badge DinÃ¡mico
         else {
             unreadSquadMessages++;
 
-            // Solo actualiza el color si viene una mención (o si ya había una, la sobreescribe)
+            // Solo actualiza el color si viene una menciÃ³n (o si ya habÃ­a una, la sobreescribe)
             if (incomingMention !== 'none') {
                 squadMentionType = incomingMention;
             }
@@ -2093,7 +2135,7 @@ ws.onmessage = (event) => {
             if (sqBadge) {
                 sqBadge.style.display = 'flex';
 
-                // Mutar color y texto según la última mención recibida
+                // Mutar color y texto segÃºn la Ãºltima menciÃ³n recibida
                 if (squadMentionType === 'personal') {
                     sqBadge.innerText = `@${unreadSquadMessages}`;
                     sqBadge.style.background = "#f1c40f"; // Amarillo brillante
@@ -2111,7 +2153,7 @@ ws.onmessage = (event) => {
                 }
                 else {
                     sqBadge.innerText = unreadSquadMessages;
-                    sqBadge.style.background = "#e74c3c"; // Rojo normal sin mención
+                    sqBadge.style.background = "#e74c3c"; // Rojo normal sin menciÃ³n
                     sqBadge.style.color = "white";
                 }
             }
@@ -2119,22 +2161,22 @@ ws.onmessage = (event) => {
         }
     }
     else if (data.type === 'init') {
-        // 🚨 ACTUALIZA EL BOTÓN TAN PRONTO COMO ENTRA EL JUGADOR
+        // ðŸš¨ ACTUALIZA EL BOTÃ“N TAN PRONTO COMO ENTRA EL JUGADOR
         updateSquadChatButton();
         authOverlay.style.pointerEvents = 'none';
-        // 💿 GUARDAR LA PLAYLIST
+        // ðŸ’¿ GUARDAR LA PLAYLIST
         bgmPlaylist = data.playlist || [];
         authOverlay.style.opacity = '0';
         window.PATCH_NOTES = data.patchNotes || []; // Guarda las noticias en la memoria local
-        // 👇 NUEVO: GUARDAR DICCIONARIO Y CONSTRUIR LA UI 👇
+        // ðŸ‘‡ NUEVO: GUARDAR DICCIONARIO Y CONSTRUIR LA UI ðŸ‘‡
         window.ZONE_CONFIG = data.zoneConfig || {};
         buildZoneUI();
         window.RANKS = data.ranksDB || [];
-        // --- NUEVO: CONTADOR DE CARGA Y DESCARGA DEL CATÁLOGO MÁGICO ---
+        // --- NUEVO: CONTADOR DE CARGA Y DESCARGA DEL CATÃLOGO MÃGICO ---
         window.MASTER_CATALOG = data.masterCatalog || {};
         window.loadedItemSprites = window.loadedItemSprites || {};
 
-        // 🌟 ASIGNAR TAREAS Y LOGROS GLOBALES 🌟
+        // ðŸŒŸ ASIGNAR TAREAS Y LOGROS GLOBALES ðŸŒŸ
         globalTasks = data.globalTasks || {};
         if (!player || !player.accountId) {
             myTaskProgress = data.taskProgress || {};
@@ -2146,15 +2188,15 @@ ws.onmessage = (event) => {
         CLIENT_TRASH_CATALOG = data.trashCatalog || [];
         CLIENT_METALS_CATALOG = Object.values(data.masterCatalog || {})
             .filter(i => i.category === 'metal')
-            .map(m => ({ ...m, value: m.price || 0 })); // 👈 EL FIX: Clonamos el objeto y le creamos la variable 'value' copiando su 'price'
-        // 🛡️ ESCUDO ANTI-CRASH: Si llega vacío, lee un objeto en blanco en lugar de crashear
+            .map(m => ({ ...m, value: m.price || 0 })); // ðŸ‘ˆ EL FIX: Clonamos el objeto y le creamos la variable 'value' copiando su 'price'
+        // ðŸ›¡ï¸ ESCUDO ANTI-CRASH: Si llega vacÃ­o, lee un objeto en blanco en lugar de crashear
         let weaponCount = Object.values(data.weaponsDB || {}).filter(w => w.src).length;
         let catalogCount = Object.values(window.MASTER_CATALOG || {}).filter(i => i.src).length;
 
         totalAssetsToLoad = weaponCount + data.tilesetsDB.length + catalogCount;
         assetsLoaded = 0;
 
-        // 🛑 EL FIX: Descargar tooooooda la ropa e ítems del Catálogo Maestro
+        // ðŸ›‘ EL FIX: Descargar tooooooda la ropa e Ã­tems del CatÃ¡logo Maestro
         for (let itemId in window.MASTER_CATALOG) {
             const item = window.MASTER_CATALOG[itemId];
             if (item.src) {
@@ -2181,14 +2223,14 @@ ws.onmessage = (event) => {
                 img.src = WEAPONS[wId].src;
                 loadedWeaponSprites[wId] = img;
             }
-            // 🔊 EL FIX: Pre-cargar los sonidos de disparo a la RAM del celular
+            // ðŸ”Š EL FIX: Pre-cargar los sonidos de disparo a la RAM del celular
             if (WEAPONS[wId].audio) {
                 if (WEAPONS[wId].audio.use) preloadSound(WEAPONS[wId].audio.use);
                 if (WEAPONS[wId].audio.reload) preloadSound(WEAPONS[wId].audio.reload);
             }
         }
 
-        // GUARDAR DB DE TILESETS Y DESCARGAR IMÁGENES
+        // GUARDAR DB DE TILESETS Y DESCARGAR IMÃGENES
         TILESET_CONFIG = data.tilesetsDB;
         TILESET_CONFIG.forEach(ts => {
             const img = new Image();
@@ -2205,17 +2247,17 @@ ws.onmessage = (event) => {
             loadedTilesets[ts.id] = img;
         });
 
-        // 👇 AÑADE ESTA LÍNEA AQUÍ 👇
+        // ðŸ‘‡ AÃ‘ADE ESTA LÃNEA AQUÃ ðŸ‘‡
         weaponsDB = data.weaponsDB;
 
-        // (Esto ya lo tenías)
+        // (Esto ya lo tenÃ­as)
         if (data.skeleton) {
             SKELETON_DATA.anchors = data.skeleton;
         }
 
         // Escudo por si no hay nada que descargar
         if (totalAssetsToLoad === 0) {
-            assetsLoaded = 1; totalAssetsToLoad = 1; updateLoadingBar("¡Listo!");
+            assetsLoaded = 1; totalAssetsToLoad = 1; updateLoadingBar("Â¡Listo!");
         }
 
         myId = data.id;
@@ -2223,32 +2265,32 @@ ws.onmessage = (event) => {
         player.worldY = data.players[myId].worldY;
         player.username = data.players[myId].username;
         player.accountId = data.players[myId].accountId;
-        player.coins = data.players[myId].coins || 0; // <--- ¡AÑADE ESTA LÍNEA!
+        player.coins = data.players[myId].coins || 0; // <--- Â¡AÃ‘ADE ESTA LÃNEA!
         player.gems = data.players[myId].gems || 0;
         player.squadName = data.players[myId].squadName;
         player.squadLogo = data.players[myId].squadLogo;
         player.squad = data.players[myId].squad;
         player.elo = data.players[myId].elo || 1000;
-        // 👇 AÑADE ESTA LÍNEA AQUÍ 👇
+        // ðŸ‘‡ AÃ‘ADE ESTA LÃNEA AQUÃ ðŸ‘‡
         player.quickSwaps = data.players[myId].quickSwaps || [];
 
-        // 🛑 EL FIX: Asegurarnos de que el cliente guarda toda la info de la zona, incluyendo su Tipo
+        // ðŸ›‘ EL FIX: Asegurarnos de que el cliente guarda toda la info de la zona, incluyendo su Tipo
         safeZones = data.safeZones || [];
 
-        // 👇 NUEVO: SINCRONIZAR SALUD AL APARECER 👇
+        // ðŸ‘‡ NUEVO: SINCRONIZAR SALUD AL APARECER ðŸ‘‡
         player.hp = data.players[myId].hp !== undefined ? data.players[myId].hp : 100;
         player.isDead = data.players[myId].isDead || false;
 
-        // 🛑 EL FIX: LEER KILLS Y LOSSES AL RECARGAR LA PÁGINA 🛑
+        // ðŸ›‘ EL FIX: LEER KILLS Y LOSSES AL RECARGAR LA PÃGINA ðŸ›‘
         player.kills = data.players[myId].kills || 0;
         player.losses = data.players[myId].losses || 0;
         centralBase = data.centralBase; // Guardar la base inicial
-        // 🛑 EL FIX: Cargar la basura que ya estaba tirada cuando entraste
+        // ðŸ›‘ EL FIX: Cargar la basura que ya estaba tirada cuando entraste
         groundItems = data.groundItems || {};
-        // 🛑 EL FIX: Guardamos el catálogo dinámico
+        // ðŸ›‘ EL FIX: Guardamos el catÃ¡logo dinÃ¡mico
         CLIENT_TRASH_CATALOG = data.trashCatalog || [];
 
-        // Actualizar la Isla Dinámica visualmente
+        // Actualizar la Isla DinÃ¡mica visualmente
         const islandFill = document.getElementById('island-hp-fill');
         const islandText = document.getElementById('island-hp-text');
         if (islandText && islandFill) {
@@ -2265,7 +2307,7 @@ ws.onmessage = (event) => {
                 otherPlayers[id].targetY = data.players[id].worldY || 0;
             }
         }
-        // 🔄 NEW: Store tiles as objects with layer and collision data!
+        // ðŸ”„ NEW: Store tiles as objects with layer and collision data!
         if (data.worldMap) {
             data.worldMap.forEach(t => {
                 const l = t.l || 0;
@@ -2281,20 +2323,20 @@ ws.onmessage = (event) => {
                     shelfY: t.shelfY || 0,
                 });
             });
-            // 📸 EL FIX: ¡El mapa ya llegó, toma una foto nueva!
+            // ðŸ“¸ EL FIX: Â¡El mapa ya llegÃ³, toma una foto nueva!
             floorDirty = true;
         }
     } else if (data.type === 'spawn_hole') {
         digHoles.push({
             x: data.x,
             y: data.y,
-            life: 200, // Durará unos segundos en pantalla
+            life: 200, // DurarÃ¡ unos segundos en pantalla
             maxLife: 200
         });
-    }// 🗣️ NUEVO: ESCUCHAR MENSAJES DEL SISTEMA (SERVER ALERTAS)
+    }// ðŸ—£ï¸  NUEVO: ESCUCHAR MENSAJES DEL SISTEMA (SERVER ALERTAS)
     else if (data.type === 'system_message') {
         if (data.isAlert) alert("System: " + data.text);
-        // Inyectamos el texto directamente en el sistema de daño flotante
+        // Inyectamos el texto directamente en el sistema de daÃ±o flotante
         let dt = {
             x: player.worldX + (Math.random() * 20 - 10),
             y: player.worldY - 20,
@@ -2348,7 +2390,7 @@ ws.onmessage = (event) => {
         isJunkyardOpen = false;
         lastJunkyardTile = null;
 
-        //  2. EL FIX: Cierra también la Joyería (si estaba abierta)
+        //  2. EL FIX: Cierra tambiÃ©n la JoyerÃ­a (si estaba abierta)
         const jeweler = document.getElementById('jeweler-modal');
         if (jeweler) jeweler.style.display = 'none';
         if (typeof isJewelerOpen !== 'undefined') isJewelerOpen = false;
@@ -2359,34 +2401,34 @@ ws.onmessage = (event) => {
         if (coinsDisplay) coinsDisplay.innerText = player.coins;
 
         // 4. Texto flotante de ganancia
-        let dt = { x: player.worldX, y: player.worldY, text: `+${data.earned} 🪙`, color: "#f1c40f", life: 100, maxLife: 100 };
+        let dt = { x: player.worldX, y: player.worldY, text: `+${data.earned} ðŸª™`, color: "#f1c40f", life: 100, maxLife: 100 };
         damageTexts.push(dt);
     } else if (data.type === 'inventory_update') {
-        // 🛑 EL FIX: Tu juego guarda en su memoria local lo que envíe el servidor
+        // ðŸ›‘ EL FIX: Tu juego guarda en su memoria local lo que envÃ­e el servidor
         if (player) {
             player.inventory = data.inventory;
         }
-    }// Recibir daño a la base en vivo
+    }// Recibir daÃ±o a la base en vivo
     else if (data.type === 'base_update') {
         centralBase = data.base;
     } else if (data.type === 'new_safezone') {
-        // 👇 NUEVO: AGREGAR ZONA NUEVA EN TIEMPO REAL 👇
+        // ðŸ‘‡ NUEVO: AGREGAR ZONA NUEVA EN TIEMPO REAL ðŸ‘‡
         safeZones.push(data.zone);
-    }// 👇 AÑADE ESTO 👇
+    }// ðŸ‘‡ AÃ‘ADE ESTO ðŸ‘‡
     else if (data.type === 'safezone_deleted') {
-        // Filtramos la lista para quitar la que el servidor nos ordenó borrar
+        // Filtramos la lista para quitar la que el servidor nos ordenÃ³ borrar
         safeZones = safeZones.filter(z => z._id !== data.id);
     }// Recibir info del letrero
     else if (data.type === 'arena_info_update') {
         if (document.getElementById('arena-modal').style.display !== 'none' && window.currentViewingArenaId === data.arenaId) {
 
-            document.getElementById('arena-modal-title').innerText = `🥊 ${data.name}`;
+            document.getElementById('arena-modal-title').innerText = `ðŸ¥Š ${data.name}`;
 
             const fightersEl = document.getElementById('arena-current-fighters');
             if (data.fighter1 && data.fighter2) {
                 fightersEl.innerHTML = `<span style="color:#3498db">${data.fighter1}</span> <span style="color:white; font-size:12px;">vs</span> <span style="color:#e74c3c">${data.fighter2}</span>`;
             } else {
-                fightersEl.innerHTML = "El Ring está Vacío";
+                fightersEl.innerHTML = "El Ring estÃ¡ VacÃ­o";
             }
 
             const queueEl = document.getElementById('arena-queue-list');
@@ -2415,14 +2457,14 @@ ws.onmessage = (event) => {
         }
     }
 
-    // Si el servidor avisa que alguien entró a la fila mientras tú estabas viendo el letrero
+    // Si el servidor avisa que alguien entrÃ³ a la fila mientras tÃº estabas viendo el letrero
     else if (data.type === 'refresh_arena_ui') {
         if (document.getElementById('arena-modal').style.display !== 'none' && window.currentViewingArenaId === data.arenaId) {
             ws.send(MessagePack.encode({ type: 'get_arena_info', arenaId: data.arenaId }));
         }
     }
 
-    // El teletransporte cinemático a la arena
+    // El teletransporte cinemÃ¡tico a la arena
     else if (data.type === 'match_found') {
         document.getElementById('arena-modal').style.display = 'none';
 
@@ -2439,15 +2481,15 @@ ws.onmessage = (event) => {
                 fade.style.opacity = '0';
                 fade.style.background = 'black';
                 player.isTeleporting = false;
-                spawnDamageText(player.worldX, player.worldY, "¡FIGHT!", true);
+                spawnDamageText(player.worldX, player.worldY, "Â¡FIGHT!", true);
             }, 200);
         }, 250);
     }
-    // 👇 AÑADE ESTE BLOQUE COMPLETO 👇
+    // ðŸ‘‡ AÃ‘ADE ESTE BLOQUE COMPLETO ðŸ‘‡
     else if (data.type === 'match_finished') {
         if (data.newElo !== undefined) player.elo = data.newElo;
 
-        // 🔧 FIX: Limpiar el arenaId para que el modal pueda reabrir después del match
+        // ðŸ”§ FIX: Limpiar el arenaId para que el modal pueda reabrir despuÃ©s del match
         window.currentViewingArenaId = null;
 
         // Al terminar la pelea, volver a donde estabas
@@ -2464,7 +2506,7 @@ ws.onmessage = (event) => {
                 fade.style.opacity = '0';
                 player.isTeleporting = false;
 
-                // Mostrar un letreo épico flotante sobre tu personaje
+                // Mostrar un letreo Ã©pico flotante sobre tu personaje
                 spawnDamageText(player.worldX, player.worldY, data.result, true);
             }, 200);
         }, 250);
@@ -2480,7 +2522,7 @@ ws.onmessage = (event) => {
             });
         }
         markChunkDirty(data.x, data.y);
-        minimapDirty = true; // 📸 AVISAR AL MINIMAPA QUE ALGO SE CONSTRUYÓ
+        minimapDirty = true; // ðŸ“¸ AVISAR AL MINIMAPA QUE ALGO SE CONSTRUYÃ“
     }
     else if (data.type === 'tile_update_bulk') {
         data.tiles.forEach(t => {
@@ -2497,7 +2539,7 @@ ws.onmessage = (event) => {
             }
         });
         data.tiles.forEach(t => markChunkDirty(t.x, t.y));
-        minimapDirty = true; // 📸 AVISAR AL MINIMAPA
+        minimapDirty = true; // ðŸ“¸ AVISAR AL MINIMAPA
     }
     else if (data.type === 'tile_meta_update') {
         const key = `${data.x},${data.y},${data.layer}`;
@@ -2510,7 +2552,7 @@ ws.onmessage = (event) => {
                 worldMap[key].destX = data.destX;
                 worldMap[key].destY = data.destY;
                 worldMap[key].itemId = data.itemId;
-                // 🛑 LOS 2 NUEVOS FIX:
+                // ðŸ›‘ LOS 2 NUEVOS FIX:
                 worldMap[key].requiresClick = data.requiresClick;
                 worldMap[key].npcMessage = data.npcMessage;
                 worldMap[key].itemRow = data.itemRow;
@@ -2540,13 +2582,13 @@ ws.onmessage = (event) => {
                 spawnY = enemy.worldY + (d.hitY || 0);
             }
         }
-        // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
-        const bulletLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 200)) : 0;
+        // âš¡ LAG COMPENSATION: avanzar la bala los ms que tardÃ³ en llegar
+        const bulletLag = 0;
         spawnProjectile(spawnX, spawnY, data.angle, data.id, data.weaponId, bulletLag);
-        // 🔊 NUEVO: Play the sound!
+        // ðŸ”Š NUEVO: Play the sound!
         const isMe = (data.id === myId);
         playItemSound(data.weaponId, 'use', isMe ? 0.8 : 0.3);
-    }// 👇 NUEVO: RECIBIR ESCOPETAZO (ARRAY DE BALAS) 👇
+    }// ðŸ‘‡ NUEVO: RECIBIR ESCOPETAZO (ARRAY DE BALAS) ðŸ‘‡
     else if (data.type === 'shoot_shotgun') {
         let spawnX = data.x;
         let spawnY = data.y;
@@ -2554,7 +2596,7 @@ ws.onmessage = (event) => {
         if (otherPlayers[data.id]) {
             otherPlayers[data.id].lastShotTime = Date.now(); // Levanta el arma del enemigo
 
-            // 🔫 EL FIX VISUAL: Sincronizar perdigones con el cañón interpolado
+            // ðŸ”« EL FIX VISUAL: Sincronizar perdigones con el caÃ±Ã³n interpolado
             const enemy = otherPlayers[data.id];
             const wStats = window.loadedWeaponsDB ? window.loadedWeaponsDB[data.weaponId] : null;
             if (wStats) {
@@ -2565,13 +2607,13 @@ ws.onmessage = (event) => {
             }
         }
 
-        // ⚡ LAG COMPENSATION: avanzar cada pellet los ms de lag
+        // âš¡ LAG COMPENSATION: avanzar cada pellet los ms de lag
         const shotgunLag = data.t ? Math.min(Date.now() - data.t, 200) : 0;
         data.angles.forEach(ang => {
             spawnProjectile(spawnX, spawnY, ang, data.id, data.weaponId, shotgunLag);
         });
 
-        // 🔊 THE FIX: Trigger the sound!
+        // ðŸ”Š THE FIX: Trigger the sound!
         const isMe = (data.id === myId);
         playItemSound(data.weaponId, 'use', isMe ? 0.8 : 0.3);
     }// --- VER QUE OTROS DAN ESPADAZOS ---
@@ -2581,22 +2623,22 @@ ws.onmessage = (event) => {
             otherPlayers[data.id].swingStartTime = Date.now();
         }
 
-        // 🔊 THE FIX: Escuchar los espadazos de otros jugadores
+        // ðŸ”Š THE FIX: Escuchar los espadazos de otros jugadores
         playItemSound(data.weaponId, 'use', 0.3);
     }
 
     // =======================================================================
-    // 💥 RECEPCIÓN MAESTRA DE VIDA, DAÑO, INTERFAZ, KILLS Y LOSSES 💥
+    // ðŸ’¥ RECEPCIÃ“N MAESTRA DE VIDA, DAÃ‘O, INTERFAZ, KILLS Y LOSSES ðŸ’¥
     // =======================================================================
     else if (data.type === 'hp_update') {
 
-        // --- 1. SI YO RECIBÍ EL DAÑO O LA CURACIÓN ---
+        // --- 1. SI YO RECIBÃ EL DAÃ‘O O LA CURACIÃ“N ---
         if (data.targetId === myId) {
             player.hp = data.newHp;
-            player.health = data.newHp; // 🛑 EL FIX: Sincroniza la barra de vida sobre tu cabeza
+            player.health = data.newHp; // ðŸ›‘ EL FIX: Sincroniza la barra de vida sobre tu cabeza
             player.isDead = data.isDead;
             player.lastHpUpdateTime = Date.now();
-            // 🛡️ Respawn shield: store when it expires so we can draw it
+            // ðŸ›¡ï¸ Respawn shield: store when it expires so we can draw it
             if (data.shieldUntil) player.shieldUntil = data.shieldUntil;
 
             if (data.damageDealt > 0) {
@@ -2612,12 +2654,12 @@ ws.onmessage = (event) => {
                 if (typeof wakeUpIsland === 'function') wakeUpIsland(3000);
 
             } else if (data.damageDealt < 0) {
-                // Curación (Texto Verde)
+                // CuraciÃ³n (Texto Verde)
                 spawnDamageText(player.worldX, player.worldY, data.damageDealt, true);
                 if (typeof wakeUpIsland === 'function') wakeUpIsland(2000);
             }
 
-            // Actualizar la "Isla Dinámica" (UI)
+            // Actualizar la "Isla DinÃ¡mica" (UI)
             const islandFill = document.getElementById('island-hp-fill');
             const islandText = document.getElementById('island-hp-text');
             if (islandText) islandText.innerText = `${player.hp} / 100`;
@@ -2630,14 +2672,14 @@ ws.onmessage = (event) => {
             }
         }
 
-        // --- 2. SI OTRO JUGADOR RECIBIÓ EL DAÑO O LA CURACIÓN ---
+        // --- 2. SI OTRO JUGADOR RECIBIÃ“ EL DAÃ‘O O LA CURACIÃ“N ---
         else if (otherPlayers[data.targetId]) {
             let enemy = otherPlayers[data.targetId];
             enemy.hp = data.newHp;
-            enemy.health = data.newHp; // 🛑 EL FIX: Sincroniza la barra de vida del enemigo
+            enemy.health = data.newHp; // ðŸ›‘ EL FIX: Sincroniza la barra de vida del enemigo
             enemy.isDead = data.isDead;
             enemy.lastHpUpdateTime = Date.now();
-            // 🛡️ Respawn shield
+            // ðŸ›¡ï¸ Respawn shield
             if (data.shieldUntil) enemy.shieldUntil = data.shieldUntil;
 
             if (data.damageDealt > 0) {
@@ -2659,7 +2701,7 @@ ws.onmessage = (event) => {
                 otherPlayers[data.shooterId].kills = data.shooterKills;
             }
 
-            // Actualizar a la Víctima (El que murió)
+            // Actualizar a la VÃ­ctima (El que muriÃ³)
             if (data.targetId === myId) {
                 player.losses = data.targetLosses;
                 spawnDamageText(player.worldX, player.worldY, "+1 Loss", false); // Flota texto rojo en ti
@@ -2668,26 +2710,26 @@ ws.onmessage = (event) => {
             }
         }
 
-        // 🏴 TURF RESPAWN: teletransportar al spawn con fade
+        // ðŸ´ TURF RESPAWN: teletransportar al spawn con fade
         // isTeleporting=true INMEDIATO para congelar movimiento desde el primer frame
         if (!data.isDead && data.targetId === myId && data.respawnX != null && data.respawnY != null) {
-            player.isTeleporting = true; // ← congela input de movimiento al instante
+            player.isTeleporting = true; // â† congela input de movimiento al instante
 
             const fade = document.getElementById('fade-overlay');
             if (fade) {
                 fade.style.background = 'black';
                 fade.style.opacity = '0.9';
                 setTimeout(() => {
-                    // Mover al spawn exactamente cuando la pantalla está negra
+                    // Mover al spawn exactamente cuando la pantalla estÃ¡ negra
                     player.worldX = data.respawnX;
                     player.worldY = data.respawnY;
                     player.vx = 0; player.vy = 0;
                     lastNetworkString = '';
-                    spawnDamageText(player.worldX, player.worldY, '🏴 Respawn', true);
+                    spawnDamageText(player.worldX, player.worldY, 'ðŸ´ Respawn', true);
                     // Desvanecer Y soltar el congelamiento solo al terminar el fade
                     setTimeout(() => {
                         fade.style.opacity = '0';
-                        player.isTeleporting = false; // ← movimiento habilitado de nuevo
+                        player.isTeleporting = false; // â† movimiento habilitado de nuevo
                     }, 220);
                 }, 320);
             } else {
@@ -2704,7 +2746,7 @@ ws.onmessage = (event) => {
         // Ignore messages about our own character!
         if (data.id === myId) return;
 
-        // 🛑 FAILSAFE 1: Ignorar si el servidor manda un paquete vacío
+        // ðŸ›‘ FAILSAFE 1: Ignorar si el servidor manda un paquete vacÃ­o
         if (!data.player) return;
 
         if (!otherPlayers[data.id]) {
@@ -2715,7 +2757,7 @@ ws.onmessage = (event) => {
         } else {
             const op = otherPlayers[data.id];
 
-            // 🛑 FAILSAFE 2: Si el jugador localmente es un fantasma (null), borrar y abortar
+            // ðŸ›‘ FAILSAFE 2: Si el jugador localmente es un fantasma (null), borrar y abortar
             if (!op) {
                 delete otherPlayers[data.id];
                 return;
@@ -2727,10 +2769,10 @@ ws.onmessage = (event) => {
             op.isMoving = data.player.isMoving;
             op.isSitting = data.player.isSitting;
 
-            // 🛑 THE JITTER FIX: We DELETED `op.frameX = data.player.frameX`
+            // ðŸ›‘ THE JITTER FIX: We DELETED `op.frameX = data.player.frameX`
             // The client will animate the legs locally!
 
-            // 🛑 THE TELEPORT FIX: ONLY update the target destination. 
+            // ðŸ›‘ THE TELEPORT FIX: ONLY update the target destination. 
             // Never overwrite op.worldX/Y directly here!
             op.targetX = data.player.worldX;
             op.targetY = data.player.worldY;
@@ -2744,7 +2786,7 @@ ws.onmessage = (event) => {
             op.elo = data.player.elo || 1000;
             op.lastUpdateTick = Date.now(); // Feed the garbage collector
 
-            // 💬 Chat bubble: only reset timer when it's a NEW message
+            // ðŸ’¬ Chat bubble: only reset timer when it's a NEW message
             if (data.player.message && data.player.message !== op.message) {
                 op.message = data.player.message;
                 op.messageTimer = data.player.messageTimer > 0 ? data.player.messageTimer : 420;
@@ -2765,10 +2807,10 @@ ws.onmessage = (event) => {
         authOverlay.style.display = 'none';
         authOverlay.style.opacity = '0';
         authOverlay.style.pointerEvents = 'none';
-        // 👇 NUEVO: Aterrizar el dron tras loguearse 👇
+        // ðŸ‘‡ NUEVO: Aterrizar el dron tras loguearse ðŸ‘‡
         isCinematicLoading = false;
 
-        // Si player.squad existe (no es null), muestra el botón como 'flex', si no, 'none'
+        // Si player.squad existe (no es null), muestra el botÃ³n como 'flex', si no, 'none'
         if (document.getElementById('island-squad-chat-btn')) {
             document.getElementById('island-squad-chat-btn').style.display = player.squad ? 'flex' : 'none';
         }
@@ -2776,6 +2818,15 @@ ws.onmessage = (event) => {
         // SAVE THE TOKEN TO BROWSER MEMORY!
         if (data.token) {
             localStorage.setItem('gameToken', data.token);
+        // --- NUEVO: BATTLE PASS INIT ---
+        if (data.activeSeason) {
+            bpActiveSeason = data.activeSeason;
+            bpXP = data.player.bpXP || 0;
+            bpPremium = data.player.bpPremium || false;
+            bpClaimedFree = data.player.bpClaimedFree || [];
+            bpClaimedPremium = data.player.bpClaimedPremium || [];
+            renderBattlePass(); // Pre-render
+        }
         }
         // --- THE FIX: Load the friends array from the server into your local player! ---
         player.friends = data.friends || [];
@@ -2790,18 +2841,18 @@ ws.onmessage = (event) => {
         player.quickSwaps = data.player.quickSwaps || [];
         player.accountId = data.player.accountId;
 
-        // --- 🌟 NUEVO: CARGAR TAREAS DEL SERVIDOR TRAS LOGIN 🌟 ---
+        // --- ðŸŒŸ NUEVO: CARGAR TAREAS DEL SERVIDOR TRAS LOGIN ðŸŒŸ ---
         globalTasks = data.globalTasks || {};
         myTaskProgress = data.taskProgress || {};
         myClaimedTasks = data.claimedTasks || {}; console.log(`[DEBUG] Updated myClaimedTasks from ${data.type}:`, myClaimedTasks);
         if (typeof checkTaskBadge === 'function') checkTaskBadge();
 
-        // 🌟 NUEVO: Pedir datos del squad si pertenece a uno, para las recompensas de Squad
+        // ðŸŒŸ NUEVO: Pedir datos del squad si pertenece a uno, para las recompensas de Squad
         if (data.player.squad) {
-            ws.send(MessagePack.encode({ type: 'get_squad_details', squadId: data.player.squad }));
+            ws.send(MessagePack.encode({ type: 'get_squad_details_silent', squadId: data.player.squad }));
         }
 
-        // 🛑 EL FIX 3: Cargar tu ropa desde el servidor al entrar
+        // ðŸ›‘ EL FIX 3: Cargar tu ropa desde el servidor al entrar
         player.equipped = data.player.equipped || { head: 'head_default', body: 'body_default', hands: 'none' };
         // --- NUEVO: RECIBIR TU ROL ---
         player.role = data.player.role;
@@ -2809,17 +2860,17 @@ ws.onmessage = (event) => {
         // EL FIX: Comprobamos si los botones existen antes de intentar cambiarles el 'style'
         const appEditModeBtn = document.getElementById('app-edit-mode');
         const appGodPanelBtn = document.getElementById('app-god-panel');
-        const appSkelBtn = document.getElementById('app-skel'); // <--- AÑADE ESTO
+        const appSkelBtn = document.getElementById('app-skel'); // <--- AÃ‘ADE ESTO
 
-        // Ocultar o Mostrar el botón del Editor según tu rol
+        // Ocultar o Mostrar el botÃ³n del Editor segÃºn tu rol
         if (player.role === 'admin') {
             if (appEditModeBtn) appEditModeBtn.style.display = 'flex';
             if (appGodPanelBtn) appGodPanelBtn.style.display = 'flex';
-            if (appSkelBtn) appSkelBtn.style.display = 'flex'; // <--- AÑADE ESTO
+            if (appSkelBtn) appSkelBtn.style.display = 'flex'; // <--- AÃ‘ADE ESTO
         } else {
             if (appEditModeBtn) appEditModeBtn.style.display = 'none';
             if (appGodPanelBtn) appGodPanelBtn.style.display = 'none';
-            if (appSkelBtn) appSkelBtn.style.display = 'none'; // <--- AÑADE ESTO
+            if (appSkelBtn) appSkelBtn.style.display = 'none'; // <--- AÃ‘ADE ESTO
             editMode = false; // Por si acaso un hacker intenta forzarlo
         }
         // Set the active highlight to match the equipped weapon
@@ -2853,9 +2904,9 @@ ws.onmessage = (event) => {
         player.squadLogo = data.player.squadLogo;
         player.squad = data.player.squad;
 
-        // 🛑 EL FIX 1: Guardar tus permisos de reclutador al entrar al juego
+        // ðŸ›‘ EL FIX 1: Guardar tus permisos de reclutador al entrar al juego
         player.squadCanInvite = data.player.squadCanInvite || false;
-        // 🚨 ACTUALIZAR EL BOTÓN DE RADIO AL LOGUEARSE
+        // ðŸš¨ ACTUALIZAR EL BOTÃ“N DE RADIO AL LOGUEARSE
         updateSquadChatButton();
         // Force an immediate camera update
         lastNetworkString = "";
@@ -2865,7 +2916,7 @@ ws.onmessage = (event) => {
 
         document.getElementById('notif-btn-container').style.display = 'block';
         document.getElementById('notif-badge').style.display = 'flex';
-        document.getElementById('notif-badge').innerText = pendingRequests.length; // 🛑 EL FIX
+        document.getElementById('notif-badge').innerText = pendingRequests.length; // ðŸ›‘ EL FIX
 
         wakeUpIsland(5000);
 
@@ -2876,13 +2927,13 @@ ws.onmessage = (event) => {
             const drawH = 32 * (headFrameH / FRAME_WIDTH);
             nCtx.drawImage(headImg, 0, 0, FRAME_WIDTH, headFrameH, (notifCanvas.width - drawW) / 2, (notifCanvas.height - drawH) / 2, drawW, drawH);
         }
-    }// --- RECIBIR INVITACIÓN A UN CLAN ---
+    }// --- RECIBIR INVITACIÃ“N A UN CLAN ---
     else if (data.type === 'squad_invite') {
         pendingRequests.push(data);
 
         document.getElementById('notif-btn-container').style.display = 'block';
         document.getElementById('notif-badge').style.display = 'flex';
-        document.getElementById('notif-badge').innerText = pendingRequests.length; // 🛑 EL FIX
+        document.getElementById('notif-badge').innerText = pendingRequests.length; // ðŸ›‘ EL FIX
         wakeUpIsland(5000);
 
         if (nCtx && headImg && headImg.complete) {
@@ -2893,7 +2944,7 @@ ws.onmessage = (event) => {
             nCtx.drawImage(headImg, 0, 0, FRAME_WIDTH, headFrameH, (notifCanvas.width - drawW) / 2, (notifCanvas.height - drawH) / 2, drawW, drawH);
         }
     }
-    // --- RECIBIR ACTUALIZACIÓN DEL GANI EDITOR ---
+    // --- RECIBIR ACTUALIZACIÃ“N DEL GANI EDITOR ---
     else if (data.type === 'sync_skeleton') {
         SKELETON_DATA.anchors = data.anchors;
     } else if (data.type === 'sync_melee_stats') {
@@ -2902,14 +2953,14 @@ ws.onmessage = (event) => {
             if (!weaponsDB[data.weaponId].dirStats) {
                 weaponsDB[data.weaponId].dirStats = {};
             }
-            // Sobreescribimos solo la configuración del lado que se editó
+            // Sobreescribimos solo la configuraciÃ³n del lado que se editÃ³
             weaponsDB[data.weaponId].dirStats[data.direction] = data.stats;
         }
     }
 };
 
 // =========================================================
-//  CONSTRUCTOR DINÁMICO DE LA INTERFAZ DE ZONAS
+//  CONSTRUCTOR DINÃMICO DE LA INTERFAZ DE ZONAS
 // =========================================================
 let activeZoneFilter = 'all'; // 'all' muestra todo. Si es 'trash', solo muestra basureros.
 let showSafeZoneVisuals = false; // Memoria del interruptor principal
@@ -2922,19 +2973,19 @@ function buildZoneUI() {
     selectEl.innerHTML = '';
     filterContainer.innerHTML = '';
 
-    // Botón "Todos" para la barra de filtros
-    filterContainer.innerHTML += `<button class="tool-btn active zone-filter-btn" data-target="all" style="background: #3498db;">🌟 Todo</button>`;
+    // BotÃ³n "Todos" para la barra de filtros
+    filterContainer.innerHTML += `<button class="tool-btn active zone-filter-btn" data-target="all" style="background: #3498db;">ðŸŒŸ Todo</button>`;
 
     // Llenar basado en el servidor
     for (const [key, config] of Object.entries(window.ZONE_CONFIG)) {
-        // Llenar Select de Creación
+        // Llenar Select de CreaciÃ³n
         selectEl.innerHTML += `<option value="${key}">${config.icon} ${config.name}</option>`;
 
-        // Crear botón de Filtro
+        // Crear botÃ³n de Filtro
         filterContainer.innerHTML += `<button class="tool-btn zone-filter-btn" data-target="${key}" style="background: rgba(255,255,255,0.1);">${config.icon} ${config.name}</button>`;
     }
 
-    // Lógica de los botones de filtro
+    // LÃ³gica de los botones de filtro
     document.querySelectorAll('.zone-filter-btn').forEach(btn => {
         btn.onclick = (e) => {
             document.querySelectorAll('.zone-filter-btn').forEach(b => {
@@ -2995,7 +3046,7 @@ let lastNetworkString = "";
 function spawnDamageText(x, y, amount, isHeal = false) {
     let textToShow;
 
-    // Si es un número puro (ej. daño o curación), hacemos la matemática normal
+    // Si es un nÃºmero puro (ej. daÃ±o o curaciÃ³n), hacemos la matemÃ¡tica normal
     if (typeof amount === 'number') {
         textToShow = isHeal ? "+" + Math.abs(amount) : Math.abs(amount).toString();
     } else {
@@ -3003,10 +3054,10 @@ function spawnDamageText(x, y, amount, isHeal = false) {
         textToShow = amount;
     }
 
-    // Elegimos el color: Verde si es "isHeal" (recompensas/curación), Amarillo para daño
+    // Elegimos el color: Verde si es "isHeal" (recompensas/curaciÃ³n), Amarillo para daÃ±o
     let textColor = isHeal ? '#2ecc71' : '#f1c40f';
 
-    // 🛑 EL FIX: En lugar de .push(), reciclamos un texto inactivo
+    // ðŸ›‘ EL FIX: En lugar de .push(), reciclamos un texto inactivo
     for (let i = 0; i < MAX_FX; i++) {
         if (!damageTexts[i].active) {
             damageTexts[i].active = true;
@@ -3021,7 +3072,7 @@ function spawnDamageText(x, y, amount, isHeal = false) {
     }
 }
 
-// 🛡️ ESCUDO ANTI-XSS: Convierte código malicioso en texto inofensivo
+// ðŸ›¡ï¸ ESCUDO ANTI-XSS: Convierte cÃ³digo malicioso en texto inofensivo
 function escapeHTML(str) {
     if (!str) return "";
     return str.toString().replace(/[&<>'"]/g,
@@ -3035,20 +3086,20 @@ function escapeHTML(str) {
     );
 }
 
-// --- BULLET SPAWNER DINÁMICO (OBJECT POOLING) ---
-// lagMs: milisegundos de red transcurridos → avanzamos la bala ese tiempo
-// para compensar el delay y que visualmente aparezca donde debería estar.
+// --- BULLET SPAWNER DINÃMICO (OBJECT POOLING) ---
+// lagMs: milisegundos de red transcurridos â†’ avanzamos la bala ese tiempo
+// para compensar el delay y que visualmente aparezca donde deberÃ­a estar.
 function spawnProjectile(startX, startY, angle, ownerId, weaponId, lagMs = 0) {
     const stats = WEAPONS[weaponId];
     if (!stats) return;
 
-    // Busca la primera bala que esté "apagada" en el cargador
+    // Busca la primera bala que estÃ© "apagada" en el cargador
     for (let i = 0; i < MAX_PROJECTILES; i++) {
         if (!projectiles[i].active) {
             const vx = Math.cos(angle) * stats.speed;
             const vy = Math.sin(angle) * stats.speed;
 
-            // Pasos de extrapolación: avanzamos la bala N ms de tiempo de red
+            // Pasos de extrapolaciÃ³n: avanzamos la bala N ms de tiempo de red
             // usando el mismo dtScale=1 base para consistencia
             const lagSteps = Math.min(lagMs / 16.67, 18); // max ~300ms = ~18 frames
 
@@ -3057,11 +3108,11 @@ function spawnProjectile(startX, startY, angle, ownerId, weaponId, lagMs = 0) {
             projectiles[i].y = startY + vy * lagSteps;
             projectiles[i].vx = vx;
             projectiles[i].vy = vy;
-            projectiles[i].life = stats.range - lagSteps; // también consume vida
+            projectiles[i].life = stats.range - lagSteps; // tambiÃ©n consume vida
             projectiles[i].owner = ownerId;
             projectiles[i].weapon = weaponId;
             projectiles[i].color = stats.color || "#f1c40f";
-            return; // Terminó de disparar
+            return; // TerminÃ³ de disparar
         }
     }
     // Si pasas de 100 balas al mismo tiempo, el arma simplemente se encasquilla.
@@ -3105,7 +3156,7 @@ joystickZone.addEventListener('touchstart', (e) => {
     e.preventDefault();  // <--- KILLS THE MAGNIFIER ON THE JOYSTICK
     e.stopPropagation(); // PREVENTS ZOOM CONFLICT
     const vectors = processJoystick(e, joystickZone, joystickKnob, 35);
-    // 🛑 EL FIX: Guardamos la "intención" del joystick, no la velocidad final
+    // ðŸ›‘ EL FIX: Guardamos la "intenciÃ³n" del joystick, no la velocidad final
     player.joyX = vectors.x;
     player.joyY = vectors.y;
 }, { passive: false });
@@ -3114,7 +3165,7 @@ joystickZone.addEventListener('touchmove', (e) => {
     e.preventDefault();  // <--- KILLS THE MAGNIFIER ON THE JOYSTICK
     e.stopPropagation(); // PREVENTS ZOOM CONFLICT
     const vectors = processJoystick(e, joystickZone, joystickKnob, 35);
-    // 🛑 EL FIX: Guardamos la "intención" del joystick, no la velocidad final
+    // ðŸ›‘ EL FIX: Guardamos la "intenciÃ³n" del joystick, no la velocidad final
     player.joyX = vectors.x;
     player.joyY = vectors.y;
 }, { passive: false });
@@ -3123,7 +3174,7 @@ joystickZone.addEventListener('touchend', (e) => {
     e.preventDefault();  // <--- KILLS THE MAGNIFIER ON THE JOYSTICK
     e.stopPropagation();
     joystickKnob.style.transform = `translate(0px, 0px)`;
-    // 🛑 EL FIX: Resetear intención al soltar
+    // ðŸ›‘ EL FIX: Resetear intenciÃ³n al soltar
     player.joyX = 0;
     player.joyY = 0;
 });
@@ -3193,15 +3244,15 @@ function sendMessage() {
     const text = chatInput.value.trim();
     if (text !== "") {
 
-        // 👇 NUEVO: COMANDO DE RESCATE /fix (ANTI-ABUSO) 👇
+        // ðŸ‘‡ NUEVO: COMANDO DE RESCATE /fix (ANTI-ABUSO) ðŸ‘‡
         if (text.toLowerCase() === '/fix' || text.toLowerCase() === '/unstuck') {
-            // Limpiamos todos los estados físicos y de interfaz locales
+            // Limpiamos todos los estados fÃ­sicos y de interfaz locales
             player.isTeleporting = false;
             player.isReloading = false;
             player.isSwinging = false;
             player.isMoving = false;
 
-            // 🛡️ EL FIX: Solo te cura si de verdad estabas en estado de muerte
+            // ðŸ›¡ï¸ EL FIX: Solo te cura si de verdad estabas en estado de muerte
             if (player.hp <= 0 || player.isDead) {
                 player.hp = 100;
                 player.isDead = false;
@@ -3214,11 +3265,11 @@ function sendMessage() {
             // Si tienes el arma bugueada, la forzamos a recargar visualmente
             renderHudHotbar();
             closeChat();
-            return; // Detenemos la ejecución
+            return; // Detenemos la ejecuciÃ³n
         }
 
-        // --- COMANDO DE ADMIN: TELETRANSPORTE INSTANTÁNEO ---
-        // ¡EL FIX!: Ahora verifica si tienes el rol de admin
+        // --- COMANDO DE ADMIN: TELETRANSPORTE INSTANTÃNEO ---
+        // Â¡EL FIX!: Ahora verifica si tienes el rol de admin
         if (text.startsWith('/tp ') && player.role === 'admin') {
             const parts = text.split(' ');
             if (parts.length === 3) {
@@ -3288,7 +3339,7 @@ function updatePlayerDirection() {
 
     // --- 1. MIRADA (NUEVO ORDEN: 0=Abajo, 1=Derecha, 2=Izquierda, 3=Arriba) ---
     let faceAngle;
-    if (isShooting) {
+    if (isShooting || player.isSwinging) {
         faceAngle = shootAngle;
     } else if (player.isMoving) {
         faceAngle = Math.atan2(player.vy, player.vx);
@@ -3296,19 +3347,19 @@ function updatePlayerDirection() {
 
     if (faceAngle !== undefined) {
         const deg = faceAngle * (180 / Math.PI);
-        // RESTAURADO: Tu lógica original que funciona perfecto
+        // RESTAURADO: Tu lÃ³gica original que funciona perfecto
         if (deg > 45 && deg <= 135) player.frameY = 0;
         else if (deg > 135 || deg <= -135) player.frameY = 1;
         else if (deg > -45 && deg <= 45) player.frameY = 2;
         else if (deg > -135 && deg <= -45) player.frameY = 3;
     }
 
-    // --- 2. ANIMACIÓN DE LAS PIERNAS (DINÁMICA) ---
+    // --- 2. ANIMACIÃ“N DE LAS PIERNAS (DINÃMICA) ---
     player.tickCount++;
 
     const speedMod = player.isMoving ? 1 : 2;
 
-    // 🛑 LÍMITES EXACTOS DE TU IMAGEN
+    // ðŸ›‘ LÃMITES EXACTOS DE TU IMAGEN
     let maxFrames = 4;
     if (player.equippedWeapon && player.equippedWeapon !== "none") {
         maxFrames = player.isMoving ? 6 : 1;
@@ -3323,9 +3374,9 @@ function updatePlayerDirection() {
 }
 
 // A helper function to draw perfectly scaled chat bubbles
-function drawDynamicBubble(text, timer, isTyping, x, y, scaledWidth) {
-    // If they aren't chatting and aren't typing, do nothing
-    if (timer <= 0 && !isTyping) return;
+function drawDynamicBubble(text, timer, isTyping, isSpeaking, x, y, scaledWidth) {
+    // If they aren't chatting, typing, and speaking, do nothing
+    if (timer <= 0 && !isTyping && !isSpeaking) return;
 
     // 1. Scale the font size to be a bit smaller (changed from 14 to 12)
     const fontSize = 7 * zoomLevel;
@@ -3339,32 +3390,50 @@ function drawDynamicBubble(text, timer, isTyping, x, y, scaledWidth) {
     // 3. Anchor it perfectly above the head
     const bubbleY = y + (15 * zoomLevel);
     const centerX = x + (scaledWidth / 2);
+    let currentY = bubbleY;
 
-    if (timer > 0) {
-        // --- ACTUAL CHAT MESSAGE ---
-        // Keep standard messages centered
-        ctx.textAlign = "center";
+    if (timer > 0 || isTyping) {
+        if (timer > 0) {
+            // --- ACTUAL CHAT MESSAGE ---
+            // Keep standard messages centered
+            ctx.textAlign = "center";
+            ctx.strokeText(text, centerX, currentY);
+            ctx.fillStyle = "white";
+            ctx.fillText(text, centerX, currentY);
+        } else if (isTyping) {
+            // --- TYPING INDICATOR ---
+            // Lock alignment to the left so the dots don't wiggle back and forth
+            ctx.textAlign = "left";
 
-        ctx.strokeText(text, centerX, bubbleY);
-        ctx.fillStyle = "white";
-        ctx.fillText(text, centerX, bubbleY);
+            // Animate the dots (1 to 3)
+            const dotCount = (Math.floor(Date.now() / 400) % 3) + 1;
+            const displayText = ".".repeat(dotCount);
 
-    } else if (isTyping) {
-        // --- TYPING INDICATOR ---
-        // Lock alignment to the left so the dots don't wiggle back and forth
-        ctx.textAlign = "left";
+            // Pre-measure the maximum width of "..." so we can center the whole block
+            const maxTextWidth = ctx.measureText("...").width;
+            const startX = centerX - (maxTextWidth / 2);
 
-        // Animate the dots (1 to 3)
-        const dotCount = (Math.floor(Date.now() / 400) % 3) + 1;
-        const displayText = ".".repeat(dotCount);
+            ctx.strokeText(displayText, startX, currentY);
+            ctx.fillStyle = "white";
+            ctx.fillText(displayText, startX, currentY);
+        }
+        currentY -= (15 * zoomLevel); // Move up so the mic doesn't overlap
+    }
 
-        // Pre-measure the maximum width of "..." so we can center the whole block
-        const maxTextWidth = ctx.measureText("...").width;
-        const startX = centerX - (maxTextWidth / 2);
-
-        ctx.strokeText(displayText, startX, bubbleY);
-        ctx.fillStyle = "white";
-        ctx.fillText(displayText, startX, bubbleY);
+    if (isSpeaking) {
+        if (typeof window.micIconObj === 'undefined') {
+            window.micIconObj = new Image();
+            window.micIconObj.src = 'items/icons/mic.png';
+        }
+        if (window.micIconObj.complete) {
+            const micW = 16 * zoomLevel;
+            const micH = 18 * zoomLevel;
+            // Pulsing animation
+            const pulse = 1 + (Math.sin(Date.now() / 150) * 0.15);
+            const drawW = micW * pulse;
+            const drawH = micH * pulse;
+            ctx.drawImage(window.micIconObj, centerX - (drawW / 2), currentY - drawH, drawW, drawH);
+        }
     }
 }
 
@@ -3378,7 +3447,7 @@ function getColorForString(str) {
     return `hsl(${hue}, 80%, 65%)`; // Returns a nice, bright, readable color!
 }
 
-// 🚀 EL FIX DE RENDIMIENTO: Caché de Nombres
+// ðŸš€ EL FIX DE RENDIMIENTO: CachÃ© de Nombres
 const nametagCache = {};
 
 function getCachedNametagText(name, squadText, textColor, nameOpacity) {
@@ -3431,14 +3500,14 @@ function getCachedNametagText(name, squadText, textColor, nameOpacity) {
         currentX += squadW;
     }
 
-    // Guardar info útil en el objeto canvas
+    // Guardar info Ãºtil en el objeto canvas
     tCanvas.actualWidth = currentX;
     nametagCache[key] = tCanvas;
     return tCanvas;
 }
 
 // --- SQUAD LOGOS CACHE ---
-const squadLogosCache = {}; // Guarda imágenes para no laguear
+const squadLogosCache = {}; // Guarda imÃ¡genes para no laguear
 
 function drawNametag(playerObj, x, y, scaledWidth, scaledHeight, textColor) {
     if (!playerObj.username || !gameSettings.showNametags) return;
@@ -3478,7 +3547,7 @@ function drawNametag(playerObj, x, y, scaledWidth, scaledHeight, textColor) {
         const img = squadLogosCache[playerObj.squadLogo];
         if (img.complete && img.naturalWidth > 0) {
             ctx.globalAlpha = Math.max(0.1, gameSettings.nameOpacity - 0.1);
-            // Alineamos el logo con el texto matemáticamente
+            // Alineamos el logo con el texto matemÃ¡ticamente
             ctx.drawImage(img, currentX, tagY + (nameCanvas.height / 2) - (logoSize * 0.85), logoSize, logoSize);
             ctx.globalAlpha = 1.0;
         }
@@ -3505,14 +3574,14 @@ const tabSearchInput = document.getElementById('tab-search');
 const tilesetTabsContainer = document.getElementById('tileset-tabs');
 
 tabSearchInput.addEventListener('input', (e) => {
-    // Convertimos lo que escribes a minúsculas para que no importe si usas mayúsculas
+    // Convertimos lo que escribes a minÃºsculas para que no importe si usas mayÃºsculas
     const query = e.target.value.toLowerCase().trim();
 
     // Obtenemos todos los botones de los tabs generados
     const tabs = tilesetTabsContainer.querySelectorAll('button');
 
     tabs.forEach(tab => {
-        // Obtenemos el texto del botón (ej. "🔫 Weapons" o "🧱 Walls")
+        // Obtenemos el texto del botÃ³n (ej. "ðŸ”« Weapons" o "ðŸ§± Walls")
         const tabName = tab.innerText.toLowerCase();
 
         // Si el nombre del tab incluye lo que escribiste, lo mostramos. Si no, lo ocultamos.
@@ -3523,9 +3592,9 @@ tabSearchInput.addEventListener('input', (e) => {
         }
     });
 });
-// --- LÓGICA DEL BOTÓN DE EDIT MODE ---
+// --- LÃ“GICA DEL BOTÃ“N DE EDIT MODE ---
 appEditMode.addEventListener('click', () => {
-    appTray.classList.remove('open'); // Cerrar el menú de apps
+    appTray.classList.remove('open'); // Cerrar el menÃº de apps
 
     editMode = !editMode; // Alternar estado (Prender/Apagar)
 
@@ -3540,7 +3609,7 @@ appEditMode.addEventListener('click', () => {
             PALETTE_SCALE = 2;
             attachPaletteListeners();
 
-            // --- NUEVO: CREAR BOTONES DE PESTAÑAS AL ABRIR ---
+            // --- NUEVO: CREAR BOTONES DE PESTAÃ‘AS AL ABRIR ---
             const tabsContainer = document.getElementById('tileset-tabs');
             tabsContainer.innerHTML = ''; // Limpiar
 
@@ -3576,7 +3645,7 @@ appEditMode.addEventListener('click', () => {
         appEditMode.querySelector('.app-bg').style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
         if (coordHelper) coordHelper.style.display = 'none'; // <--- HIDE RADAR
 
-        // 👇 NUEVO: APAGAR TODO LO DE LAS ZONAS AL CERRAR EL EDITOR 👇
+        // ðŸ‘‡ NUEVO: APAGAR TODO LO DE LAS ZONAS AL CERRAR EL EDITOR ðŸ‘‡
         const zoneFilterToolbar = document.getElementById('zone-filter-toolbar');
         const btnToggleZoneFilters = document.getElementById('btn-toggle-zone-filters');
         const zoneTypeSelect = document.getElementById('zone-type-select');
@@ -3600,14 +3669,14 @@ function switchTileset(index) {
     const activeTs = TILESET_CONFIG[index];
     const img = loadedTilesets[activeTs.id];
 
-    // Ajustar el canvas al tamaño de la NUEVA imagen
+    // Ajustar el canvas al tamaÃ±o de la NUEVA imagen
     const scaledSize = TILE_SIZE * PALETTE_SCALE;
     cols = Math.floor(img.width / TILE_SIZE);
     const rows = Math.floor(img.height / TILE_SIZE);
     pCanvas.width = cols * scaledSize;
     pCanvas.height = rows * scaledSize;
 
-    // Resetear la selección para evitar bugs visuales
+    // Resetear la selecciÃ³n para evitar bugs visuales
     selectStart = null;
     selectEnd = null;
     isDraggingBox = false;
@@ -3615,14 +3684,14 @@ function switchTileset(index) {
     drawPalette();
 }
 
-// Botón de la "X" para cerrar la paleta lateral
+// BotÃ³n de la "X" para cerrar la paleta lateral
 closePalette.addEventListener('click', () => {
     if (editMode) appEditMode.click(); // Simula un clic en la app para apagar todo limpio
 });
 
-// 👆 HASTA AQUÍ 👆
+// ðŸ‘† HASTA AQUÃ ðŸ‘†
 
-// --- LÓGICA DE LA APP DE ACTUALIZACIONES ---
+// --- LÃ“GICA DE LA APP DE ACTUALIZACIONES ---
 const appUpdates = document.getElementById('app-updates');
 const updatesModal = document.getElementById('updates-modal');
 const closeUpdatesModal = document.getElementById('close-updates-modal');
@@ -3656,11 +3725,11 @@ function renderPatchNotes() {
         const dateObj = new Date(note.date);
         const dateString = dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
-        // Destacar el parche más reciente
+        // Destacar el parche mÃ¡s reciente
         const isNewest = index === 0;
         const borderColor = isNewest ? 'rgba(0, 198, 255, 0.5)' : 'rgba(255,255,255,0.1)';
         const bg = isNewest ? 'rgba(0, 198, 255, 0.05)' : 'rgba(255,255,255,0.02)';
-        const badge = isNewest ? `<span style="background: #00c6ff; color: black; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 10px;">¡NUEVO!</span>` : '';
+        const badge = isNewest ? `<span style="background: #00c6ff; color: black; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 10px;">Â¡NUEVO!</span>` : '';
 
         const noteDiv = document.createElement('div');
         noteDiv.style.background = bg;
@@ -3675,7 +3744,7 @@ function renderPatchNotes() {
                         </h4>
                         <span style="color: #777; font-size: 11px; font-family: monospace;">v${escapeHTML(note.version)}</span>
                     </div>
-                    <div style="color: #aaa; font-size: 10px; margin-bottom: 10px;">📅 ${dateString}</div>
+                    <div style="color: #aaa; font-size: 10px; margin-bottom: 10px;">ðŸ“… ${dateString}</div>
                     <div style="color: #ddd; font-size: 13px; line-height: 1.5; font-family: sans-serif; white-space: pre-wrap;">${escapeHTML(note.description)}</div>
                 `;
 
@@ -3683,7 +3752,7 @@ function renderPatchNotes() {
     });
 }
 
-// --- LÓGICA DEL GOD PANEL Y PUNTERO MÁGICO ---
+// --- LÃ“GICA DEL GOD PANEL Y PUNTERO MÃGICO ---
 const appGodPanel = document.getElementById('app-god-panel');
 const godModal = document.getElementById('god-modal');
 const closeGodModal = document.getElementById('close-god-modal');
@@ -3709,11 +3778,11 @@ if (appGodPanel && godModal && closeGodModal && godPointerBtn) {
         godPointerActive = !godPointerActive;
         if (godPointerActive) {
             godPointerBtn.style.background = "#e74c3c";
-            godPointerBtn.innerText = "🔴 Puntero Activado";
+            godPointerBtn.innerText = "ðŸ”´ Puntero Activado";
             canvas.style.cursor = 'crosshair';
         } else {
             godPointerBtn.style.background = "#34495e";
-            godPointerBtn.innerText = "🪄 Activar Puntero Mágico";
+            godPointerBtn.innerText = "ðŸª„ Activar Puntero MÃ¡gico";
             canvas.style.cursor = 'default';
         }
     });
@@ -3851,7 +3920,7 @@ canvas.addEventListener('mousedown', (e) => {
     }
 }, true);
 
-// --- LÓGICA DE ARRASTRE PARA LA VENTANA DE DIOS ---
+// --- LÃ“GICA DE ARRASTRE PARA LA VENTANA DE DIOS ---
 let isDraggingGod = false;
 let godOffsetX = 0;
 let godOffsetY = 0;
@@ -3891,7 +3960,7 @@ if (godDragHandle) {
     window.addEventListener('mouseup', () => { isDraggingGod = false; godDragHandle.style.cursor = 'grab'; });
 }
 
-// --- LÓGICA DE ARRASTRE PARA EL SKEL EDITOR ---
+// --- LÃ“GICA DE ARRASTRE PARA EL SKEL EDITOR ---
 const skelModal = document.getElementById('skeleton-editor');
 const skelDragHandle = document.getElementById('skel-drag-handle');
 let isDraggingSkel = false;
@@ -4006,19 +4075,19 @@ const modalCtx = modalAvatarCanvas ? modalAvatarCanvas.getContext('2d') : null;
 // --- UPGRADED: NOTIFICATION BUTTON ACTIONS ---
 notifToggle.addEventListener('click', () => {
     if (pendingRequests.length > 0) {
-        const req = pendingRequests[0]; // Solo miramos, no la sacamos aún
+        const req = pendingRequests[0]; // Solo miramos, no la sacamos aÃºn
 
-        // LA MAGIA BLINDADA (ANTI-XSS): Cambiar texto y color según el tipo
+        // LA MAGIA BLINDADA (ANTI-XSS): Cambiar texto y color segÃºn el tipo
         if (req.type === 'friend_request') {
-            notifText.innerHTML = `<span id="safe-notif-name" style="color:#3498db; font-weight:bold;"></span> te ha enviado una solicitud de amistad. ¿Aceptas?`;
+            notifText.innerHTML = `<span id="safe-notif-name" style="color:#3498db; font-weight:bold;"></span> te ha enviado una solicitud de amistad. Â¿Aceptas?`;
             document.getElementById('safe-notif-name').innerText = req.senderUsername; // Inserta el nombre como texto puro
         } else if (req.type === 'squad_invite') {
-            notifText.innerHTML = `<span id="safe-notif-name" style="color:#9b59b6; font-weight:bold;"></span> te invita a unirte a su clan: <span id="safe-notif-squad" style="color:#f1c40f; font-weight:bold;"></span>. ¿Aceptas?`;
+            notifText.innerHTML = `<span id="safe-notif-name" style="color:#9b59b6; font-weight:bold;"></span> te invita a unirte a su clan: <span id="safe-notif-squad" style="color:#f1c40f; font-weight:bold;"></span>. Â¿Aceptas?`;
             document.getElementById('safe-notif-name').innerText = req.senderUsername;
             document.getElementById('safe-notif-squad').innerText = `[${req.squadName}]`;
         }
 
-        // ... (El código de dibujar el avatar déjalo igual) ...
+        // ... (El cÃ³digo de dibujar el avatar dÃ©jalo igual) ...
         if (modalCtx && headImg && headImg.complete) {
             modalCtx.clearRect(0, 0, modalAvatarCanvas.width, modalAvatarCanvas.height);
             const headFrameH = headImg.height / 4;
@@ -4033,7 +4102,7 @@ notifToggle.addEventListener('click', () => {
 // SI PRESIONAS YES
 notifYesBtn.addEventListener('click', () => {
     if (pendingRequests.length > 0) {
-        const req = pendingRequests.shift(); // Sacamos la petición
+        const req = pendingRequests.shift(); // Sacamos la peticiÃ³n
 
         if (req.type === 'friend_request') {
             ws.send(MessagePack.encode({ type: 'add_friend', friendAccountId: req.senderAccountId, isReply: true }));
@@ -4041,7 +4110,7 @@ notifYesBtn.addEventListener('click', () => {
             if (!player.friends.includes(req.senderAccountId)) player.friends.push(req.senderAccountId);
         }
         else if (req.type === 'squad_invite') {
-            // Si aceptó el clan, enviarlo al servidor
+            // Si aceptÃ³ el clan, enviarlo al servidor
             ws.send(MessagePack.encode({ type: 'accept_squad_invite', squadId: req.squadId }));
         }
 
@@ -4102,7 +4171,7 @@ let dragOffsetX = 0, dragOffsetY = 0;
 let dragOriginalMinX = 0, dragOriginalMinY = 0;
 let draggedTilesBuffer = [];
 
-// FUNCIÓN MAESTRA 1: Recoger bloques del piso
+// FUNCIÃ“N MAESTRA 1: Recoger bloques del piso
 function captureSelection(keepOnMap = false) {
     let captured = [];
     let deleteOps = [];
@@ -4141,7 +4210,7 @@ function captureSelection(keepOnMap = false) {
     return captured;
 }
 
-// FUNCIÓN MAESTRA 2: Pegar bloques arrastrados
+// FUNCIÃ“N MAESTRA 2: Pegar bloques arrastrados
 function pasteSelectionBuffer(tilesArray, offsetX, offsetY) {
     let placeOps = [];
     let bulkNetwork = [];
@@ -4234,7 +4303,7 @@ document.getElementById('tool-select').onclick = (e) => {
     document.getElementById('tile-grid').style.touchAction = 'none';
 };
 
-// --- 3. LÓGICA DE HERRAMIENTAS PRINCIPALES (PAINT, SELECT, ERASE) ---
+// --- 3. LÃ“GICA DE HERRAMIENTAS PRINCIPALES (PAINT, SELECT, ERASE) ---
 const worldPaintBtn = document.getElementById('world-paint-btn');
 const worldFillBtn = document.getElementById('world-fill-btn');
 const worldSelectBtn = document.getElementById('world-select-btn');
@@ -4286,13 +4355,13 @@ eraserBtn.onclick = () => {
         selectedTileId = selectedGrid.tiles[0][0] !== undefined ? selectedGrid.tiles[0][0] : 0;
         eraserBtn.style.borderColor = "transparent";
     } else {
-        // ENCENDER BORRADOR (-1 significa "vacío")
+        // ENCENDER BORRADOR (-1 significa "vacÃ­o")
         selectedTileId = -1;
         eraserBtn.style.borderColor = "red";
     }
 };
 
-// Mostrar/Ocultar el menú de creación y filtros al cambiar de herramientas
+// Mostrar/Ocultar el menÃº de creaciÃ³n y filtros al cambiar de herramientas
 const btnToggleZoneFilters = document.getElementById('btn-toggle-zone-filters');
 const zoneFilterToolbar = document.getElementById('zone-filter-toolbar');
 
@@ -4360,7 +4429,7 @@ if (btnSavePrefab) {
     btnSavePrefab.addEventListener('click', () => {
         const name = prefabSaveName.value.trim();
         if (!name) return alert("Ingresa un nombre para el Prefab");
-        if (!mapSelectionBox) return alert("Debes seleccionar un área en el mapa primero con la herramienta de selección");
+        if (!mapSelectionBox) return alert("Debes seleccionar un Ã¡rea en el mapa primero con la herramienta de selecciÃ³n");
 
         const w = (mapSelectionBox.maxX - mapSelectionBox.minX) + 1;
         const h = (mapSelectionBox.maxY - mapSelectionBox.minY) + 1;
@@ -4409,7 +4478,7 @@ const hideZoneTools = () => {
 worldPaintBtn.addEventListener('click', hideZoneTools);
 eraserBtn.addEventListener('click', hideZoneTools);
 
-// Lógica del botón 👁️ Ver Zonas
+// LÃ³gica del botÃ³n ðŸ‘ï¸ Ver Zonas
 btnToggleZoneFilters.addEventListener('click', () => {
     showSafeZoneVisuals = !showSafeZoneVisuals;
     if (showSafeZoneVisuals) {
@@ -4423,11 +4492,11 @@ btnToggleZoneFilters.addEventListener('click', () => {
     }
 });
 
-// 👇 NUEVO: LÓGICA DEL BOTÓN "CREAR ZONA SEGURA" Y CHECKBOX 👇
+// ðŸ‘‡ NUEVO: LÃ“GICA DEL BOTÃ“N "CREAR ZONA SEGURA" Y CHECKBOX ðŸ‘‡
 const btnMakeSafeZone = document.getElementById('btn-make-safezone');
 const zoneTypeSelect = document.getElementById('zone-type-select'); // <--- NUEVO
 
-// --- 🛡️ LÓGICA DEL MINI INSPECTOR DE ZONAS SEGURAS 🛡️ ---
+// --- ðŸ›¡ï¸ LÃ“GICA DEL MINI INSPECTOR DE ZONAS SEGURAS ðŸ›¡ï¸ ---
 const szInspectorModal = document.getElementById('safezone-inspector-modal');
 const closeSzInspector = document.getElementById('close-sz-inspector');
 const deleteSzBtn = document.getElementById('delete-sz-btn');
@@ -4448,23 +4517,23 @@ if (deleteSzBtn) {
             // Enviamos la orden al servidor
             ws.send(MessagePack.encode({ type: 'delete_safezone', id: currentInspectingZoneId }));
 
-            // Efecto visual en el botón
+            // Efecto visual en el botÃ³n
             deleteSzBtn.innerText = "Borrando...";
             deleteSzBtn.style.background = "#c0392b";
 
-            // Ocultamos de nuestra pantalla inmediatamente para que se sienta rápido
+            // Ocultamos de nuestra pantalla inmediatamente para que se sienta rÃ¡pido
             safeZones = safeZones.filter(z => z._id !== currentInspectingZoneId);
 
             setTimeout(() => {
                 szInspectorModal.style.display = 'none';
-                deleteSzBtn.innerText = "🗑️ Eliminar Zona"; // Resetear botón
+                deleteSzBtn.innerText = "ðŸ—‘ï¸ Eliminar Zona"; // Resetear botÃ³n
                 deleteSzBtn.style.background = "#e74c3c";
             }, 300);
         }
     };
 }
 
-// 🏴 TURF SPAWN FIELDS: show/hide depending on zone type
+// ðŸ´ TURF SPAWN FIELDS: show/hide depending on zone type
 const turfSpawnFields = document.getElementById('turf-spawn-fields');
 const turfSpawnX = document.getElementById('turf-spawn-x');
 const turfSpawnY = document.getElementById('turf-spawn-y');
@@ -4480,10 +4549,10 @@ function updateTurfFieldsVisibility() {
 // Trigger visibility update when zone type changes
 document.getElementById('zone-type-select').addEventListener('change', updateTurfFieldsVisibility);
 
-// "📌 Mi pos" — fill with current player TILE coords (same as radar display)
+// "ðŸ“Œ Mi pos" â€” fill with current player TILE coords (same as radar display)
 if (turfUsePosBtn) {
     turfUsePosBtn.addEventListener('click', () => {
-        // Radar shows: Math.floor(worldX / TILE_SIZE) — match exactly
+        // Radar shows: Math.floor(worldX / TILE_SIZE) â€” match exactly
         turfSpawnX.value = Math.floor(player.worldX / TILE_SIZE);
         turfSpawnY.value = Math.floor(player.worldY / TILE_SIZE);
     });
@@ -4491,23 +4560,23 @@ if (turfUsePosBtn) {
 
 btnMakeSafeZone.addEventListener('click', () => {
     if (!mapSelectionBox) {
-        alert("⚠️ Primero usa la herramienta 'Select' para arrastrar y marcar un área en el mapa.");
+        alert("âš ï¸ Primero usa la herramienta 'Select' para arrastrar y marcar un Ã¡rea en el mapa.");
         return;
     }
 
     const zType = document.getElementById('zone-type-select').value;
 
-    // 🏴 VALIDACIÓN TURF: requiere coords de spawn (en tiles, como el radar)
+    // ðŸ´ VALIDACIÃ“N TURF: requiere coords de spawn (en tiles, como el radar)
     let spawnX = null;
     let spawnY = null;
     if (zType === 'turf') {
         const tileX = parseFloat(turfSpawnX.value);
         const tileY = parseFloat(turfSpawnY.value);
         if (isNaN(tileX) || isNaN(tileY)) {
-            alert("⚠️ Zona Turf requiere un punto de Spawn.\nIngresa las coordenadas de Tile (X, Y), o usa '📌 Mi pos' para usar tu posición actual.");
+            alert("âš ï¸ Zona Turf requiere un punto de Spawn.\nIngresa las coordenadas de Tile (X, Y), o usa 'ðŸ“Œ Mi pos' para usar tu posiciÃ³n actual.");
             return;
         }
-        // Convertir tile → píxeles de mundo (centrado en el tile)
+        // Convertir tile â†’ pÃ­xeles de mundo (centrado en el tile)
         spawnX = (tileX * TILE_SIZE) + (TILE_SIZE / 2);
         spawnY = (tileY * TILE_SIZE) + (TILE_SIZE / 2);
     }
@@ -4526,7 +4595,7 @@ btnMakeSafeZone.addEventListener('click', () => {
         zoneType: zType,
         xMin, xMax, yMin, yMax
     };
-    // Solo añadir spawn si es turf
+    // Solo aÃ±adir spawn si es turf
     if (zType === 'turf') {
         payload.spawnX = spawnX;
         payload.spawnY = spawnY;
@@ -4534,14 +4603,14 @@ btnMakeSafeZone.addEventListener('click', () => {
 
     ws.send(MessagePack.encode(payload));
 
-    alert(`✅ Zona '${zoneName}' (${zType}) creada con éxito.${zType === 'turf' ? `\n📍 Spawn: X=${spawnX}, Y=${spawnY}` : ''}`);
+    alert(`âœ… Zona '${zoneName}' (${zType}) creada con Ã©xito.${zType === 'turf' ? `\nðŸ“ Spawn: X=${spawnX}, Y=${spawnY}` : ''}`);
     mapSelectionBox = null;
-    // Limpiar campos turf para la próxima zona
+    // Limpiar campos turf para la prÃ³xima zona
     if (turfSpawnX) turfSpawnX.value = '';
     if (turfSpawnY) turfSpawnY.value = '';
     worldPaintBtn.click();
 });
-// 👆 FIN DE LA LÓGICA DE ZONA SEGURA 👆
+// ðŸ‘† FIN DE LA LÃ“GICA DE ZONA SEGURA ðŸ‘†
 
 
 // --- NEW: UNDO & REDO HISTORY STACKS ---
@@ -4560,7 +4629,7 @@ function updateHistoryButtons() {
     redoBtn.disabled = redoStack.length === 0;
 }
 
-// ↩️ UNDO ACTION (100% MASIVO - CERO LAG)
+// â†©ï¸ UNDO ACTION (100% MASIVO - CERO LAG)
 undoBtn.addEventListener('click', () => {
     if (undoStack.length === 0) return;
     const action = undoStack.pop();
@@ -4585,7 +4654,7 @@ undoBtn.addEventListener('click', () => {
     updateHistoryButtons();
 });
 
-// ↪️ REDO ACTION (100% MASIVO - CERO LAG)
+// â†ªï¸ REDO ACTION (100% MASIVO - CERO LAG)
 redoBtn.addEventListener('click', () => {
     if (redoStack.length === 0) return;
     const action = redoStack.pop();
@@ -4644,7 +4713,7 @@ document.getElementById('tool-select').onclick = (e) => {
     document.getElementById('tool-pan').classList.remove('active');
     if (pCanvas) {
         pCanvas.style.touchAction = 'none';
-        pCanvas.style.cursor = 'crosshair'; // Cruz de selección
+        pCanvas.style.cursor = 'crosshair'; // Cruz de selecciÃ³n
     }
     tileGridDiv.style.touchAction = 'none';
 };
@@ -4724,7 +4793,7 @@ function handlePaletteUp(e) {
     for (let r = 0; r < selectedGrid.h; r++) {
         let rowArray = [];
         for (let c = 0; c < selectedGrid.w; c++) {
-            // Calcula qué cuadrito de tu All_Tilesets.png tocaste
+            // Calcula quÃ© cuadrito de tu All_Tilesets.png tocaste
             rowArray.push((minR + r) * cols + (minC + c));
         }
         selectedGrid.tiles.push(rowArray);
@@ -4738,8 +4807,8 @@ function attachPaletteListeners() {
     pCanvas.onmousedown = handlePaletteDown;
     pCanvas.onmousemove = handlePaletteMove;
 
-    // EL FIX: Antes tenía un 'if(isDraggingBox)'. Ahora escucha siempre 
-    // que levantas el dedo o el clic para detener cualquier acción (pan o select).
+    // EL FIX: Antes tenÃ­a un 'if(isDraggingBox)'. Ahora escucha siempre 
+    // que levantas el dedo o el clic para detener cualquier acciÃ³n (pan o select).
     window.addEventListener('mouseup', handlePaletteUp);
 
     pCanvas.ontouchstart = handlePaletteDown;
@@ -4812,8 +4881,8 @@ function handlePaletteUp(e) {
     selectedTileId = selectedGrid.tiles[0][0];
 }
 
-// --- EVENTOS DEL TOOLBAR (TÁCTIL Y RATÓN) ---
-// --- EVENTOS DEL TOOLBAR (TÁCTIL Y RATÓN) ---
+// --- EVENTOS DEL TOOLBAR (TÃCTIL Y RATÃ“N) ---
+// --- EVENTOS DEL TOOLBAR (TÃCTIL Y RATÃ“N) ---
 const editorToolbar = document.getElementById('editor-toolbar');
 const toolbarDragHandle = document.getElementById('toolbar-drag-handle');
 
@@ -4845,12 +4914,12 @@ function moveToolbar(clientX, clientY) {
     editorToolbar.style.bottom = 'auto';
 }
 
-// Táctil
+// TÃ¡ctil
 toolbarDragHandle.addEventListener('touchstart', (e) => startDragToolbar(e.touches[0].clientX, e.touches[0].clientY, e), { passive: false });
 window.addEventListener('touchmove', (e) => { if (e.touches.length > 0) moveToolbar(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
 window.addEventListener('touchend', () => isDraggingToolbar = false);
 
-// Ratón (PC)
+// RatÃ³n (PC)
 toolbarDragHandle.addEventListener('mousedown', (e) => startDragToolbar(e.clientX, e.clientY, e));
 window.addEventListener('mousemove', (e) => moveToolbar(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => isDraggingToolbar = false);
@@ -4872,9 +4941,9 @@ let currentStrokeHistory = []; // Memoria para agrupar trazos largos
 function handleEditStart(clientX, clientY) {
     if (!editMode) return;
 
-    // 👇 DETECTAR CLIC PARA INSPECCIONAR ZONAS UNIVERSALES 👇
+    // ðŸ‘‡ DETECTAR CLIC PARA INSPECCIONAR ZONAS UNIVERSALES ðŸ‘‡
     if (showSafeZoneVisuals) {
-        // Calculamos en qué pixel del mundo hiciste clic
+        // Calculamos en quÃ© pixel del mundo hiciste clic
         const worldClickX = (clientX - (window.innerWidth / 2)) / zoomLevel + player.worldX;
         const worldClickY = (clientY - (window.innerHeight / 2)) / zoomLevel + player.worldY;
 
@@ -4888,24 +4957,24 @@ function handleEditStart(clientX, clientY) {
             const zone = safeZones[clickedZoneIndex];
             currentInspectingZoneId = zone._id;
 
-            // Ponerle el ícono correcto al título del inspector
-            let icon = "🛡️";
-            if (zone.zoneType === 'trash') icon = "🗑️";
-            if (zone.zoneType === 'npc') icon = "🤖";
-            if (zone.zoneType === 'indoor') icon = "🏠";
+            // Ponerle el Ã­cono correcto al tÃ­tulo del inspector
+            let icon = "ðŸ›¡ï¸";
+            if (zone.zoneType === 'trash') icon = "ðŸ—‘ï¸";
+            if (zone.zoneType === 'npc') icon = "ðŸ¤–";
+            if (zone.zoneType === 'indoor') icon = "ðŸ ";
 
             document.getElementById('sz-inspector-name').innerText = `${icon} ${zone.name}`;
 
-            // Calculamos cuánto mide
+            // Calculamos cuÃ¡nto mide
             const width = Math.round((zone.xMax - zone.xMin) / TILE_SIZE);
             const height = Math.round((zone.yMax - zone.yMin) / TILE_SIZE);
-            document.getElementById('sz-inspector-size').innerText = `Área: ${width}x${height} bloques`;
+            document.getElementById('sz-inspector-size').innerText = `Ãrea: ${width}x${height} bloques`;
 
             szInspectorModal.style.display = 'flex'; // Mostrar Modal
-            return; // Detenemos el código aquí
+            return; // Detenemos el cÃ³digo aquÃ­
         }
     }
-    // 👆 FIN DEL CÓDIGO DE INSPECCIÓN 👆
+    // ðŸ‘† FIN DEL CÃ“DIGO DE INSPECCIÃ“N ðŸ‘†
 
     const gridPos = getWorldGridXY(clientX, clientY);
     const centerKey = getMapKey(gridPos.x, gridPos.y, activeLayer);
@@ -4964,7 +5033,7 @@ function handleEditStart(clientX, clientY) {
             if (selectedTileId === -1) {
                 worldMap.delete(k);
             } else {
-                // Respetamos hasCollision antiguo si existía, o false por defecto
+                // Respetamos hasCollision antiguo si existÃ­a, o false por defecto
                 const collision = t ? t.hasCollision : false;
                 worldMap.set(k, { tileId: selectedTileId, l: activeLayer, hasCollision: collision });
             }
@@ -5144,7 +5213,7 @@ function paintAt(gridPos) {
                 const paintY = gridPos.y + r;
                 const key = getMapKey(paintX, paintY, activeLayer);
                 const cellData = selectedGrid.tiles[r][c];
-                // Compatibilidad hacia atrás si era un número directo en vez de un objeto
+                // Compatibilidad hacia atrÃ¡s si era un nÃºmero directo en vez de un objeto
                 const tId = typeof cellData === 'object' ? cellData.id : cellData;
                 const rot = typeof cellData === 'object' ? cellData.rot : 0;
 
@@ -5208,7 +5277,7 @@ function handleEditMove(clientX, clientY, e) {
         mapSelectEnd = getWorldGridXY(clientX, clientY);
         updateCoordHelper(mapSelectEnd);
     }
-    // FUNCIÓN DE BROCHA: Arrastrar para pintar/borrar continuamente
+    // FUNCIÃ“N DE BROCHA: Arrastrar para pintar/borrar continuamente
     else if (worldMode === 'paint' && isPainting) {
         if (e && e.preventDefault) e.preventDefault();
         const gridPos = getWorldGridXY(clientX, clientY);
@@ -5244,7 +5313,7 @@ function handleEditEnd(clientX, clientY) {
 
     if (isDraggingMapBox && worldMode === 'select') {
         isDraggingMapBox = false;
-        if (!mapSelectStart || !mapSelectEnd) return; // Evitar crashes de clicks rápidos
+        if (!mapSelectStart || !mapSelectEnd) return; // Evitar crashes de clicks rÃ¡pidos
 
         mapSelectionBox = {
             minX: Math.min(mapSelectStart.x, mapSelectEnd.x),
@@ -5260,7 +5329,7 @@ function handleEditEnd(clientX, clientY) {
         if (inspectCopyAboveBtn) inspectCopyAboveBtn.style.display = 'block';
         if (inspectCopyAllBtn) inspectCopyAllBtn.style.display = 'block'; // <--- NUEVO
 
-        // Actualizamos los textos para que sepas en qué capa estás
+        // Actualizamos los textos para que sepas en quÃ© capa estÃ¡s
         if (copyLayerNum) copyLayerNum.innerText = activeLayer;
         if (delLayerNum) delLayerNum.innerText = activeLayer;
 
@@ -5272,7 +5341,7 @@ function handleEditEnd(clientX, clientY) {
         let areaIsSit = false;
         for (let r = mapSelectionBox.minY; r <= mapSelectionBox.maxY; r++) {
             for (let c = mapSelectionBox.minX; c <= mapSelectionBox.maxX; c++) {
-                // 🛑 EL FIX: Escanear la memoria correctamente
+                // ðŸ›‘ EL FIX: Escanear la memoria correctamente
                 const key = getMapKey(c, r, activeLayer);
                 const tile = worldMap.get(key);
                 if (tile && tile.hasCollision) {
@@ -5288,11 +5357,11 @@ function handleEditEnd(clientX, clientY) {
     }
 }
 
-// --- ENLAZAR EVENTOS TÁCTILES ---
+// --- ENLAZAR EVENTOS TÃCTILES ---
 canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) return;
 
-    // --- FIX: Actualizar Radar con un solo toque en Móvil ---
+    // --- FIX: Actualizar Radar con un solo toque en MÃ³vil ---
     if (editMode && coordHelper && e.touches.length > 0) {
         const gridPos = getWorldGridXY(e.touches[0].clientX, e.touches[0].clientY);
         updateCoordHelper(gridPos);
@@ -5316,11 +5385,11 @@ canvas.addEventListener('touchend', (e) => {
     }
 });
 
-// --- ENLAZAR EVENTOS DE RATÓN (PC) ---
+// --- ENLAZAR EVENTOS DE RATÃ“N (PC) ---
 canvas.addEventListener('mousedown', (e) => {
     if (e.target.id !== 'gameCanvas') return;
 
-    // 1. DRAG DE SELECCIÓN CON CLICK DERECHO
+    // 1. DRAG DE SELECCIÃ“N CON CLICK DERECHO
     if (editMode && e.button === 2 && worldMode === 'select' && mapSelectionBox) {
         const gridPos = getWorldGridXY(e.clientX, e.clientY);
         if (gridPos.x >= mapSelectionBox.minX && gridPos.x <= mapSelectionBox.maxX &&
@@ -5358,13 +5427,13 @@ canvas.addEventListener('mousedown', (e) => {
 
             if (tileData.rotation) {
                 currentRotation = tileData.rotation;
-                inspectRotateBtn.innerText = `🔄 Rot: ${currentRotation}`;
+                inspectRotateBtn.innerText = `ðŸ”„ Rot: ${currentRotation}`;
             } else {
                 currentRotation = 0;
-                inspectRotateBtn.innerText = `🔄 Rotate`;
+                inspectRotateBtn.innerText = `ðŸ”„ Rotate`;
             }
         } else {
-            // Clic en vacío = Goma
+            // Clic en vacÃ­o = Goma
             selectedGrid.w = 1;
             selectedGrid.h = 1;
             selectedGrid.isMultiLayer = false;
@@ -5397,13 +5466,13 @@ canvas.addEventListener('mousedown', (e) => {
     const gridClickY = Math.floor(clickY / TILE_SIZE);
     const clickedLogicTile = worldMap.get(getMapKey(gridClickX, gridClickY, 15));
 
-    // Si es un bloque con lógica y requiere clic
+    // Si es un bloque con lÃ³gica y requiere clic
     if (clickedLogicTile && clickedLogicTile.requiresClick) {
-        // Validar que el jugador no esté muy lejos (rango de interacción)
+        // Validar que el jugador no estÃ© muy lejos (rango de interacciÃ³n)
         const distToTile = Math.hypot(player.worldX - clickX, player.worldY - clickY);
         if (distToTile < TILE_SIZE * 3) {
             executeTileLogic(clickedLogicTile, `${gridClickX},${gridClickY}`);
-            return; // Detenemos la ejecución para que no dispare ni abra perfiles
+            return; // Detenemos la ejecuciÃ³n para que no dispare ni abra perfiles
         }
     }
 
@@ -5519,7 +5588,7 @@ function copyMultiLayer(startL, endL) {
                 }
             }
 
-            // Llenar tiles clásicos por si es solo 1 capa
+            // Llenar tiles clÃ¡sicos por si es solo 1 capa
             const singleKey = getMapKey(mapSelectionBox.minX + c, mapSelectionBox.minY + r, startL);
             const singleTile = worldMap.get(singleKey);
             singleRowArray.push(singleTile ? { id: singleTile.tileId, rot: singleTile.rotation || 0 } : { id: -1, rot: 0 });
@@ -5535,7 +5604,7 @@ function copyMultiLayer(startL, endL) {
     mapSelectionBox = null;
 }
 
-// --- NUEVO: LÓGICA DE ROTACIÓN (90 GRADOS) ---
+// --- NUEVO: LÃ“GICA DE ROTACIÃ“N (90 GRADOS) ---
 const inspectRotateBtn = document.getElementById('inspect-rotate-btn');
 if (inspectRotateBtn) {
     inspectRotateBtn.onclick = () => {
@@ -5553,7 +5622,7 @@ if (inspectRotateBtn) {
             const lx = t.x - mapSelectionBox.minX;
             const ly = t.y - mapSelectionBox.minY;
 
-            // Fórmula de Rotación 90° a la derecha
+            // FÃ³rmula de RotaciÃ³n 90Â° a la derecha
             const nx = oldH - 1 - ly;
             const ny = lx;
 
@@ -5565,7 +5634,7 @@ if (inspectRotateBtn) {
             });
         });
 
-        // 2. Ajustamos la caja de selección a sus nuevas dimensiones
+        // 2. Ajustamos la caja de selecciÃ³n a sus nuevas dimensiones
         mapSelectionBox.maxX = mapSelectionBox.minX + oldH - 1;
         mapSelectionBox.maxY = mapSelectionBox.minY + oldW - 1;
 
@@ -5580,7 +5649,7 @@ if (inspectCopyBelowBtn) inspectCopyBelowBtn.onclick = () => copyMultiLayer(0, 7
 if (inspectCopyAboveBtn) inspectCopyAboveBtn.onclick = () => copyMultiLayer(8, 15);
 if (inspectCopyAllBtn) inspectCopyAllBtn.onclick = () => copyMultiLayer(0, 15); // <--- NUEVO
 
-// FUNCIÓN MAESTRA 3: Borrar Capas
+// FUNCIÃ“N MAESTRA 3: Borrar Capas
 function deleteLayers(startL, endL) {
     let currentAction = [];
     let bulkNetworkData = [];
@@ -5665,7 +5734,7 @@ function handleInspectorCheckboxChange() {
 inspectCollision.onchange = handleInspectorCheckboxChange;
 inspectIsSit.onchange = handleInspectorCheckboxChange;
 
-// --- LÓGICA DEL MENÚ DESPLEGABLE DEL EDITOR ---
+// --- LÃ“GICA DEL MENÃš DESPLEGABLE DEL EDITOR ---
 const logicSelect = document.getElementById('logic-type-select');
 const tpDestX = document.getElementById('tp-dest-x');
 const tpDestY = document.getElementById('tp-dest-y');
@@ -5674,7 +5743,7 @@ const shopItemRowInput = document.getElementById('shop-item-row'); // <--- NUEVO
 const saveTpBtn = document.getElementById('save-tp-btn');
 const npcMessageInput = document.getElementById('npc-message-input');
 const logicRequiresClick = document.getElementById('logic-requires-click');
-// Variables (Añade estas 2)
+// Variables (AÃ±ade estas 2)
 const shopItemSxInput = document.getElementById('shop-item-sx');
 const shopItemSyInput = document.getElementById('shop-item-sy');
 const insMinigameType = document.getElementById('ins-minigame-type'); // <--- NUEVO
@@ -5703,9 +5772,9 @@ saveTpBtn.onclick = () => {
     if (inspectingCoord) {
         // 1. Extraer las coordenadas que tocaste (ej. x:10, y:15, capa:2)
         const [gx, gy, gl] = inspectingCoord.split(',').map(Number);
-        const key = getMapKey(gx, gy, gl); // ¡Usar la nueva llave matemática!
+        const key = getMapKey(gx, gy, gl); // Â¡Usar la nueva llave matemÃ¡tica!
 
-        // 2. Leer todos los valores de las cajitas del menú HTML
+        // 2. Leer todos los valores de las cajitas del menÃº HTML
         const tType = logicSelect.value === 'none' ? null : logicSelect.value;
         const dx = parseInt(tpDestX.value);
         const dy = parseInt(tpDestY.value);
@@ -5812,8 +5881,8 @@ saveTpBtn.onclick = () => {
             isRanked: isRanked
         }));
 
-        // 5. Animación bonita del botón
-        saveTpBtn.innerText = "¡Guardado!";
+        // 5. AnimaciÃ³n bonita del botÃ³n
+        saveTpBtn.innerText = "Â¡Guardado!";
         saveTpBtn.style.background = "#27ae60";
         setTimeout(() => {
             saveTpBtn.innerText = "Guardar";
@@ -5835,14 +5904,14 @@ let mmLastZoom = -1;
 function drawMinimap() {
     if (!mCtx) return;
 
-    // El número de jugadores ahora se actualiza automáticamente vía red (type: 'player_count')
+    // El nÃºmero de jugadores ahora se actualiza automÃ¡ticamente vÃ­a red (type: 'player_count')
 
     const cameraX = player.worldX + mapOffsetX;
     const cameraY = player.worldY + mapOffsetY;
     const scale = minimapZoom / TILE_SIZE;
 
-    // 2. ¿NECESITAMOS TOMAR UNA NUEVA FOTO? (Dirty Flag)
-    // Si construyeron algo, cambiaste el zoom, o te moviste más de 16 píxeles (1 bloque)
+    // 2. Â¿NECESITAMOS TOMAR UNA NUEVA FOTO? (Dirty Flag)
+    // Si construyeron algo, cambiaste el zoom, o te moviste mÃ¡s de 16 pÃ­xeles (1 bloque)
     if (minimapDirty || mmLastZoom !== minimapZoom || Math.abs(cameraX - mmLastCameraX) > TILE_SIZE || Math.abs(cameraY - mmLastCameraY) > TILE_SIZE) {
 
         // Limpiamos el lienzo invisible
@@ -5859,7 +5928,7 @@ function drawMinimap() {
         const startY = Math.floor((cameraY - mapRadiusY) / TILE_SIZE);
         const endY = Math.ceil((cameraY + mapRadiusY) / TILE_SIZE);
 
-        // DIBUJAMOS TODAS LAS 16 CAPAS EN LA FOTO INVISIBLE (Operación Pesada)
+        // DIBUJAMOS TODAS LAS 16 CAPAS EN LA FOTO INVISIBLE (OperaciÃ³n Pesada)
         for (let currentLayer = 0; currentLayer <= 15; currentLayer++) {
             for (let tx = startX; tx <= endX; tx++) {
                 for (let ty = startY; ty <= endY; ty++) {
@@ -5892,7 +5961,7 @@ function drawMinimap() {
             }
         }
 
-        // Guardamos las coordenadas de donde se tomó la foto
+        // Guardamos las coordenadas de donde se tomÃ³ la foto
         mmLastCameraX = cameraX;
         mmLastCameraY = cameraY;
         mmLastZoom = minimapZoom;
@@ -5903,13 +5972,13 @@ function drawMinimap() {
     mCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
     mCtx.imageSmoothingEnabled = false;
 
-    // 🔥 El truco maestro: Si caminaste medio bloque, no tomamos una foto nueva.
-    // Simplemente desplazamos la foto vieja los píxeles exactos.
+    // ðŸ”¥ El truco maestro: Si caminaste medio bloque, no tomamos una foto nueva.
+    // Simplemente desplazamos la foto vieja los pÃ­xeles exactos.
     const subPixelX = (mmLastCameraX - cameraX) * scale;
     const subPixelY = (mmLastCameraY - cameraY) * scale;
     mCtx.drawImage(minimapBgCanvas, subPixelX, subPixelY);
 
-    // 4. DIBUJAR LOS JUGADORES ENCIMA DE LA FOTO (Gente moviéndose en vivo)
+    // 4. DIBUJAR LOS JUGADORES ENCIMA DE LA FOTO (Gente moviÃ©ndose en vivo)
     function drawMinimapPlayer(pX, pY, pFrameY, headId, color, targetAccountId) {
         const mX = (pX - cameraX) * scale + (minimapCanvas.width / 2);
         const mY = (pY - cameraY) * scale + (minimapCanvas.height / 2);
@@ -5942,28 +6011,28 @@ function drawMinimap() {
     drawMinimapPlayer(player.worldX, player.worldY, player.frameY, myHId, "#f1c40f", player.accountId);
 }
 
-// 🚀 EL FIX DEL SANTO GRIAL: RESOLUCIÓN DINÁMICA
+// ðŸš€ EL FIX DEL SANTO GRIAL: RESOLUCIÃ“N DINÃMICA
 let dynamicRenderScale = 1.0;
 let fpsHistory = [];
 let lastResolutionCheck = performance.now();
 
 function resize() {
-    // 📱 FIX BLUR iPHONE 15 PRO:
-    // Antes limitábamos el DPR a 2 en móvil para ahorrar GPU, pero en pantallas
-    // de 3x (iPhone 15 Pro, Pixel 8 Pro...) el browser upscaleaba 2x→3x
-    // y eso desenfocaba los píxeles del juego. Usamos el DPR real completo.
-    // El dynamicRenderScale (0.5–1.0) ya se encarga de bajar resolución si
+    // ðŸ“± FIX BLUR iPHONE 15 PRO:
+    // Antes limitÃ¡bamos el DPR a 2 en mÃ³vil para ahorrar GPU, pero en pantallas
+    // de 3x (iPhone 15 Pro, Pixel 8 Pro...) el browser upscaleaba 2xâ†’3x
+    // y eso desenfocaba los pÃ­xeles del juego. Usamos el DPR real completo.
+    // El dynamicRenderScale (0.5â€“1.0) ya se encarga de bajar resoluciÃ³n si
     // el celular se calienta o no llega a 60fps.
     const dpr = window.devicePixelRatio || 1;
 
     cachedScreenWidth = window.innerWidth;
     cachedScreenHeight = window.innerHeight;
 
-    // 1. El canvas CSS ocupa siempre el 100% de la pantalla física real
+    // 1. El canvas CSS ocupa siempre el 100% de la pantalla fÃ­sica real
     canvas.style.width = cachedScreenWidth + 'px';
     canvas.style.height = cachedScreenHeight + 'px';
 
-    // 2. El canvas interno en píxeles físicos reales del dispositivo
+    // 2. El canvas interno en pÃ­xeles fÃ­sicos reales del dispositivo
     const finalScale = dpr * dynamicRenderScale;
     canvas.width = Math.floor(cachedScreenWidth * finalScale);
     canvas.height = Math.floor(cachedScreenHeight * finalScale);
@@ -5972,7 +6041,7 @@ function resize() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(finalScale, finalScale);
 
-    // Avisamos a las cámaras que tomen foto nueva
+    // Avisamos a las cÃ¡maras que tomen foto nueva
     if (typeof floorDirty !== 'undefined') floorDirty = true;
     if (typeof minimapDirty !== 'undefined') minimapDirty = true;
 }
@@ -5983,12 +6052,12 @@ resize();
 // --- PROFILE MODAL LOGIC ---
 const profileModal = document.getElementById('profile-modal');
 const closeProfile = document.getElementById('close-profile');
-// --- CONECTADO AL CANVAS CLÁSICO GIGANTE ---
+// --- CONECTADO AL CANVAS CLÃSICO GIGANTE ---
 const profileCanvas = document.getElementById('profile-canvas');
 const prCtx = profileCanvas.getContext('2d');
 const profileNameDisplay = document.getElementById('profile-name-display');
 
-// Nuevas variables para el botón de opciones
+// Nuevas variables para el botÃ³n de opciones
 const profileOptionsBtn = document.getElementById('profile-options-btn');
 const profileOtherControls = document.getElementById('profile-other-controls');
 const addFriendBtn = document.getElementById('add-friend-btn');
@@ -6002,9 +6071,9 @@ const saveNameBtn = document.getElementById('save-name-btn');
 let isProfileOpen = false;
 let profileTargetId = null;
 let profileAnimFrame = 0;
-let currentProfileData = null; // 👈 Guarda toda la data del jugador inspeccionado
+let currentProfileData = null; // ðŸ‘ˆ Guarda toda la data del jugador inspeccionado
 
-// --- ENLAZAR EVENTOS TÁCTILES ---
+// --- ENLAZAR EVENTOS TÃCTILES ---
 canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) return;
 
@@ -6013,13 +6082,13 @@ canvas.addEventListener('touchstart', (e) => {
         updateCoordHelper(gridPos);
     }
 
-    // Si estamos en modo edición, pintar o seleccionar
+    // Si estamos en modo ediciÃ³n, pintar o seleccionar
     if (editMode) {
         handleEditStart(e.touches[0].clientX, e.touches[0].clientY);
         return;
     }
 
-    // Si NO estamos en edición, calcular toque normal
+    // Si NO estamos en ediciÃ³n, calcular toque normal
     const touch = e.touches[0];
     const clickX = (touch.clientX - (window.innerWidth / 2)) / zoomLevel + player.worldX;
     const clickY = (touch.clientY - (window.innerHeight / 2)) / zoomLevel + player.worldY;
@@ -6032,7 +6101,7 @@ canvas.addEventListener('touchstart', (e) => {
         const distToTile = Math.hypot(player.worldX - clickX, player.worldY - clickY);
         if (distToTile < TILE_SIZE * 3) {
             executeTileLogic(clickedLogicTile, `${gridClickX},${gridClickY}`);
-            return; // Detenemos la ejecución
+            return; // Detenemos la ejecuciÃ³n
         }
     }
 
@@ -6049,7 +6118,7 @@ canvas.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 // =========================================================
-// 🗣️ SISTEMA DE DIÁLOGOS RPG (A PRUEBA DE FALLOS v3)
+// ðŸ—£ï¸ SISTEMA DE DIÃLOGOS RPG (A PRUEBA DE FALLOS v3)
 // =========================================================
 let dialogFullText = "";
 let dialogCurrentIndex = 0;
@@ -6057,14 +6126,14 @@ let dialogTimer = null;
 let isDialogTyping = false;
 
 function showRetroDialog(texto) {
-    if (!texto) return; // Escudo por si el texto viene vacío
+    if (!texto) return; // Escudo por si el texto viene vacÃ­o
 
     const box = document.getElementById('retro-dialog-box');
     const textEl = document.getElementById('retro-dialog-text');
     const indicator = document.getElementById('retro-dialog-indicator');
 
     if (!box || !textEl) {
-        console.error("No se encontró el HTML de la caja de diálogo.");
+        console.error("No se encontrÃ³ el HTML de la caja de diÃ¡logo.");
         return;
     }
 
@@ -6073,10 +6142,10 @@ function showRetroDialog(texto) {
     player.vy = 0;
     player.isMoving = false;
 
-    // 🛑 EL FIX: También detenemos al jugador hacia donde haya estado caminando
+    // ðŸ›‘ EL FIX: TambiÃ©n detenemos al jugador hacia donde haya estado caminando
     keys.w = false; keys.a = false; keys.s = false; keys.d = false;
 
-    // 2. Reiniciar la caja (Asegurar que la flechita se oculte al iniciar nuevo diálogo)
+    // 2. Reiniciar la caja (Asegurar que la flechita se oculte al iniciar nuevo diÃ¡logo)
     box.style.display = 'block';
     if (indicator) indicator.style.display = 'none';
 
@@ -6089,7 +6158,7 @@ function showRetroDialog(texto) {
     // 4. Limpiar timers viejos por si acaso
     if (dialogTimer) clearInterval(dialogTimer);
 
-    // 5. Iniciar el efecto de máquina de escribir (1 letra cada 35ms)
+    // 5. Iniciar el efecto de mÃ¡quina de escribir (1 letra cada 35ms)
     dialogTimer = setInterval(() => {
         textEl.innerText += dialogFullText.charAt(dialogCurrentIndex);
         dialogCurrentIndex++;
@@ -6100,7 +6169,7 @@ function showRetroDialog(texto) {
     }, 35);
 }
 
-// Función para rellenar de golpe cuando se completa o el jugador se salta la animación
+// FunciÃ³n para rellenar de golpe cuando se completa o el jugador se salta la animaciÃ³n
 function finishTypingDialog() {
     if (dialogTimer) clearInterval(dialogTimer);
     const textEl = document.getElementById('retro-dialog-text');
@@ -6113,22 +6182,22 @@ function finishTypingDialog() {
     if (indicator) indicator.style.display = 'block';
 }
 
-// --- Lógica de Interacción (Hacer Clic en la caja) ---
+// --- LÃ³gica de InteracciÃ³n (Hacer Clic en la caja) ---
 window.handleDialogClick = function (e) {
-    // Evitar que el clic en la caja de diálogo se propague al mapa detrás
+    // Evitar que el clic en la caja de diÃ¡logo se propague al mapa detrÃ¡s
     if (e && e.preventDefault) e.preventDefault();
     if (e && e.stopPropagation) e.stopPropagation();
 
     const box = document.getElementById('retro-dialog-box');
 
     if (isDialogTyping) {
-        // Si está escribiendo y das clic, muestra todo el texto de golpe (Fast-Forward)
+        // Si estÃ¡ escribiendo y das clic, muestra todo el texto de golpe (Fast-Forward)
         finishTypingDialog();
     } else {
-        // Si ya terminó de escribir y das clic, cerramos la caja y eres libre
+        // Si ya terminÃ³ de escribir y das clic, cerramos la caja y eres libre
         if (box) {
             box.style.display = 'none';
-            // 🛑 EL FIX: Limpiamos la flechita para que no aparezca parpadeando la próxima vez que se abra de golpe
+            // ðŸ›‘ EL FIX: Limpiamos la flechita para que no aparezca parpadeando la prÃ³xima vez que se abra de golpe
             const indicator = document.getElementById('retro-dialog-indicator');
             if (indicator) indicator.style.display = 'none';
         }
@@ -6139,13 +6208,13 @@ function openProfile(targetId, username, offlineData = null) {
     profileTargetId = targetId;
     profileNameDisplay.innerText = username;
 
-    // 🛑 EL FIX ESTRUCTURAL DEFINITIVO PARA LA ROPA 🛑
+    // ðŸ›‘ EL FIX ESTRUCTURAL DEFINITIVO PARA LA ROPA ðŸ›‘
     let targetPlayer;
 
     if (targetId === 'self') {
         targetPlayer = player;
     } else if (targetId === 'offline') {
-        // Creamos un "maniquí" blindado fusionando los datos que llegaron del buscador
+        // Creamos un "maniquÃ­" blindado fusionando los datos que llegaron del buscador
         targetPlayer = {
             accountId: offlineData ? offlineData.accountId : null,
             username: username,
@@ -6157,7 +6226,7 @@ function openProfile(targetId, username, offlineData = null) {
             squadName: offlineData ? offlineData.squadName : null,
             squadLogo: offlineData ? offlineData.squadLogo : null,
 
-            // 🧠 AQUÍ ESTÁ LA MAGIA: Garantizamos que tenga body, head y hat
+            // ðŸ§  AQUÃ ESTÃ LA MAGIA: Garantizamos que tenga body, head y hat
             equipped: {
                 head: (offlineData && offlineData.equipped && offlineData.equipped.head)
                     ? offlineData.equipped.head : (offlineData && offlineData.headId ? offlineData.headId : 'head_default'),
@@ -6169,15 +6238,15 @@ function openProfile(targetId, username, offlineData = null) {
         };
     } else {
         targetPlayer = otherPlayers[targetId] || player;
-        // Escudo extra por si el jugador conectado aún no ha enviado su ropa por la red
+        // Escudo extra por si el jugador conectado aÃºn no ha enviado su ropa por la red
         if (!targetPlayer.equipped) targetPlayer.equipped = { head: 'head_default', body: 'body_default', hat: 'none' };
     }
 
-    // Guardamos el jugador estructurado en la memoria global para la animación 3D
+    // Guardamos el jugador estructurado en la memoria global para la animaciÃ³n 3D
     currentProfileData = targetPlayer;
 
-    // ... (el resto de la función openProfile se queda igual a partir del Rango)
-    // 👇 LUEGO ya podemos leer sus puntos de Elo de forma segura 👇
+    // ... (el resto de la funciÃ³n openProfile se queda igual a partir del Rango)
+    // ðŸ‘‡ LUEGO ya podemos leer sus puntos de Elo de forma segura ðŸ‘‡
     const targetElo = targetPlayer.elo || 1000;
     const rank = getPlayerRank(targetElo);
 
@@ -6229,7 +6298,7 @@ function openProfile(targetId, username, offlineData = null) {
         if (targetId === 'self') {
             coinsDisplay.innerText = player.coins || 0;
         } else {
-            // Ahora usa los datos reales enviados por el servidor si está offline
+            // Ahora usa los datos reales enviados por el servidor si estÃ¡ offline
             coinsDisplay.innerText = targetPlayer.coins || 0;
         }
     }
@@ -6255,10 +6324,10 @@ function openProfile(targetId, username, offlineData = null) {
         profileModal.style.display = 'flex';
     }
 
-    // --- ACTUALIZACIÓN DE VISIBILIDAD REDISEÑO ---
+    // --- ACTUALIZACIÃ“N DE VISIBILIDAD REDISEÃ‘O ---
     const mainActionsDiv = document.getElementById('profile-main-actions');
 
-    // 👇 EL FIX: Declarar todas las variables ANTES de usarlas 👇
+    // ðŸ‘‡ EL FIX: Declarar todas las variables ANTES de usarlas ðŸ‘‡
     const moreOptionsBtn = document.getElementById('toggle-more-options-btn');
     const moreOptionsModal = document.getElementById('more-options-modal');
     const backFromMoreOptions = document.getElementById('back-from-more-options');
@@ -6267,7 +6336,7 @@ function openProfile(targetId, username, offlineData = null) {
     if (targetId === 'self') {
         if (typeof profileOptionsBtn !== 'undefined' && profileOptionsBtn) profileOptionsBtn.style.display = 'block';
         if (mainActionsDiv) mainActionsDiv.style.display = 'none'; // Ocultar botones principales en ti
-        if (moreOptionsBtn) moreOptionsBtn.style.display = 'none'; // Ocultar "Más Opciones" en ti
+        if (moreOptionsBtn) moreOptionsBtn.style.display = 'none'; // Ocultar "MÃ¡s Opciones" en ti
     } else {
         if (typeof profileOptionsBtn !== 'undefined' && profileOptionsBtn) profileOptionsBtn.style.display = 'none';
 
@@ -6278,14 +6347,14 @@ function openProfile(targetId, username, offlineData = null) {
         if (typeof addFriendBtn !== 'undefined' && addFriendBtn) addFriendBtn.style.display = 'block';
 
         // =========================================================
-        // 🛠️ EL FIX DEFINITIVO: DATOS SEGUROS PARA LOS BOTONES
+        // ðŸ› ï¸ EL FIX DEFINITIVO: DATOS SEGUROS PARA LOS BOTONES
         // =========================================================
         // Sacamos el ID y Nombre exacto de nuestra nueva memoria segura
         const targetAccId = currentProfileData.accountId;
         const targetName = currentProfileData.username;
         const isFriend = player.friends && player.friends.includes(targetAccId);
 
-        // --- BOTÓN DE AGREGAR / ELIMINAR AMIGO ---
+        // --- BOTÃ“N DE AGREGAR / ELIMINAR AMIGO ---
         if (typeof addFriendBtn !== 'undefined' && addFriendBtn) {
             addFriendBtn.style.background = "#3498db";
             addFriendBtn.style.border = "none";
@@ -6293,23 +6362,23 @@ function openProfile(targetId, username, offlineData = null) {
 
             // Usamos .onclick en lugar de addEventListener para que no se dupliquen los clics
             if (isFriend) {
-                addFriendBtn.innerText = "❌ Unfriend";
+                addFriendBtn.innerText = "âŒ Unfriend";
                 addFriendBtn.onclick = () => {
                     ws.send(MessagePack.encode({ type: 'remove_friend', targetId: targetAccId }));
                     if (typeof profileModal !== 'undefined') profileModal.style.display = 'none';
                 };
             } else {
-                addFriendBtn.innerText = "➕ Add Friend";
+                addFriendBtn.innerText = "âž• Add Friend";
                 addFriendBtn.onclick = () => {
                     ws.send(MessagePack.encode({ type: 'add_friend', friendAccountId: targetAccId }));
-                    addFriendBtn.innerText = "✓ Sent";
+                    addFriendBtn.innerText = "âœ“ Sent";
                     if (!player.friends) player.friends = [];
                     player.friends.push(targetAccId);
                 };
             }
         }
 
-        // --- BOTÓN DE ENVIAR MENSAJE (CHAT) ---
+        // --- BOTÃ“N DE ENVIAR MENSAJE (CHAT) ---
         if (typeof profileMessageBtn !== 'undefined' && profileMessageBtn) {
             profileMessageBtn.onclick = () => {
                 if (!targetAccId) {
@@ -6318,37 +6387,37 @@ function openProfile(targetId, username, offlineData = null) {
                 }
                 if (typeof profileModal !== 'undefined') profileModal.style.display = 'none';
 
-                lastPmSource = 'profile'; // 💾 ¡AÑADE ESTA LÍNEA! Memorizamos que venimos del perfil
+                lastPmSource = 'profile'; // ðŸ’¾ Â¡AÃ‘ADE ESTA LÃNEA! Memorizamos que venimos del perfil
                 openPMModal(targetAccId, targetName);
             };
         }
 
-        // --- LÓGICA DE MÁS OPCIONES (INVITAR AL SQUAD) ---
+        // --- LÃ“GICA DE MÃS OPCIONES (INVITAR AL SQUAD) ---
         if (moreOptionsBtn && moreOptionsModal) {
             moreOptionsBtn.onclick = () => {
                 if (typeof profileModal !== 'undefined') profileModal.style.display = 'none';
                 moreOptionsModal.style.display = 'flex';
 
                 if (inviteSquadBtn) {
-                    // 🛑 EL FIX: Ocultar el botón si no tienes squad O si no tienes permisos
+                    // ðŸ›‘ EL FIX: Ocultar el botÃ³n si no tienes squad O si no tienes permisos
                     if (!player.squad || !player.squadCanInvite) {
                         inviteSquadBtn.style.display = 'none';
                     } else {
                         inviteSquadBtn.style.display = 'block';
 
-                        // Reiniciar visualmente el botón
-                        inviteSquadBtn.innerText = "🏴‍☠️ Invitar al Clan";
+                        // Reiniciar visualmente el botÃ³n
+                        inviteSquadBtn.innerText = "ðŸ´â€â˜ ï¸ Invitar al Clan";
                         inviteSquadBtn.style.background = "rgba(155, 89, 182, 0.2)";
                         inviteSquadBtn.style.borderColor = "#9b59b6";
                         inviteSquadBtn.style.color = "white";
                         inviteSquadBtn.disabled = false;
 
-                        // Conectamos el botón de invitar
+                        // Conectamos el botÃ³n de invitar
                         inviteSquadBtn.onclick = () => {
                             ws.send(MessagePack.encode({ type: 'send_squad_invite', targetAccountId: targetAccId }));
 
-                            // ⏳ FEEDBACK INMEDIATO
-                            inviteSquadBtn.innerText = "⏳ Enviando...";
+                            // â³ FEEDBACK INMEDIATO
+                            inviteSquadBtn.innerText = "â³ Enviando...";
                             inviteSquadBtn.style.background = "#7f8c8d";
                             inviteSquadBtn.style.borderColor = "#555";
                             inviteSquadBtn.disabled = true; // Bloquea el spam de clics
@@ -6367,9 +6436,9 @@ function openProfile(targetId, username, offlineData = null) {
 
     } // Fin del 'else' (es otro jugador)
 
-    // Finalmente, dibujamos la animación 3D
+    // Finalmente, dibujamos la animaciÃ³n 3D
     drawProfileAnimation();
-} // <--- FIN DE LA FUNCIÓN openProfile
+} // <--- FIN DE LA FUNCIÃ“N openProfile
 
 closeProfile.addEventListener('click', () => {
     isProfileOpen = false;
@@ -6382,7 +6451,7 @@ closeProfile.addEventListener('click', () => {
         document.getElementById('my-squad-modal').style.display = 'flex';
         lastProfileSource = 'game';
     } else if (lastProfileSource === 'squad_member') {
-        // 🛑 EL FIX: Si veníamos de editar a un miembro, abrimos AMBAS ventanas
+        // ðŸ›‘ EL FIX: Si venÃ­amos de editar a un miembro, abrimos AMBAS ventanas
         document.getElementById('my-squad-modal').style.display = 'flex'; // Fondo
         document.getElementById('squad-member-modal').style.display = 'flex'; // Frente
         lastProfileSource = 'game'; // Reseteamos
@@ -6392,7 +6461,7 @@ closeProfile.addEventListener('click', () => {
 profileOptionsBtn.addEventListener('click', () => {
     editNameInput.value = player.username;
     openWardrobe();
-    profileModal.style.display = 'none'; // 🛑 HIDE PROFILE MODAL
+    profileModal.style.display = 'none'; // ðŸ›‘ HIDE PROFILE MODAL
     optionsModal.style.display = 'flex';
 });
 
@@ -6400,7 +6469,7 @@ profileOptionsBtn.addEventListener('click', () => {
 // ---  SISTEMA DEL MODAL DE OPCIONES ---
 // =========================================================
 
-// 1. Lógica de Pestañas (Tabs)
+// 1. LÃ³gica de PestaÃ±as (Tabs)
 const opTabBtns = document.querySelectorAll('.op-tab-btn');
 const opTabContents = document.querySelectorAll('.op-tab-content');
 
@@ -6433,7 +6502,7 @@ closeOptionsModal.addEventListener('click', () => {
     const nameInput = document.getElementById('edit-name-input');
     if (nameInput) {
         const newName = nameInput.value.trim();
-        // Verificamos que no esté vacío y que sea diferente al actual
+        // Verificamos que no estÃ© vacÃ­o y que sea diferente al actual
         if (newName.length > 0 && newName !== player.username) {
             player.username = newName; // Actualizamos localmente
 
@@ -6471,18 +6540,18 @@ closeOptionsModal.addEventListener('click', () => {
 
     // Ocultamos la ventana
     optionsModal.style.display = 'none';
-    // 🛑 RETURN TO PROFILE MODAL
+    // ðŸ›‘ RETURN TO PROFILE MODAL
     if (isProfileOpen) {
         profileModal.style.display = 'flex';
     }
 });
 
-// 3. The Isolated Walking Animation for the UI (CON ROPA Y SOMBRERO DINÁMICO)
+// 3. The Isolated Walking Animation for the UI (CON ROPA Y SOMBRERO DINÃMICO)
 function drawProfileAnimation() {
     prCtx.clearRect(0, 0, profileCanvas.width, profileCanvas.height);
     prCtx.imageSmoothingEnabled = false;
 
-    // 1. ¿A quién estamos inspeccionando? Usamos la memoria exacta que guardó openProfile
+    // 1. Â¿A quiÃ©n estamos inspeccionando? Usamos la memoria exacta que guardÃ³ openProfile
     const targetP = currentProfileData || player;
 
     // 2. Obtener la ropa que lleva puesta
@@ -6490,7 +6559,7 @@ function drawProfileAnimation() {
     const safeSprites = window.loadedItemSprites || {};
     const dynBody = safeSprites[eq.body] || window.bodyImg || window.walkSprite;
     const dynHead = safeSprites[eq.head] || window.headImg;
-    const dynHat = safeSprites[eq.hat]; // 🎩 Extraemos el sombrero
+    const dynHat = safeSprites[eq.hat]; // ðŸŽ© Extraemos el sombrero
 
     if (!dynBody || !dynBody.complete) {
         requestAnimationFrame(drawProfileAnimation);
@@ -6500,7 +6569,7 @@ function drawProfileAnimation() {
     profileAnimFrame = (profileAnimFrame + 0.1) % 8;
     const fX = Math.floor(profileAnimFrame);
 
-    // Fila 8: Caminar desarmado (Hacia abajo = Dirección 0)
+    // Fila 8: Caminar desarmado (Hacia abajo = DirecciÃ³n 0)
     const bodyRow = SKELETON_DATA.states["walk_unarmed"] || 8;
     const headRow = 0;
 
@@ -6523,13 +6592,13 @@ function drawProfileAnimation() {
         drawW, drawH
     );
 
-    // Extraer el bamboleo de la cabeza para el cuadro exacto de la animación
+    // Extraer el bamboleo de la cabeza para el cuadro exacto de la animaciÃ³n
     const fKey = `walk_unarmed_0_${fX}`;
     const rawAnchors = (SKELETON_DATA.anchors && SKELETON_DATA.anchors[fKey]) ? SKELETON_DATA.anchors[fKey] : {};
     const headAnc = rawAnchors.head || [0, 0];
 
     // ==========================================================
-    // 🧠 EL WOBBLE (BAMBOLEO) MATEMÁTICO PARA EL PERFIL
+    // ðŸ§  EL WOBBLE (BAMBOLEO) MATEMÃTICO PARA EL PERFIL
     // ==========================================================
     const WOBBLE_PATTERN = [0, 1, 0, -1, 0, 1, 0, -1];
     const currentWalkFrame = fX % 8;
@@ -6549,7 +6618,7 @@ function drawProfileAnimation() {
         );
     }
 
-    // 5. 🎩 Dibujar SOMBRERO
+    // 5. ðŸŽ© Dibujar SOMBRERO
     if (dynHat && dynHat.complete && dynHat.naturalWidth > 0) {
         const hatFrameH = dynHat.height / 4;
         prCtx.drawImage(
@@ -6560,12 +6629,12 @@ function drawProfileAnimation() {
     }
     // ==========================================================
 
-    // 🛑 EL FIX: Solo pedir el siguiente frame si la ventana sigue abierta
+    // ðŸ›‘ EL FIX: Solo pedir el siguiente frame si la ventana sigue abierta
     if (isProfileOpen) {
         requestAnimationFrame(drawProfileAnimation);
     }
 }
-// --- LÓGICA DEL INBOX Y CHAT PRIVADO ---
+// --- LÃ“GICA DEL INBOX Y CHAT PRIVADO ---
 const inboxModal = document.getElementById('inbox-modal');
 const closeInboxModal = document.getElementById('close-inbox-modal');
 const inboxListContainer = document.getElementById('inbox-list-container');
@@ -6580,13 +6649,13 @@ const profileMessageBtn = document.getElementById('profile-message-btn');
 
 let currentChatTargetId = ""; // AHORA USAMOS EL ID
 let currentChatTargetName = "";
-let currentChatTargetHead = "head_default"; // 👈 NUEVA VARIABLE
+let currentChatTargetHead = "head_default"; // ðŸ‘ˆ NUEVA VARIABLE
 // =========================================================
-// 👕 SISTEMA DE GUARDARROPA (CARRUSEL)
+// ðŸ‘• SISTEMA DE GUARDARROPA (CARRUSEL)
 // =========================================================
 let ownedHeads = [];
 let ownedBodies = [];
-let ownedHats = []; // 🎩 NUEVO
+let ownedHats = []; // ðŸŽ© NUEVO
 let currentHeadIdx = 0;
 let currentBodyIdx = 0;
 let currentHatIdx = 0;
@@ -6594,7 +6663,7 @@ let currentHatIdx = 0;
 function openWardrobe() {
     ownedHeads = ['head_default'];
     ownedBodies = ['body_default'];
-    ownedHats = ['none']; // 🎩 Por defecto puedes no llevar sombrero
+    ownedHats = ['none']; // ðŸŽ© Por defecto puedes no llevar sombrero
 
     const safeCatalog = window.MASTER_CATALOG || {};
 
@@ -6606,7 +6675,7 @@ function openWardrobe() {
             if (catalogItem) {
                 if (catalogItem.category === 'head' && !ownedHeads.includes(itemId)) ownedHeads.push(itemId);
                 if (catalogItem.category === 'body' && !ownedBodies.includes(itemId)) ownedBodies.push(itemId);
-                if (catalogItem.category === 'hat' && !ownedHats.includes(itemId)) ownedHats.push(itemId); // 🎩
+                if (catalogItem.category === 'hat' && !ownedHats.includes(itemId)) ownedHats.push(itemId); // ðŸŽ©
             }
         });
     }
@@ -6638,7 +6707,7 @@ function updateWardrobePreview() {
     const safeSprites = window.loadedItemSprites || {};
     const bImg = safeSprites[bodyId] || window.bodyImg;
     const hImg = safeSprites[headId] || window.headImg;
-    const hatImg = safeSprites[hatId]; // 🎩
+    const hatImg = safeSprites[hatId]; // ðŸŽ©
 
     const frameW = 48; const frameH = 64;
     const zoom = 2;
@@ -6648,7 +6717,7 @@ function updateWardrobePreview() {
     if (bImg && bImg.complete && bImg.naturalWidth > 0) ctx.drawImage(bImg, 0, 0, frameW, frameH, drawX, drawY, frameW * zoom, frameH * zoom);
     if (hImg && hImg.complete && hImg.naturalWidth > 0) ctx.drawImage(hImg, 0, 0, frameW, frameH, drawX, drawY, frameW * zoom, frameH * zoom);
 
-    // 🎩 Dibujar Sombrero en el Carrusel (Fila 0 = Hacia abajo)
+    // ðŸŽ© Dibujar Sombrero en el Carrusel (Fila 0 = Hacia abajo)
     if (hatImg && hatImg.complete && hatImg.naturalWidth > 0) {
         const hHeight = hatImg.height / 4;
         ctx.drawImage(hatImg, 0, 0, frameW, hHeight, drawX, drawY, frameW * zoom, hHeight * zoom);
@@ -6660,7 +6729,7 @@ document.getElementById('head-next').onclick = () => { currentHeadIdx = (current
 document.getElementById('body-prev').onclick = () => { currentBodyIdx = (currentBodyIdx - 1 + ownedBodies.length) % ownedBodies.length; updateWardrobePreview(); };
 document.getElementById('body-next').onclick = () => { currentBodyIdx = (currentBodyIdx + 1) % ownedBodies.length; updateWardrobePreview(); };
 
-// 🎩 Botones del sombrero
+// ðŸŽ© Botones del sombrero
 document.getElementById('hat-prev').onclick = () => { currentHatIdx = (currentHatIdx - 1 + ownedHats.length) % ownedHats.length; updateWardrobePreview(); };
 document.getElementById('hat-next').onclick = () => { currentHatIdx = (currentHatIdx + 1) % ownedHats.length; updateWardrobePreview(); };
 
@@ -6675,14 +6744,14 @@ closeInboxModal.addEventListener('click', () => {
     inboxModal.style.display = 'none';
 });
 
-// BOTÓN "ATRÁS" EN EL CHAT
+// BOTÃ“N "ATRÃS" EN EL CHAT
 backToInboxBtn.addEventListener('click', () => {
     pmModal.style.display = 'none';
 
     currentChatTargetId = "";
     currentChatTargetName = "";
 
-    // 🛑 EL FIX: ¿A dónde regresamos?
+    // ðŸ›‘ EL FIX: Â¿A dÃ³nde regresamos?
     if (lastPmSource === 'profile') {
         // Si vinimos del perfil, reabrimos el perfil
         profileModal.style.display = 'flex';
@@ -6694,7 +6763,7 @@ backToInboxBtn.addEventListener('click', () => {
     }
 });
 
-// ABRIR UN CHAT ESPECÍFICO
+// ABRIR UN CHAT ESPECÃFICO
 function openPMModal(targetAccountId, fallbackName) {
     inboxModal.style.display = 'none';
     currentChatTargetId = targetAccountId;
@@ -6725,7 +6794,7 @@ pmSendBtn.addEventListener('click', sendPM);
 pmInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendPM(); });
 
 // =========================================================
-// 🏭 FÁBRICA UNIVERSAL DE TARJETAS DE JUGADORES (DRY)
+// ðŸ­ FÃBRICA UNIVERSAL DE TARJETAS DE JUGADORES (DRY)
 // =========================================================
 function createPlayerCard(playerData, onClickCallback, inboxData = null) {
     const isAdmin = (playerData.role === 'admin');
@@ -6755,7 +6824,7 @@ function createPlayerCard(playerData, onClickCallback, inboxData = null) {
     avatarDiv.style.background = "rgba(0,0,0,0.3)";
     avatarDiv.style.flexShrink = "0";
 
-    // 🛑 EL FIX DE LA CABEZA: Buscar de forma segura en cualquier formato
+    // ðŸ›‘ EL FIX DE LA CABEZA: Buscar de forma segura en cualquier formato
     const headToDraw = (playerData.equipped && playerData.equipped.head)
         ? playerData.equipped.head
         : (playerData.targetHeadId || playerData.headId || 'head_default');
@@ -6790,7 +6859,7 @@ function createPlayerCard(playerData, onClickCallback, inboxData = null) {
                     <span style="color: #aaa; font-family: sans-serif; font-size: 13px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(inboxData.lastMessage)}</span>
                 `;
     } else {
-        const statusHtml = playerData.isOnline ? `<span style="color: #2ecc71; font-size: 11px;">● Online</span>` : `<span style="color: #777; font-size: 11px;">○ Offline</span>`;
+        const statusHtml = playerData.isOnline ? `<span style="color: #2ecc71; font-size: 11px;">â— Online</span>` : `<span style="color: #777; font-size: 11px;">â—‹ Offline</span>`;
         textDiv.innerHTML = `
                     <div style="display: flex; align-items: center;">
                         <span style="color: ${nameColor}; font-weight: bold; font-family: sans-serif; font-size: 15px;">${escapeHTML(playerData.username)}</span>
@@ -6815,7 +6884,7 @@ function renderInbox(inboxData) {
         return;
     }
 
-    // 📦 LA CAJA INVISIBLE
+    // ðŸ“¦ LA CAJA INVISIBLE
     const fragment = document.createDocumentFragment();
 
     inboxData.forEach(chat => {
@@ -6824,11 +6893,11 @@ function renderInbox(inboxData) {
         fragment.appendChild(card); // Meter a la caja invisible
     });
 
-    // 💥 Pegar la caja de golpe a la pantalla
+    // ðŸ’¥ Pegar la caja de golpe a la pantalla
     inboxListContainer.appendChild(fragment);
 }
 
-// --- HELPERS PARA AVATARES (AHORA USA CABEZAS DINÁMICAS) ---
+// --- HELPERS PARA AVATARES (AHORA USA CABEZAS DINÃMICAS) ---
 function createAvatarCanvas(size = 36, targetAccountId = null) {
     const tCanvas = document.createElement('canvas');
     tCanvas.width = size;
@@ -6836,7 +6905,7 @@ function createAvatarCanvas(size = 36, targetAccountId = null) {
     const tCtx = tCanvas.getContext('2d');
     tCtx.imageSmoothingEnabled = false;
 
-    // 1. Buscar qué cabeza tiene equipada el jugador
+    // 1. Buscar quÃ© cabeza tiene equipada el jugador
     let headId = 'head_default';
     if (targetAccountId === player.accountId) {
         headId = player.equipped?.head || 'head_default';
@@ -6849,7 +6918,7 @@ function createAvatarCanvas(size = 36, targetAccountId = null) {
         }
     }
 
-    // 2. Cargar la imagen del catálogo
+    // 2. Cargar la imagen del catÃ¡logo
     const safeSprites = window.loadedItemSprites || {};
     const dHead = safeSprites[headId] || headImg;
 
@@ -6857,7 +6926,7 @@ function createAvatarCanvas(size = 36, targetAccountId = null) {
     if (dHead && dHead.complete && dHead.naturalWidth > 0) {
         const frameW = FRAME_WIDTH;
         const headFrameH = dHead.height / 4;
-        const zoom = size / 30; // Escala dinámica según el tamaño de la burbuja
+        const zoom = size / 30; // Escala dinÃ¡mica segÃºn el tamaÃ±o de la burbuja
 
         const drawW = frameW * zoom;
         const drawH = headFrameH * zoom;
@@ -6884,7 +6953,7 @@ function formatPMTime(dateString) {
 function renderPMHistory(history) {
     pmHistoryContainer.innerHTML = "";
     if (history.length === 0) {
-        pmHistoryContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 12px; margin-top:20px;">No hay mensajes. ¡Di hola!</div>';
+        pmHistoryContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 12px; margin-top:20px;">No hay mensajes. Â¡Di hola!</div>';
         return;
     }
 
@@ -6901,7 +6970,7 @@ function renderPMHistory(history) {
         row.style.marginBottom = "8px";
 
         // --- 1. MINI AVATAR ---
-        // 👇 EL FIX: Si soy yo, usa mi cabeza. Si es el otro, usa la cabeza que mandó el server.
+        // ðŸ‘‡ EL FIX: Si soy yo, usa mi cabeza. Si es el otro, usa la cabeza que mandÃ³ el server.
         const headToUse = isMe ? (player.equipped?.head || 'head_default') : currentChatTargetHead;
         const avatar = createAvatarCanvas(28, msg.senderId, headToUse);
         avatar.style.borderRadius = "50%"; // Avatar circular para los chats
@@ -6945,7 +7014,7 @@ function renderPMHistory(history) {
         bubbleGroup.appendChild(bubble);
         bubbleGroup.appendChild(timeSpan);
 
-        // Ensamblar la fila: [Burbuja] + [Avatar] si eres tú, o [Avatar] + [Burbuja] si es el otro
+        // Ensamblar la fila: [Burbuja] + [Avatar] si eres tÃº, o [Avatar] + [Burbuja] si es el otro
         if (isMe) {
             row.appendChild(bubbleGroup);
             row.appendChild(avatar);
@@ -6960,17 +7029,17 @@ function renderPMHistory(history) {
     pmHistoryContainer.scrollTop = pmHistoryContainer.scrollHeight;
 }
 
-// 🟢 FUNCIÓN MAESTRA DEL BOTÓN DE RADIO
+// ðŸŸ¢ FUNCIÃ“N MAESTRA DEL BOTÃ“N DE RADIO
 function updateSquadChatButton() {
     const btn = document.getElementById('island-squad-chat-btn');
     if (btn) {
-        // Si player.squad tiene un ID (no es nulo ni vacío), muestra el botón. Si no, lo oculta.
+        // Si player.squad tiene un ID (no es nulo ni vacÃ­o), muestra el botÃ³n. Si no, lo oculta.
         btn.style.display = (player.squad && player.squad !== "null") ? 'flex' : 'none';
     }
 }
 
 // ==========================================
-// 🟢 LÓGICA DEL SQUAD CHAT (RADIO, MENCIONES Y AVATARES)
+// ðŸŸ¢ LÃ“GICA DEL SQUAD CHAT (RADIO, MENCIONES Y AVATARES)
 // ==========================================
 const islandSquadChatBtn = document.getElementById('island-squad-chat-btn');
 const squadNotifBadge = document.getElementById('squad-notif-badge');
@@ -6985,12 +7054,12 @@ const sqChatHeaderName = document.getElementById('sq-chat-header-name');
 const sqChatOnlineCount = document.getElementById('sq-chat-online-count');
 
 let unreadSquadMessages = 0;
-let squadMentionType = 'none'; // 🛑 NUEVO: Guarda si es personal, everyone, important o none
+let squadMentionType = 'none'; // ðŸ›‘ NUEVO: Guarda si es personal, everyone, important o none
 
-// Función para contar jugadores del clan en vivo
+// FunciÃ³n para contar jugadores del clan en vivo
 function updateSquadOnlineCount() {
     if (!player.squad) return;
-    let count = 1; // Tú siempre estás conectado
+    let count = 1; // TÃº siempre estÃ¡s conectado
     for (let id in otherPlayers) {
         if (otherPlayers[id].squad === player.squad) count++;
     }
@@ -7010,7 +7079,7 @@ function buildSquadChatBubble(msg) {
     row.style.gap = "8px";
     row.style.marginBottom = "8px";
 
-    // 1. DIBUJAR EL AVATAR DE QUIEN ENVÍA
+    // 1. DIBUJAR EL AVATAR DE QUIEN ENVÃA
     const avatarCanvas = document.createElement('canvas');
     avatarCanvas.width = 28; avatarCanvas.height = 28;
     avatarCanvas.style.borderRadius = "50%";
@@ -7024,7 +7093,7 @@ function buildSquadChatBubble(msg) {
 
     if (headImg && headImg.complete) {
         const hH = headImg.height / 4;
-        const zoom = 28 / 30; // Escalar al tamaño de la burbuja
+        const zoom = 28 / 30; // Escalar al tamaÃ±o de la burbuja
         setTimeout(() => {
             aCtx.imageSmoothingEnabled = false;
             aCtx.drawImage(headImg, 0, 0, 48, hH, (28 - 48 * zoom) / 2, (28 - hH * zoom) / 2 + 4 * zoom, 48 * zoom, hH * zoom);
@@ -7137,7 +7206,7 @@ if (sqChatSendBtn) sqChatSendBtn.addEventListener('click', executeSquadChatSend)
 if (sqChatInput) sqChatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') executeSquadChatSend(); });
 
 // ==========================================
-// 🧠 MOTOR DE AUTOCOMPLETADO DE MENCIONES
+// ðŸ§  MOTOR DE AUTOCOMPLETADO DE MENCIONES
 // ==========================================
 const sqMentionDropdown = document.getElementById('sq-mention-dropdown');
 
@@ -7147,7 +7216,7 @@ if (sqChatInput) {
         const val = sqChatInput.value;
         const cursorStart = sqChatInput.selectionStart;
 
-        // Cortar el texto hasta donde está el cursor y buscar si la última palabra empieza con @
+        // Cortar el texto hasta donde estÃ¡ el cursor y buscar si la Ãºltima palabra empieza con @
         const textBeforeCursor = val.substring(0, cursorStart);
         const match = textBeforeCursor.match(/@(\w*)$/); // Busca @ seguido de cualquier letra
 
@@ -7159,20 +7228,20 @@ if (sqChatInput) {
         }
     });
 
-    // Si el jugador da clic fuera, ocultar el menú con un micro-retraso para permitir el clic
+    // Si el jugador da clic fuera, ocultar el menÃº con un micro-retraso para permitir el clic
     sqChatInput.addEventListener('blur', () => {
         setTimeout(() => { sqMentionDropdown.style.display = 'none'; }, 200);
     });
 }
 
-// Construir y Mostrar la Lista Dinámica
+// Construir y Mostrar la Lista DinÃ¡mica
 function showMentionDropdown(searchStr, startIndex, endIndex) {
     sqMentionDropdown.innerHTML = '';
 
     // 1. Tags Globales del Sistema
     let candidates = [
-        { name: 'everyone', color: '#e74c3c', desc: 'Notifica a todos', icon: '📢' },
-        { name: 'important', color: '#f39c12', desc: 'Aviso urgente', icon: '⚠️' }
+        { name: 'everyone', color: '#e74c3c', desc: 'Notifica a todos', icon: 'ðŸ“¢' },
+        { name: 'important', color: '#f39c12', desc: 'Aviso urgente', icon: 'âš ï¸' }
     ];
 
     // 2. Jugadores del Clan Online (Escaneando tu mapa local)
@@ -7183,13 +7252,13 @@ function showMentionDropdown(searchStr, startIndex, endIndex) {
                     name: otherPlayers[id].username,
                     color: '#3498db',
                     desc: 'Online',
-                    icon: '🟢'
+                    icon: 'ðŸŸ¢'
                 });
             }
         }
     }
 
-    // 3. Filtrar según lo que escribió el usuario (ej: "@lu" muestra a "Luis")
+    // 3. Filtrar segÃºn lo que escribiÃ³ el usuario (ej: "@lu" muestra a "Luis")
     const filtered = candidates.filter(c => c.name.toLowerCase().includes(searchStr));
 
     if (filtered.length === 0) {
@@ -7220,7 +7289,7 @@ function showMentionDropdown(searchStr, startIndex, endIndex) {
                     <span style="color:#777; font-size:10px; font-weight:bold;">${c.desc}</span>
                 `;
 
-        // Acción al dar clic (Inyectar el nombre al input)
+        // AcciÃ³n al dar clic (Inyectar el nombre al input)
         item.onmousedown = (e) => {
             e.preventDefault(); // Evita perder el foco
             const val = sqChatInput.value;
@@ -7271,8 +7340,8 @@ function renderEquipModal() {
     equipSlotsContainer.innerHTML = "";
     for (let i = 0; i < 3; i++) {
         const slot = document.createElement('div');
-        slot.style.width = "75px";  // 🔥 CAJA MÁS GRANDE
-        slot.style.height = "75px"; // 🔥 CAJA MÁS GRANDE
+        slot.style.width = "75px";  // ðŸ”¥ CAJA MÃS GRANDE
+        slot.style.height = "75px"; // ðŸ”¥ CAJA MÃS GRANDE
         slot.style.background = "rgba(0,0,0,0.3)";
         slot.style.border = "2px solid rgba(255,255,255,0.3)";
         slot.style.borderRadius = "12px";
@@ -7281,18 +7350,18 @@ function renderEquipModal() {
         slot.style.alignItems = "center";
         slot.style.cursor = "pointer";
 
-        // Show what is currently in that slot (DINÁMICO)
+        // Show what is currently in that slot (DINÃMICO)
         const currentSlotItem = player.hotbar[i];
         if (currentSlotItem && currentSlotItem !== "none") {
             const iconElement = getWeaponIcon(currentSlotItem);
             if (iconElement) {
-                iconElement.style.width = "100%"; // 🔥 LLENAR LA CAJA
-                iconElement.style.transform = "scale(1.3)"; // 🔥 APLICAR SUPER ZOOM
+                iconElement.style.width = "100%"; // ðŸ”¥ LLENAR LA CAJA
+                iconElement.style.transform = "scale(1.3)"; // ðŸ”¥ APLICAR SUPER ZOOM
                 slot.appendChild(iconElement);
             }
         } else {
-            slot.innerText = "🔫";
-            slot.style.fontSize = "35px"; // Emoji más grande si está vacío
+            slot.innerText = "ðŸ”«";
+            slot.style.fontSize = "35px"; // Emoji mÃ¡s grande si estÃ¡ vacÃ­o
         }
 
         // Click a slot -> Open the full backpack to fill it!
@@ -7306,7 +7375,7 @@ function renderEquipModal() {
     }
 }
 
-// --- CREADOR DE ÍCONOS DINÁMICO (CUADRADO PERFECTO 64x64) ---
+// --- CREADOR DE ÃCONOS DINÃMICO (CUADRADO PERFECTO 64x64) ---
 function getWeaponIcon(itemId) {
     const stats = weaponsDB[itemId] || WEAPONS[itemId];
     if (!stats) return null;
@@ -7319,7 +7388,7 @@ function getWeaponIcon(itemId) {
         const frameW = 48;
         const frameH = 64;
 
-        // 🛑 EL FIX: Hacemos el lienzo CUADRADO y más grande (64x64)
+        // ðŸ›‘ EL FIX: Hacemos el lienzo CUADRADO y mÃ¡s grande (64x64)
         // Esto nos da espacio libre ("padding") para mover la imagen 
         // sin cortarle la punta a la espada o a la pistola.
         tCanvas.width = 64;
@@ -7338,15 +7407,15 @@ function getWeaponIcon(itemId) {
         let destY = 0;
 
         if (stats.type === 'ranged') {
-            // 🔫 AJUSTES PARA PISTOLAS / ESCOPETAS
+            // ðŸ”« AJUSTES PARA PISTOLAS / ESCOPETAS
             srcY = frameH; // Fila 2 de tu PNG
             destX = 15;    // Empuja a la derecha
             destY = -2;    // Empuja hacia arriba
         } else {
-            // 🗡️ AJUSTES PARA CUERPO A CUERPO (Melee)
+            // ðŸ—¡ï¸ AJUSTES PARA CUERPO A CUERPO (Melee)
             srcY = 0;      // Fila 1 de tu PNG
-            destX = 8;    // 👉 Empuja a la derecha (Cámbialo si le falta más)
-            destY = -8;   // 👆 Empuja hacia arriba (Cámbialo si le falta más)
+            destX = 8;    // ðŸ‘‰ Empuja a la derecha (CÃ¡mbialo si le falta mÃ¡s)
+            destY = -8;   // ðŸ‘† Empuja hacia arriba (CÃ¡mbialo si le falta mÃ¡s)
         }
 
         setTimeout(() => {
@@ -7382,7 +7451,7 @@ function renderInventory() {
     noneSlot.onclick = () => {
         const previousWeapon = player.equippedWeapon;
 
-        // 💾 GUARDAR ESTADO AL VACIAR LAS MANOS
+        // ðŸ’¾ GUARDAR ESTADO AL VACIAR LAS MANOS
         if (previousWeapon !== "none" && WEAPONS[previousWeapon] && WEAPONS[previousWeapon].type === 'ranged') {
             player.weaponAmmo[previousWeapon] = player.ammo;
         }
@@ -7419,15 +7488,15 @@ function renderInventory() {
             const qty = (typeof rawItem === 'object') ? (rawItem.quantity || 1) : 1;
 
             if (itemId && itemId !== "none") {
-                // 1. EL TRUCO MAESTRO: Un solo canvas de tamaño fijo (48x64) para TODOS los items
+                // 1. EL TRUCO MAESTRO: Un solo canvas de tamaÃ±o fijo (48x64) para TODOS los items
                 const canvas = document.createElement('canvas');
-                canvas.width = 48;  // Ancho estándar
-                canvas.height = 64; // Alto estándar (Formato de arma)
+                canvas.width = 48;  // Ancho estÃ¡ndar
+                canvas.height = 64; // Alto estÃ¡ndar (Formato de arma)
                 canvas.style.width = "auto";
                 canvas.style.height = "85%"; // Margen para que respire dentro del slot
                 canvas.style.objectFit = "contain";
                 canvas.style.imageRendering = "pixelated";
-                // 👇 EL NUEVO SCALE: Para que se vea igual de grande que en el HUD 👇
+                // ðŸ‘‡ EL NUEVO SCALE: Para que se vea igual de grande que en el HUD ðŸ‘‡
                 canvas.style.transform = "scale(1.45)";
                 const ctx = canvas.getContext('2d');
                 const isWeapon = weaponsDB[itemId];
@@ -7439,7 +7508,7 @@ function renderInventory() {
                         ctx.imageSmoothingEnabled = false;
 
                         if (isWeapon) {
-                            // LÓGICA ARMAS: Ocupan todo el canvas de 48x64
+                            // LÃ“GICA ARMAS: Ocupan todo el canvas de 48x64
                             const frameH = img.height / 6; // 64
                             let srcY = 0;
                             let destX = 0;
@@ -7452,11 +7521,11 @@ function renderInventory() {
                                 destY = -18;  // Sube el arma
                             }
 
-                            // Dibujamos usando las variables dinámicas
+                            // Dibujamos usando las variables dinÃ¡micas
                             ctx.drawImage(img, 0, srcY, 48, 64, destX, destY, 48, 64);
                         }
                         else if (catalogItem) {
-                            // LÓGICA ITEMS (Basura/Metales): Miden 16x16. 
+                            // LÃ“GICA ITEMS (Basura/Metales): Miden 16x16. 
                             // Los dibujamos exactamente en el centro del canvas de 48x64.
                             const sx = catalogItem.drawConfig?.sx ?? catalogItem.sx ?? 0;
                             const sy = catalogItem.drawConfig?.sy ?? catalogItem.sy ?? 0;
@@ -7489,7 +7558,7 @@ function renderInventory() {
     }
 }
 // =========================================================
-// 🔍 SISTEMA DE INSPECCIÓN DE OBJETOS
+// ðŸ” SISTEMA DE INSPECCIÃ“N DE OBJETOS
 // =========================================================
 
 function openItemInspector(itemId, quantity) {
@@ -7502,18 +7571,18 @@ function openItemInspector(itemId, quantity) {
     const canvas = document.getElementById('item-detail-canvas');
     const ctx = canvas.getContext('2d');
 
-    // 🛑 EL FIX: LIMPIEZA INICIAL DE SEGURIDAD
+    // ðŸ›‘ EL FIX: LIMPIEZA INICIAL DE SEGURIDAD
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     title.innerText = "Cargando..."; // Reset de texto
     statsBox.innerHTML = "";        // Reset de stats
-    btnEquip.style.display = 'none'; // Esconder botón por seguridad
+    btnEquip.style.display = 'none'; // Esconder botÃ³n por seguridad
     btnEquip.disabled = false;
     btnEquip.style.background = "#27ae60";
 
     // Solo muestra el multiplicador
     qtyTxt.innerText = `x${quantity}`;
 
-    // 🛑 EL FIX: Ajuste de posición para armas a distancia en el Inspector
+    // ðŸ›‘ EL FIX: Ajuste de posiciÃ³n para armas a distancia en el Inspector
     if (weaponsDB[itemId]) {
         const w = weaponsDB[itemId];
         title.innerText = w.name;
@@ -7521,7 +7590,7 @@ function openItemInspector(itemId, quantity) {
 
         let typeIcon = w.type === 'ranged' ? 'Ranged' : 'Melee';
 
-        // Inyectamos las píldoras (Badges) con flexbox para que se acomoden solas
+        // Inyectamos las pÃ­ldoras (Badges) con flexbox para que se acomoden solas
         statsBox.innerHTML = `
                     <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
                         <div style="background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); color: #aaa; font-size: 12px;">
@@ -7536,12 +7605,12 @@ function openItemInspector(itemId, quantity) {
                     </div>
                 `;
 
-        // (Este es tu código actual)
+        // (Este es tu cÃ³digo actual)
         btnEquip.style.display = 'block';
         btnEquip.innerText = (player.equippedWeapon === itemId) ? "Equipada" : "Equipar";
         if (player.equippedWeapon === itemId) btnEquip.disabled = true;
 
-        // 👇 PEGA ESTE BLOQUE NUEVO JUSTO AQUÍ 👇
+        // ðŸ‘‡ PEGA ESTE BLOQUE NUEVO JUSTO AQUÃ ðŸ‘‡
         const btnQuickSwap = document.getElementById('btn-quickswap-item');
         if (btnQuickSwap) {
             btnQuickSwap.style.display = 'block';
@@ -7555,7 +7624,7 @@ function openItemInspector(itemId, quantity) {
                 btnQuickSwap.style.boxShadow = "0 4px 0 #8e44ad";
             }
         }
-        // 👆 HASTA AQUÍ 👆
+        // ðŸ‘† HASTA AQUÃ ðŸ‘†
 
         if (loadedWeaponSprites[itemId]) {
             const ws = loadedWeaponSprites[itemId];
@@ -7573,7 +7642,7 @@ function openItemInspector(itemId, quantity) {
                 destY = -8;   // Sube la imagen (Doble del inventario)
             }
 
-            // Mantenemos la resolución alta para que se vea nítido
+            // Mantenemos la resoluciÃ³n alta para que se vea nÃ­tido
             canvas.width = frameW * 2;
             canvas.height = frameH * 2;
 
@@ -7588,21 +7657,21 @@ function openItemInspector(itemId, quantity) {
             }, 0);
         }
     }
-    // 📦 INSPECTOR UNIVERSAL PARA CUALQUIER OTRO OBJETO
+    // ðŸ“¦ INSPECTOR UNIVERSAL PARA CUALQUIER OTRO OBJETO
     else if (window.MASTER_CATALOG[itemId]) {
         const btnQuickSwap = document.getElementById('btn-quickswap-item');
         if (btnQuickSwap) btnQuickSwap.style.display = 'none';
 
-        // 🛑 EL FIX: Sacar el item del catálogo antes de intentar leer su nombre
+        // ðŸ›‘ EL FIX: Sacar el item del catÃ¡logo antes de intentar leer su nombre
         const item = window.MASTER_CATALOG[itemId];
 
         title.innerText = item.name;
-        title.style.color = '#00d2d3'; // Color genérico brillante
+        title.style.color = '#00d2d3'; // Color genÃ©rico brillante
 
-        // Texto dinámico de ambientación según la categoría
+        // Texto dinÃ¡mico de ambientaciÃ³n segÃºn la categorÃ­a
         let loreText = "Un objeto misterioso de este mundo.";
         if (item.category === 'junk') loreText = "Material de desecho recolectado en el mapa.";
-        if (item.category === 'metal') loreText = "Mineral valioso extraído del subsuelo.";
+        if (item.category === 'metal') loreText = "Mineral valioso extraÃ­do del subsuelo.";
         if (item.category === 'food') loreText = "Parece comestible. Recupera salud.";
 
         const itemValue = item.value || item.price || 0;
@@ -7613,7 +7682,7 @@ function openItemInspector(itemId, quantity) {
                             <b>${item.category}</b>
                         </div>
                         <div style="background: rgba(46, 204, 113, 0.15); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(46, 204, 113, 0.3); color: #2ecc71; font-size: 12px;">
-                            Value: <b>${itemValue} 🪙</b>
+                            Value: <b>${itemValue} ðŸª™</b>
                         </div>
                     </div>
                     <div style="color:#95a5a6; font-size: 11px; font-style: italic; line-height: 1.3;">"${loreText}"</div>
@@ -7636,12 +7705,12 @@ function openItemInspector(itemId, quantity) {
             }, 0);
         }
     } else {
-        // 👇 PEGA ESTA LÍNEA AQUÍ 👇
+        // ðŸ‘‡ PEGA ESTA LÃNEA AQUÃ ðŸ‘‡
         const btnQuickSwap = document.getElementById('btn-quickswap-item');
         if (btnQuickSwap) btnQuickSwap.style.display = 'none';
         // Si no es ninguna de las dos
         title.innerText = "Objeto Desconocido";
-        statsBox.innerHTML = `<div style="color:orange;">ID: ${itemId}<br>No se encontró en la base de datos local.</div>`;
+        statsBox.innerHTML = `<div style="color:orange;">ID: ${itemId}<br>No se encontrÃ³ en la base de datos local.</div>`;
     }
 
     modal.style.display = 'flex';
@@ -7651,7 +7720,7 @@ document.getElementById('btn-close-item-detail').onclick = () => {
     document.getElementById('item-detail-modal').style.display = 'none';
 };
 
-// --- EL BOTÓN VERDE DEL INSPECTOR AHORA SE CONECTA A TU HOTBAR ---
+// --- EL BOTÃ“N VERDE DEL INSPECTOR AHORA SE CONECTA A TU HOTBAR ---
 document.getElementById('btn-equip-item').onclick = () => {
     if (ws.readyState === WebSocket.OPEN && currentInspectingItemId) {
 
@@ -7669,7 +7738,7 @@ document.getElementById('btn-equip-item').onclick = () => {
             weaponId: currentInspectingItemId
         }));
 
-        // 4. Cerrar ambos menús (El inspector flotante y la cuadrícula grande)
+        // 4. Cerrar ambos menÃºs (El inspector flotante y la cuadrÃ­cula grande)
         document.getElementById('item-detail-modal').style.display = 'none';
         inventoryModal.style.display = 'none';
     }
@@ -7689,18 +7758,18 @@ function renderHudHotbar() {
             slot.style.boxShadow = "none";
         }
 
-        // --- HUD DINÁMICO ---
+        // --- HUD DINÃMICO ---
         const hudItem = player.hotbar[i];
         if (hudItem && hudItem !== "none") {
             const iconElement = getWeaponIcon(hudItem);
             if (iconElement) {
-                iconElement.style.transform = "scale(1.3)"; // 🔥 Súper Zoom del 150%
+                iconElement.style.transform = "scale(1.3)"; // ðŸ”¥ SÃºper Zoom del 150%
                 iconElement.style.opacity = (player.activeSlot === i && player.equippedWeapon === "none") ? "0.3" : "1";
                 slot.appendChild(iconElement);
             }
         }
 
-        // 👇 LA MAGIA MULTI-TOUCH 👇
+        // ðŸ‘‡ LA MAGIA MULTI-TOUCH ðŸ‘‡
         slot.onpointerdown = (e) => {
             if (e) e.preventDefault(); // Evita que el navegador cancele el toque
 
@@ -7709,10 +7778,10 @@ function renderHudHotbar() {
                 qsMenu.style.display = 'none';
             }
 
-            // 🔊 Memorize what we are holding BEFORE we change it
+            // ðŸ”Š Memorize what we are holding BEFORE we change it
             const previousWeapon = player.equippedWeapon;
 
-            // 💾 GUARDAR EL ESTADO DE LAS BALAS ANTES DE GUARDAR EL ARMA
+            // ðŸ’¾ GUARDAR EL ESTADO DE LAS BALAS ANTES DE GUARDAR EL ARMA
             if (previousWeapon !== "none" && WEAPONS[previousWeapon] && WEAPONS[previousWeapon].type === 'ranged') {
                 player.weaponAmmo[previousWeapon] = player.ammo;
             }
@@ -7735,24 +7804,24 @@ function renderHudHotbar() {
                     player.ammo = Infinity;
                     player.isReloading = false;
                 } else {
-                    // 💾 CARGAR EL ESTADO DE LAS BALAS (Si es un arma nueva, viene llena)
+                    // ðŸ’¾ CARGAR EL ESTADO DE LAS BALAS (Si es un arma nueva, viene llena)
                     if (player.weaponAmmo[player.equippedWeapon] === undefined) {
                         player.weaponAmmo[player.equippedWeapon] = stats.magSize;
                     }
                     player.ammo = player.weaponAmmo[player.equippedWeapon];
 
-                    // Solo recargamos si el arma se guardó vacía
+                    // Solo recargamos si el arma se guardÃ³ vacÃ­a
                     if (player.ammo <= 0) {
                         player.isReloading = true;
                         playItemSound(player.equippedWeapon, 'reload', 0.6);
                         player.reloadTimeout = setTimeout(() => {
                             player.ammo = stats.magSize;
                             if (ws.readyState === WebSocket.OPEN) ws.send(MessagePack.encode({ type: 'reload_weapon', weaponId: player.equippedWeapon }));
-                            player.weaponAmmo[player.equippedWeapon] = stats.magSize; // 💾 Sincronizar memoria
+                            player.weaponAmmo[player.equippedWeapon] = stats.magSize; // ðŸ’¾ Sincronizar memoria
                             player.isReloading = false;
                         }, stats.reloadTime);
                     } else {
-                        player.isReloading = false; // ¡Lista para disparar al instante!
+                        player.isReloading = false; // Â¡Lista para disparar al instante!
                     }
                 }
             } else {
@@ -7774,7 +7843,7 @@ setTimeout(renderHudHotbar, 500); // Slight delay ensures images load first
 
 // --- SHOP MODAL LOGIC ---
 const shopModal = document.getElementById('shop-modal');
-const closeShopModal = document.getElementById('close-shop-modal'); // <--- ¡ESTA ES LA QUE FALTABA!
+const closeShopModal = document.getElementById('close-shop-modal'); // <--- Â¡ESTA ES LA QUE FALTABA!
 const buyItemBtn = document.getElementById('buy-item-btn');
 
 let isShopOpen = false;
@@ -7782,11 +7851,11 @@ let currentShopItemId = null;
 let lastShopTile = null;
 
 // --- NUEVO: CONTROL DEL GIRADOR (SPINNER) ---
-let shopPreviewRotationInterval = null; // Guardará el timer del giro
-let shopPreviewFacingRow = 0; // Guardará hacia dónde mira (0=Down, 1=Left, 2=Right, 3=Up)
+let shopPreviewRotationInterval = null; // GuardarÃ¡ el timer del giro
+let shopPreviewFacingRow = 0; // GuardarÃ¡ hacia dÃ³nde mira (0=Down, 1=Left, 2=Right, 3=Up)
 
 // =========================================================================
-// --- 🛍️ VISUALIZADOR UNIVERSAL DE TIENDA (CORRECCIÓN DE POSTURAS) ---
+// --- ðŸ›ï¸ VISUALIZADOR UNIVERSAL DE TIENDA (CORRECCIÃ“N DE POSTURAS) ---
 // =========================================================================
 
 let shopShotTimer = null;
@@ -7806,26 +7875,26 @@ function drawShopPlayerPreview() {
     const previewZoom = 3;
     let dir = shopPreviewFacingRow;
 
-    // 1. 🔍 DETECCIÓN INTELIGENTE DEL TIPO DE OBJETO
+    // 1. ðŸ” DETECCIÃ“N INTELIGENTE DEL TIPO DE OBJETO
     const catalogData = window.MASTER_CATALOG ? window.MASTER_CATALOG[currentShopItemId] : null;
     const weaponData = weaponsDB[currentShopItemId] || WEAPONS[currentShopItemId];
     const itemData = weaponData || catalogData || {};
 
-    // ¿Es estrictamente un arma o es ropa cosmética?
+    // Â¿Es estrictamente un arma o es ropa cosmÃ©tica?
     const category = itemData.category || (weaponData ? 'weapon' : 'unknown');
     const isWeapon = (category === 'weapon' || weaponData !== undefined);
     const isClothing = !isWeapon;
 
-    // 2. LÓGICA DE ESTADO: Correr armado (4) vs Caminar normal (8)
+    // 2. LÃ“GICA DE ESTADO: Correr armado (4) vs Caminar normal (8)
     const stateKey = isWeapon ? "walk_armed" : "walk_unarmed";
     const baseRow = SKELETON_DATA.states[stateKey] !== undefined ? SKELETON_DATA.states[stateKey] : (isWeapon ? 4 : 8);
     const maxFrames = isWeapon ? 6 : 8;
 
-    // Avanzamos el frame de animación de las piernas
+    // Avanzamos el frame de animaciÃ³n de las piernas
     shopAnimFrame = (shopAnimFrame + 0.1) % maxFrames;
     const frameX = Math.floor(shopAnimFrame);
 
-    // 3. VESTIR AL MANIQUÍ
+    // 3. VESTIR AL MANIQUÃ
     const eq = player.equipped || { head: 'head_default', body: 'body_default', hat: 'none' };
     const safeSprites = window.loadedItemSprites || {};
 
@@ -7858,9 +7927,9 @@ function drawShopPlayerPreview() {
     const headX = offsetX + (headAnc[0] * previewZoom);
     const headY = offsetY + ((headAnc[1] + wobbleY) * previewZoom);
 
-    // 5. DIBUJAR CAPAS (Z-INDEX BÁSICO)
+    // 5. DIBUJAR CAPAS (Z-INDEX BÃSICO)
 
-    // A. DIBUJAR CUERPO (Este sí usa frameX para mover las piernas por la hoja de sprites)
+    // A. DIBUJAR CUERPO (Este sÃ­ usa frameX para mover las piernas por la hoja de sprites)
     if (dynBody && dynBody.complete && dynBody.naturalWidth > 0) {
         pCtx.drawImage(dynBody, frameX * bW, (baseRow + dir) * bH, bW, bH, offsetX, offsetY, bW * previewZoom, bH * previewZoom);
     }
@@ -7877,12 +7946,12 @@ function drawShopPlayerPreview() {
         pCtx.drawImage(dynHat, 0, dir * hatFrameH, bW, hatFrameH, headX, headY, bW * previewZoom, hatFrameH * previewZoom);
     }
 
-    // 6. 🔫 LÓGICA EXCLUSIVA SI SE ESTÁ VENDIENDO UN ARMA
+    // 6. ðŸ”« LÃ“GICA EXCLUSIVA SI SE ESTÃ VENDIENDO UN ARMA
     if (isWeapon) {
         const wData = weaponData || {};
         const wSprite = loadedWeaponSprites[currentShopItemId];
 
-        // Disparo Automático
+        // Disparo AutomÃ¡tico
         const now = Date.now();
         if (now - lastShopShotTime > 1500) {
             lastShopShotTime = now;
@@ -7948,7 +8017,7 @@ function drawShopPlayerPreview() {
 }
 
 // =========================================================================
-// --- 🤖 MOTOR MVVM: TRANSFORMADOR DE ESTADÍSTICAS PARA LA TIENDA ---
+// --- ðŸ¤– MOTOR MVVM: TRANSFORMADOR DE ESTADÃSTICAS PARA LA TIENDA ---
 // =========================================================================
 function buildItemViewModel(itemId) {
     const rawData = WEAPONS[itemId] || window.MASTER_CATALOG[itemId];
@@ -7957,19 +8026,19 @@ function buildItemViewModel(itemId) {
     const viewModel = {
         name: rawData.name || "Objeto Desconocido",
         price: rawData.price || 0,
-        uiStats: [] // Aquí se guardará la lista procesada para el Modal
+        uiStats: [] // AquÃ­ se guardarÃ¡ la lista procesada para el Modal
     };
 
-    // 🛑 EL FIX: Quitamos el "Alcance" para ahorrar espacio
+    // ðŸ›‘ EL FIX: Quitamos el "Alcance" para ahorrar espacio
     const rules = {
-        damage: { label: "Daño", icon: "⚔️", suffix: "" },
-        fireRate: { label: "Cadencia", icon: "⚡", suffix: "ms" },
-        magSize: { label: "Cargador", icon: "🔋", suffix: " bls" },
-        reloadTime: { label: "Recarga", icon: "🔄", suffix: "ms" }
+        damage: { label: "DaÃ±o", icon: "âš”ï¸", suffix: "" },
+        fireRate: { label: "Cadencia", icon: "âš¡", suffix: "ms" },
+        magSize: { label: "Cargador", icon: "ðŸ”‹", suffix: " bls" },
+        reloadTime: { label: "Recarga", icon: "ðŸ”„", suffix: "ms" }
     };
 
-    // LÓGICA RETROCOMPATIBLE: 
-    // Busca adentro de .stats (nueva BD) o directamente en la raíz (vieja BD)
+    // LÃ“GICA RETROCOMPATIBLE: 
+    // Busca adentro de .stats (nueva BD) o directamente en la raÃ­z (vieja BD)
     const statsSource = rawData.stats ? rawData.stats : rawData;
 
     for (const [key, rule] of Object.entries(rules)) {
@@ -7986,17 +8055,17 @@ function buildItemViewModel(itemId) {
 }
 
 function openShopModal(itemId) {
-    // 1. Usamos nuestro transformador mágico
+    // 1. Usamos nuestro transformador mÃ¡gico
     const viewData = buildItemViewModel(itemId);
     if (!viewData) return;
 
     currentShopItemId = itemId;
     const shopItemIsClothing = window.MASTER_CATALOG && window.MASTER_CATALOG[itemId];
 
-    // 2. Llenar los datos básicos
+    // 2. Llenar los datos bÃ¡sicos
     document.getElementById('shop-item-name').innerText = viewData.name;
 
-    // 3. 🛑 EL FIX: RENDERIZADO DINÁMICO VERTICAL
+    // 3. ðŸ›‘ EL FIX: RENDERIZADO DINÃMICO VERTICAL
     const statsContainer = document.getElementById('shop-item-stats-container');
     statsContainer.innerHTML = "";
 
@@ -8004,7 +8073,7 @@ function openShopModal(itemId) {
         statsContainer.style.display = 'flex'; // Activamos el CSS Flexbox vertical del HTML
 
         viewData.uiStats.forEach(stat => {
-            // Genera una "mini tarjeta horizontal" por cada estadística
+            // Genera una "mini tarjeta horizontal" por cada estadÃ­stica
             statsContainer.innerHTML += `
                         <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between;">
                             <span style="color: #aaa; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">${stat.icon} ${stat.label}</span> 
@@ -8013,10 +8082,10 @@ function openShopModal(itemId) {
                     `;
         });
     } else {
-        statsContainer.style.display = 'none'; // Ocultar la caja si es ropa cosmética
+        statsContainer.style.display = 'none'; // Ocultar la caja si es ropa cosmÃ©tica
     }
 
-    // 4. Gestionar el Ícono Agrandado
+    // 4. Gestionar el Ãcono Agrandado
     const iconContainer = document.getElementById('shop-icon-container');
     iconContainer.innerHTML = "";
 
@@ -8049,7 +8118,7 @@ function openShopModal(itemId) {
         iconContainer.appendChild(iconElement);
     }
 
-    // 5. CONFIGURAR EL GIRADOR (SPINNER) AUTOMÁTICO
+    // 5. CONFIGURAR EL GIRADOR (SPINNER) AUTOMÃTICO
     isShopOpen = true;
     shopPreviewFacingRow = 0;
 
@@ -8061,9 +8130,9 @@ function openShopModal(itemId) {
     // 6. Congelar al jugador mientras ve la tienda
     player.vx = 0; player.vy = 0; player.isMoving = false;
 
-    // 7. Configurar Botón de Compra
+    // 7. Configurar BotÃ³n de Compra
     const buyItemBtn = document.getElementById('buy-item-btn');
-    buyItemBtn.innerHTML = ` <span style="font-size: 20px;">🪙</span> <span id="shop-item-price">${viewData.price}</span>`;
+    buyItemBtn.innerHTML = ` <span style="font-size: 20px;">ðŸª™</span> <span id="shop-item-price">${viewData.price}</span>`;
     buyItemBtn.style.background = "#2ecc71";
 
     shopModal.style.display = 'flex';
@@ -8081,7 +8150,7 @@ closeShopModal.addEventListener('click', () => {
 
 buyItemBtn.addEventListener('click', () => {
     if (currentShopItemId && ws.readyState === WebSocket.OPEN) {
-        // Cambiar visualmente el botón para dar feedback
+        // Cambiar visualmente el botÃ³n para dar feedback
         buyItemBtn.innerText = "Procesando...";
         buyItemBtn.style.background = "#f1c40f";
 
@@ -8090,7 +8159,7 @@ buyItemBtn.addEventListener('click', () => {
     }
 });
 
-// --- RECARGA TÁCTICA (MANUAL) ---
+// --- RECARGA TÃCTICA (MANUAL) ---
 const ammoDisplayBox = document.getElementById('ammo-display');
 
 const triggerReload = (e) => {
@@ -8102,7 +8171,7 @@ const triggerReload = (e) => {
         if (stats && player.ammo < stats.magSize) {
             player.isReloading = true;
 
-            // 🔊 NUEVO: Play Reload Sound
+            // ðŸ”Š NUEVO: Play Reload Sound
             playItemSound(player.equippedWeapon, 'reload', 0.6)
 
             if (player.reloadTimeout) clearTimeout(player.reloadTimeout);
@@ -8118,7 +8187,7 @@ const triggerReload = (e) => {
 
 ammoDisplayBox.addEventListener('mousedown', triggerReload);
 ammoDisplayBox.addEventListener('touchstart', triggerReload, { passive: false });
-// --- LÓGICA DE LAS PESTAÑAS DEL MODAL SOCIAL ---
+// --- LÃ“GICA DE LAS PESTAÃ‘AS DEL MODAL SOCIAL ---
 const frTabBtns = document.querySelectorAll('.fr-tab-btn');
 const frTabContents = document.querySelectorAll('.fr-tab-content');
 
@@ -8142,7 +8211,7 @@ frTabBtns.forEach(btn => {
     });
 });
 
-// --- LÓGICA DE LA BÚSQUEDA GLOBAL ---
+// --- LÃ“GICA DE LA BÃšSQUEDA GLOBAL ---
 const searchPlayersInput = document.getElementById('search-players-input');
 const searchResultsContainer = document.getElementById('search-results-container');
 let searchTimeout = null;
@@ -8154,7 +8223,7 @@ if (searchPlayersInput) {
 
         if (text.length >= 3) {
             searchResultsContainer.innerHTML = '<div style="text-align:center; color:#aaa; font-size: 13px; margin-top:10px;">Buscando...</div>';
-            // Esperamos medio segundo después de que deje de escribir para no hacer spam al servidor
+            // Esperamos medio segundo despuÃ©s de que deje de escribir para no hacer spam al servidor
             searchTimeout = setTimeout(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send(MessagePack.encode({ type: 'search_players', query: text }));
@@ -8170,7 +8239,7 @@ if (searchPlayersInput) {
 function renderSearchResults(results) {
     searchResultsContainer.innerHTML = "";
     if (results.length === 0) {
-        searchResultsContainer.innerHTML = '<div style="text-align:center; color:#e74c3c; font-size: 13px; margin-top:10px;">No se encontró a nadie con ese nombre.</div>';
+        searchResultsContainer.innerHTML = '<div style="text-align:center; color:#e74c3c; font-size: 13px; margin-top:10px;">No se encontrÃ³ a nadie con ese nombre.</div>';
         return;
     }
 
@@ -8186,7 +8255,7 @@ function renderSearchResults(results) {
 
         res.isOnline = !!onlineId;
         const card = createPlayerCard(res, () => {
-            lastProfileSource = 'friends'; // 💾 ¡AÑADE ESTA LÍNEA AQUÍ TAMBIÉN!
+            lastProfileSource = 'friends'; // ðŸ’¾ Â¡AÃ‘ADE ESTA LÃNEA AQUÃ TAMBIÃ‰N!
             document.getElementById('friends-modal').style.display = 'none';
             if (onlineId && onlineId !== 'offline') openProfile(onlineId, res.username);
             else {
@@ -8198,7 +8267,7 @@ function renderSearchResults(results) {
     });
 }
 
-// --- LÓGICA DE LA APP DE AMIGOS ---
+// --- LÃ“GICA DE LA APP DE AMIGOS ---
 const appFriends = document.getElementById('app-friends');
 const friendsModal = document.getElementById('friends-modal');
 const closeFriendsModal = document.getElementById('close-friends-modal');
@@ -8206,7 +8275,7 @@ const friendsListContainer = document.getElementById('friends-list-container');
 
 let offlineFriendAccountId = null; // Memoria temporal para poder enviarle PMs a alguien offline
 
-// Abrir la app desde el Menú
+// Abrir la app desde el MenÃº
 appFriends.addEventListener('click', () => {
     hideTrayForModal();
     friendsListContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 14px; margin-top:20px;">Cargando amigos...</div>';
@@ -8228,11 +8297,11 @@ function renderFriendsList(friendsData) {
     container.innerHTML = "";
 
     if (friendsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:20px; font-style:italic;">Tu lista de amigos está vacía.</div>';
+        container.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:20px; font-style:italic;">Tu lista de amigos estÃ¡ vacÃ­a.</div>';
         return;
     }
 
-    // 📦 LA CAJA INVISIBLE
+    // ðŸ“¦ LA CAJA INVISIBLE
     const fragment = document.createDocumentFragment();
 
     friendsData.forEach(friend => {
@@ -8252,11 +8321,11 @@ function renderFriendsList(friendsData) {
         fragment.appendChild(card); // Meter a la caja invisible
     });
 
-    // 💥 Pegar la caja de golpe a la pantalla
+    // ðŸ’¥ Pegar la caja de golpe a la pantalla
     container.appendChild(fragment);
 }
 
-// --- LÓGICA DE SQUADS (FRONTEND) ---
+// --- LÃ“GICA DE SQUADS (FRONTEND) ---
 const openSquadsBtn = document.getElementById('open-squads-btn');
 const squadMainModal = document.getElementById('squad-main-modal');
 const closeSquadMain = document.getElementById('close-squad-main');
@@ -8268,7 +8337,7 @@ const confirmCreateSquad = document.getElementById('confirm-create-squad');
 const newSquadNameInput = document.getElementById('new-squad-name');
 const squadCreateMsg = document.getElementById('squad-create-msg');
 
-// --- LÓGICA DEL LEADERBOARD ---
+// --- LÃ“GICA DEL LEADERBOARD ---
 const btnSquadLeaderboard = document.getElementById('btn-squad-leaderboard');
 const leaderboardModal = document.getElementById('leaderboard-modal');
 const closeLeaderboardModal = document.getElementById('close-leaderboard-modal');
@@ -8291,11 +8360,11 @@ if (btnSquadLeaderboard) {
 if (closeLeaderboardModal) {
     closeLeaderboardModal.addEventListener('click', () => {
         leaderboardModal.style.display = 'none';
-        squadMainModal.style.display = 'flex'; // Volver al menú de Squads
+        squadMainModal.style.display = 'flex'; // Volver al menÃº de Squads
     });
 }
 
-// 2. Lógica de Pestañas
+// 2. LÃ³gica de PestaÃ±as
 lbTabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         lbTabBtns.forEach(b => {
@@ -8311,7 +8380,7 @@ lbTabBtns.forEach(btn => {
         btn.style.fontWeight = 'bold';
 
         activeLbTab = btn.getAttribute('data-target');
-        renderLeaderboard(); // Redibujar con la nueva categoría
+        renderLeaderboard(); // Redibujar con la nueva categorÃ­a
     });
 });
 
@@ -8319,7 +8388,7 @@ lbTabBtns.forEach(btn => {
 function renderLeaderboard() {
     leaderboardContent.innerHTML = "";
 
-    // --- PESTAÑA: EN VIVO (ESTADO DE LAS BASES) ---
+    // --- PESTAÃ‘A: EN VIVO (ESTADO DE LAS BASES) ---
     if (activeLbTab === 'live') {
         if (currentLeaderboardData.liveBases.length === 0) {
             leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">No hay bases activas en el servidor.</div>';
@@ -8332,15 +8401,15 @@ function renderLeaderboard() {
 
             const logoHtml = base.ownerLogo
                 ? `<img src="${base.ownerLogo}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">`
-                : `<div style="width: 40px; height: 40px; background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px;">🏴‍☠️</div>`;
+                : `<div style="width: 40px; height: 40px; background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px;">ðŸ´â€â˜ ï¸</div>`;
 
             leaderboardContent.innerHTML += `
                         <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px;">
-                            <div style="color: #3498db; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🏰 ${base.name}</div>
+                            <div style="color: #3498db; font-weight: bold; font-size: 16px; margin-bottom: 10px;">ðŸ° ${base.name}</div>
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 ${logoHtml}
                                 <div style="flex: 1;">
-                                    <div style="color: #f1c40f; font-weight: bold; font-size: 15px; margin-bottom: 4px;">👑 ${base.owner}</div>
+                                    <div style="color: #f1c40f; font-weight: bold; font-size: 15px; margin-bottom: 4px;">ðŸ‘‘ ${base.owner}</div>
                                     <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden;">
                                         <div style="width: ${hpPct}%; height: 100%; background: ${hpColor};"></div>
                                     </div>
@@ -8352,8 +8421,8 @@ function renderLeaderboard() {
         return;
     }
 
-    // --- PESTAÑAS: DIARIO, SEMANAL, HISTÓRICO ---
-    // Decidir qué campo de la base de datos usar para ordenar
+    // --- PESTAÃ‘AS: DIARIO, SEMANAL, HISTÃ“RICO ---
+    // Decidir quÃ© campo de la base de datos usar para ordenar
     let sortField = 'territoryTimeMinutes';
     if (activeLbTab === 'daily') sortField = 'dailyTimeMinutes';
     if (activeLbTab === 'weekly') sortField = 'weeklyTimeMinutes';
@@ -8365,20 +8434,20 @@ function renderLeaderboard() {
     sortedSquads = sortedSquads.filter(sq => sq[sortField] > 0);
 
     if (sortedSquads.length === 0) {
-        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Nadie ha puntuado en esta categoría aún.</div>';
+        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Nadie ha puntuado en esta categorÃ­a aÃºn.</div>';
         return;
     }
 
     sortedSquads.forEach((sq, index) => {
         let rankColor = "rgba(255,255,255,0.1)";
         let rankText = `#${index + 1}`;
-        if (index === 0) { rankColor = "rgba(241, 196, 15, 0.2)"; rankText = "🥇 1"; }
-        else if (index === 1) { rankColor = "rgba(189, 195, 199, 0.2)"; rankText = "🥈 2"; }
-        else if (index === 2) { rankColor = "rgba(211, 84, 0, 0.2)"; rankText = "🥉 3"; }
+        if (index === 0) { rankColor = "rgba(241, 196, 15, 0.2)"; rankText = "ðŸ¥‡ 1"; }
+        else if (index === 1) { rankColor = "rgba(189, 195, 199, 0.2)"; rankText = "ðŸ¥ˆ 2"; }
+        else if (index === 2) { rankColor = "rgba(211, 84, 0, 0.2)"; rankText = "ðŸ¥‰ 3"; }
 
-        const logoHtml = sq.logo ? `<img src="${sq.logo}" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">` : `🏴‍☠️`;
+        const logoHtml = sq.logo ? `<img src="${sq.logo}" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">` : `ðŸ´â€â˜ ï¸`;
 
-        // Creamos el elemento en lugar de usar += para poder añadirle el onclick
+        // Creamos el elemento en lugar de usar += para poder aÃ±adirle el onclick
         const row = document.createElement('div');
         row.style.cssText = `background: rgba(255,255,255,0.05); border: 1px solid ${rankColor}; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 8px;`;
         row.innerHTML = `
@@ -8392,7 +8461,7 @@ function renderLeaderboard() {
         row.onclick = () => {
             lastSquadMenu = 'leaderboard';
             leaderboardModal.style.display = 'none';
-            // 🛑 EL FIX: Pantalla de carga instantánea
+            // ðŸ›‘ EL FIX: Pantalla de carga instantÃ¡nea
             document.getElementById('my-squad-title').innerText = "Cargando...";
             document.getElementById('squad-members-list').innerHTML = "";
             document.getElementById('my-squad-modal').style.display = 'flex';
@@ -8403,14 +8472,14 @@ function renderLeaderboard() {
     });
 }
 
-// --- LÓGICA DE BÚSQUEDA DE SQUADS ---
+// --- LÃ“GICA DE BÃšSQUEDA DE SQUADS ---
 const btnOpenSearch = document.getElementById('btn-search-squads');
 const searchModal = document.getElementById('squad-search-modal');
 const closeSearchBtn = document.getElementById('close-search-squads');
 const searchInput = document.getElementById('search-squads-input');
 const resultsContainer = document.getElementById('squad-search-results-container');
 
-// Abrir el buscador y cargar la lista inicial (vacía = todos)
+// Abrir el buscador y cargar la lista inicial (vacÃ­a = todos)
 btnOpenSearch.onclick = () => {
     document.getElementById('squad-main-modal').style.display = 'none';
     searchModal.style.display = 'flex';
@@ -8422,7 +8491,7 @@ closeSearchBtn.onclick = () => {
     document.getElementById('squad-main-modal').style.display = 'flex';
 };
 
-// Búsqueda en tiempo real al escribir
+// BÃºsqueda en tiempo real al escribir
 searchInput.oninput = (e) => {
     ws.send(MessagePack.encode({ type: 'search_squads', query: e.target.value }));
 };
@@ -8448,7 +8517,7 @@ function renderSquadSearchResults(results) {
 
         const logoHtml = sq.logo
             ? `<img src="${sq.logo}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">`
-            : `<div style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; justify-content: center; align-items: center;">🏴‍☠️</div>`;
+            : `<div style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; justify-content: center; align-items: center;">ðŸ´â€â˜ ï¸</div>`;
 
         row.innerHTML = `
             ${logoHtml}
@@ -8456,14 +8525,14 @@ function renderSquadSearchResults(results) {
                 <div style="color: #f1c40f; font-weight: bold; font-size: 15px;">${escapeHTML(sq.name)}</div>
                 <div style="color: #777; font-size: 11px;">${sq.memberCount} miembros | ${sq.infamia} min</div>
             </div>
-            <span style="color: #555;">➔</span>
+            <span style="color: #555;">âž”</span>
         `;
 
         // (dentro de renderSquadSearchResults)
         row.onclick = () => {
             lastSquadMenu = 'search';
             document.getElementById('squad-search-modal').style.display = 'none';
-            // 🛑 EL FIX: Pantalla de carga instantánea
+            // ðŸ›‘ EL FIX: Pantalla de carga instantÃ¡nea
             document.getElementById('my-squad-title').innerText = "Cargando...";
             document.getElementById('squad-members-list').innerHTML = "";
             document.getElementById('my-squad-modal').style.display = 'flex';
@@ -8491,13 +8560,13 @@ const squadMembersList = document.getElementById('squad-members-list');
 // 1. Clic en "Mis Squads" -> Pide la LISTA
 btnMySquads.addEventListener('click', () => {
     squadMainModal.style.display = 'none';
-    // 🛑 EL FIX: Pantalla de carga instantánea
+    // ðŸ›‘ EL FIX: Pantalla de carga instantÃ¡nea
     squadsListContainer.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Cargando...</div>';
     squadListModal.style.display = 'flex';
     ws.send(MessagePack.encode({ type: 'get_my_squads_list' }));
 });
 
-// 2. Botón Atrás de la lista
+// 2. BotÃ³n AtrÃ¡s de la lista
 backToSquadMain.addEventListener('click', () => {
     squadListModal.style.display = 'none';
     squadMainModal.style.display = 'flex';
@@ -8512,14 +8581,14 @@ closeMySquad.addEventListener('click', () => {
     } else if (lastSquadMenu === 'list') {
         squadListModal.style.display = 'flex';
     } else if (lastSquadMenu === 'leaderboard') {
-        // 🛑 EL FIX: Regresar al Leaderboard
+        // ðŸ›‘ EL FIX: Regresar al Leaderboard
         document.getElementById('leaderboard-modal').style.display = 'flex';
     } else {
         squadMainModal.style.display = 'flex';
     }
 });
 // =========================================================
-// --- 🛡️ DIBUJAR CUADRÍCULA DE MIEMBROS DEL SQUAD ---
+// --- ðŸ›¡ï¸ DIBUJAR CUADRÃCULA DE MIEMBROS DEL SQUAD ---
 // =========================================================
 function renderSquadGrid(sq) {
     const container = document.getElementById('squad-members-list');
@@ -8533,11 +8602,11 @@ function renderSquadGrid(sq) {
     const defaultHead = window.headImg;
 
     const allMembers = [
-        { ...sq.leader, isLeader: true, title: "👑 Líder" },
+        { ...sq.leader, isLeader: true, title: "ðŸ‘‘ LÃ­der" },
         ...sq.members
     ];
 
-    // 📦 LA CAJA INVISIBLE
+    // ðŸ“¦ LA CAJA INVISIBLE
     const fragment = document.createDocumentFragment();
 
     allMembers.forEach(member => {
@@ -8583,7 +8652,7 @@ function renderSquadGrid(sq) {
         card.appendChild(canvas);
         card.appendChild(nameLabel);
 
-        // 🔥 En lugar de mandarlo al DOM real, lo metemos al Fragment
+        // ðŸ”¥ En lugar de mandarlo al DOM real, lo metemos al Fragment
         fragment.appendChild(card);
 
         const ctx = canvas.getContext('2d');
@@ -8635,7 +8704,7 @@ function renderSquadGrid(sq) {
         };
     });
 
-    // 💥 Pegar la cuadrícula entera con sus 25 cabezas de 1 solo golpe
+    // ðŸ’¥ Pegar la cuadrÃ­cula entera con sus 25 cabezas de 1 solo golpe
     container.appendChild(fragment);
 }
 function createSquadMemberRow(name, title, isLeader) {
@@ -8668,7 +8737,7 @@ function createSquadMemberRow(name, title, isLeader) {
     return row;
 }
 
-// Abrir/Cerrar Menú Principal
+// Abrir/Cerrar MenÃº Principal
 if (openSquadsBtn) {
     openSquadsBtn.addEventListener('click', () => {
         hideTrayForModal();
@@ -8688,13 +8757,13 @@ btnCreateSquad.addEventListener('click', () => {
     squadCreateMsg.innerText = ""; // Limpiar errores pasados
     newSquadNameInput.value = "";
 });
-// Cerrar Ventana de "Crear" y regresar al Menú Principal
+// Cerrar Ventana de "Crear" y regresar al MenÃº Principal
 closeCreateSquad.addEventListener('click', () => {
     squadCreateModal.style.display = 'none';
-    squadMainModal.style.display = 'flex'; // <--- 🌟 ESTA ES LA LÍNEA MÁGICA
+    squadMainModal.style.display = 'flex'; // <--- ðŸŒŸ ESTA ES LA LÃNEA MÃGICA
 });
 
-// Botón de Confirmar Creación
+// BotÃ³n de Confirmar CreaciÃ³n
 confirmCreateSquad.addEventListener('click', () => {
     const squadName = newSquadNameInput.value.trim();
     const squadLogo = document.getElementById('new-squad-logo').value.trim(); // <--- ATRAPA EL LOGO
@@ -8704,11 +8773,11 @@ confirmCreateSquad.addEventListener('click', () => {
         return;
     }
     confirmCreateSquad.innerText = "Creando...";
-    // SE LO ENVÍA AL SERVIDOR
+    // SE LO ENVÃA AL SERVIDOR
     ws.send(MessagePack.encode({ type: 'create_squad', squadName: squadName, logo: squadLogo }));
 });
 
-// --- LÓGICA DE EDITAR SQUAD ---
+// --- LÃ“GICA DE EDITAR SQUAD ---
 const squadEditModal = document.getElementById('squad-edit-modal');
 const closeEditSquad = document.getElementById('close-edit-squad');
 const confirmEditSquad = document.getElementById('confirm-edit-squad');
@@ -8720,10 +8789,10 @@ let originalSquadName = ""; // Para saber si le cobramos o no
 
 closeEditSquad.addEventListener('click', () => squadEditModal.style.display = 'none');
 
-// Efecto visual: si cambia el nombre, el botón cambia de texto
+// Efecto visual: si cambia el nombre, el botÃ³n cambia de texto
 editSquadNameInput.addEventListener('input', () => {
     if (editSquadNameInput.value.trim() !== originalSquadName) {
-        confirmEditSquad.innerText = "Guardar Cambios (Cuesta 350 🪙)";
+        confirmEditSquad.innerText = "Guardar Cambios (Cuesta 350 ðŸª™)";
     } else {
         confirmEditSquad.innerText = "Guardar Logo (Gratis)";
     }
@@ -8781,7 +8850,7 @@ function openSquadMemberModal(member, squad) {
     const iCanKick = amILeader || (myMemberData && myMemberData.canKick);
 
     document.getElementById('sm-name').innerText = member.name || "Desconocido";
-    // ✅ EL FIX CORRECTO (Usando tu Catálogo Maestro):
+    // âœ… EL FIX CORRECTO (Usando tu CatÃ¡logo Maestro):
     const headId = (member.equipped && member.equipped.head) ? member.equipped.head : 'head_default';
     const headItem = MASTER_CATALOG[headId];
     const canvas = document.getElementById('sm-head-canvas');
@@ -8798,12 +8867,12 @@ function openSquadMemberModal(member, squad) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.imageSmoothingEnabled = false;
 
-        // El recorte maestro (Igual que en la cuadrícula del Squad)
+        // El recorte maestro (Igual que en la cuadrÃ­cula del Squad)
         const sourceX = 12;
         const sourceY = 12;
         const cropSize = 24;
 
-        // Dibujamos el recorte ocupando los 64x64 píxeles del Canvas
+        // Dibujamos el recorte ocupando los 64x64 pÃ­xeles del Canvas
         ctx.drawImage(
             img,
             sourceX, sourceY, cropSize, cropSize,
@@ -8811,7 +8880,7 @@ function openSquadMemberModal(member, squad) {
         );
     };
 
-    // Dibujar si ya descargó, o esperar a que cargue
+    // Dibujar si ya descargÃ³, o esperar a que cargue
     if (hImg && hImg.complete && hImg.naturalWidth > 0) {
         drawHead(hImg);
     } else if (hImg) {
@@ -8829,7 +8898,7 @@ function openSquadMemberModal(member, squad) {
     chkKick.checked = member.canKick || false;
     chkAssign.checked = member.canAssignRoles || false;
 
-    // 2. Bloquear inputs si no tengo permisos o si es el líder
+    // 2. Bloquear inputs si no tengo permisos o si es el lÃ­der
     const isEditingLeader = member.isLeader || (squad.leader.id === member.accountId);
     const canIEditThisPerson = iCanAssignRoles && !isEditingLeader;
 
@@ -8838,17 +8907,17 @@ function openSquadMemberModal(member, squad) {
     chkKick.disabled = !canIEditThisPerson;
     chkAssign.disabled = !canIEditThisPerson;
 
-    // 3. Botón de Expulsar
+    // 3. BotÃ³n de Expulsar
     kickBtn.style.display = (iCanKick && !isEditingLeader && member.accountId !== player.accountId) ? 'block' : 'none';
 
     squadMemberModal.style.display = 'flex';
 }
 
 // ==========================================
-// 💾 FUNCIÓN DE AUTO-GUARDADO (SIN BOTÓN)
+// ðŸ’¾ FUNCIÃ“N DE AUTO-GUARDADO (SIN BOTÃ“N)
 // ==========================================
 function autoSaveSquadMember() {
-    // Solo guarda si el modal está abierto y tenemos a alguien seleccionado
+    // Solo guarda si el modal estÃ¡ abierto y tenemos a alguien seleccionado
     if (!currentEditingMember || squadMemberModal.style.display === 'none') return;
 
     ws.send(MessagePack.encode({
@@ -8861,14 +8930,14 @@ function autoSaveSquadMember() {
     }));
 }
 
-// Los "Triggers": Guardan al hacer clic en un checkbox, o al terminar de escribir el Título
+// Los "Triggers": Guardan al hacer clic en un checkbox, o al terminar de escribir el TÃ­tulo
 document.getElementById('sm-title').addEventListener('change', autoSaveSquadMember);
 document.getElementById('sm-can-invite').addEventListener('change', autoSaveSquadMember);
 document.getElementById('sm-can-kick').addEventListener('change', autoSaveSquadMember);
 document.getElementById('sm-can-assign').addEventListener('change', autoSaveSquadMember);
 
 // ==========================================
-// 👁️ BOTÓN DE VER PERFIL (CON NAVEGACIÓN)
+// ðŸ‘ï¸ BOTÃ“N DE VER PERFIL (CON NAVEGACIÃ“N)
 // ==========================================
 document.getElementById('sm-profile-btn').onclick = () => {
     if (!currentEditingMember) return;
@@ -8878,7 +8947,7 @@ document.getElementById('sm-profile-btn').onclick = () => {
 
     lastProfileSource = 'squad_member';
 
-    // 🛑 EL FIX DEFINITIVO DE IDENTIDAD
+    // ðŸ›‘ EL FIX DEFINITIVO DE IDENTIDAD
     if (currentEditingMember.accountId === player.accountId) {
         openProfile('self', player.username);
     } else {
@@ -8892,20 +8961,20 @@ document.getElementById('sm-profile-btn').onclick = () => {
 };
 
 // ==========================================
-// ❌ CERRAR MODAL
+// âŒ CERRAR MODAL
 // ==========================================
 document.getElementById('close-squad-member').onclick = () => {
-    // Forzamos un último autoguardado rápido por si editó texto y le dio rápido a la X sin deseleccionar la caja
+    // Forzamos un Ãºltimo autoguardado rÃ¡pido por si editÃ³ texto y le dio rÃ¡pido a la X sin deseleccionar la caja
     autoSaveSquadMember();
     squadMemberModal.style.display = 'none';
     currentEditingMember = null;
 };
 
-// --- LÓGICA DE LA APP SKELETON (SKEL) ---
+// --- LÃ“GICA DE LA APP SKELETON (SKEL) ---
 const appSkelIcon = document.getElementById('app-skel');
 if (appSkelIcon) {
     appSkelIcon.addEventListener('click', () => {
-        // 2. Abre el editor y actualiza la previsualización
+        // 2. Abre el editor y actualiza la previsualizaciÃ³n
         document.getElementById('skeleton-editor').style.display = 'flex';
         updateSkelPreview();
     });
@@ -8914,7 +8983,7 @@ const closeSkelBtn = document.querySelector('#skel-drag-handle button');
 if (closeSkelBtn) {
     closeSkelBtn.onclick = () => {
         document.getElementById('skeleton-editor').style.display = 'none';
-        restoreTrayAfterModal(); // 🌟 MAGIA
+        restoreTrayAfterModal(); // ðŸŒŸ MAGIA
     };
 }
 
@@ -8928,17 +8997,17 @@ let previewSwingStart = 0;
 // --- VARIABLES DEL SPRITE PICKER ---
 let isPickingAccessory = false; // false = Mano (Cuerpo), true = Accesorio (Arma)
 
-// Lógica del botón Toggle
+// LÃ³gica del botÃ³n Toggle
 const btnToggleSheet = document.getElementById('btn-toggle-sheet');
 if (btnToggleSheet) {
     btnToggleSheet.onclick = () => {
         isPickingAccessory = !isPickingAccessory;
-        btnToggleSheet.innerText = isPickingAccessory ? "🦴 Ver Hoja de Cuerpo" : "⚔️ Ver Hoja de Arma";
+        btnToggleSheet.innerText = isPickingAccessory ? "ðŸ¦´ Ver Hoja de Cuerpo" : "âš”ï¸ Ver Hoja de Arma";
         drawSpriteSheetGrid();
     };
 }
 
-// 1. DIBUJAR LA CUADRÍCULA (INTELIGENTE)
+// 1. DIBUJAR LA CUADRÃCULA (INTELIGENTE)
 function drawSpriteSheetGrid() {
     const ssCanvas = document.getElementById('spritesheet-canvas');
     if (!ssCanvas) return;
@@ -9022,7 +9091,7 @@ if (ssCanvasEl) {
     });
 }
 
-// Función auxiliar para cambiar UI
+// FunciÃ³n auxiliar para cambiar UI
 function switchGaniTab(tab, color, title, instructions) {
     currentGaniTab = tab;
     document.getElementById('tab-skel-body').style.background = tab === 'body' ? '#9b59b6' : 'rgba(0,0,0,0.5)';
@@ -9040,12 +9109,12 @@ function switchGaniTab(tab, color, title, instructions) {
     document.getElementById('save-skel-btn').style.background = color;
     document.getElementById('save-skel-btn').style.boxShadow = `0 4px 0 ${color}`;
 
-    // Cargar datos al entrar a la pestaña Melee
+    // Cargar datos al entrar a la pestaÃ±a Melee
     if (tab === 'melee') {
         const wId = player.equippedWeapon;
         const stats = weaponsDB[wId];
 
-        // --- MOSTRAR/OCULTAR BOTÓN DE HOJA DE ARMA ---
+        // --- MOSTRAR/OCULTAR BOTÃ“N DE HOJA DE ARMA ---
         const tBtn = document.getElementById('btn-toggle-sheet');
         if (tBtn) {
             if (tab === 'melee') {
@@ -9053,35 +9122,35 @@ function switchGaniTab(tab, color, title, instructions) {
             } else {
                 tBtn.style.display = 'none';
                 isPickingAccessory = false; // Resetear al cuerpo por seguridad
-                tBtn.innerText = "⚔️ Ver Hoja de Arma";
+                tBtn.innerText = "âš”ï¸ Ver Hoja de Arma";
             }
         }
 
-        // Si es melee, cargamos los datos basados en la dirección actual
+        // Si es melee, cargamos los datos basados en la direcciÃ³n actual
         loadMeleeSlidersForDirection(player.frameY);
     }
-    // 👇 AÑADE ESTO: Para que dibuje la cuadrícula grande del cuerpo
+    // ðŸ‘‡ AÃ‘ADE ESTO: Para que dibuje la cuadrÃ­cula grande del cuerpo
     if (tab === 'body') {
         setTimeout(drawSpriteSheetGrid, 50); // El setTimeout le da tiempo al HTML de abrirse
     }
     updateSkelPreview();
 }
-// Ocultar o mostrar el botón Toggle de la hoja de sprites
+// Ocultar o mostrar el botÃ³n Toggle de la hoja de sprites
 const tBtn = document.getElementById('btn-toggle-sheet');
 if (tBtn) {
-    if (currentGaniTab === 'melee') { // 🛑 EL FIX: Usar currentGaniTab
+    if (currentGaniTab === 'melee') { // ðŸ›‘ EL FIX: Usar currentGaniTab
         tBtn.style.display = 'inline-block';
     } else {
         tBtn.style.display = 'none';
         isPickingAccessory = false; // Resetear siempre al cuerpo
-        tBtn.innerText = "⚔️ Ver Hoja de Arma";
+        tBtn.innerText = "âš”ï¸ Ver Hoja de Arma";
     }
 }
-document.getElementById('tab-skel-body').onclick = () => switchGaniTab('body', '#9b59b6', '💾 Guardar Esqueleto', "Arrastra el <b>Punto Azul</b> a la mano del jugador.");
-document.getElementById('tab-skel-weapon').onclick = () => switchGaniTab('weapon', '#e74c3c', '💾 Guardar Pivote de Arma', "Arrastra el <b>Punto Rojo</b> al mango de la pistola.");
-document.getElementById('tab-skel-melee').onclick = () => switchGaniTab('melee', '#e67e22', '💾 Guardar Hitbox y Animación', "Ajusta los <b>Slidres</b> para definir el área de daño (Rojo).");
+document.getElementById('tab-skel-body').onclick = () => switchGaniTab('body', '#9b59b6', 'ðŸ’¾ Guardar Esqueleto', "Arrastra el <b>Punto Azul</b> a la mano del jugador.");
+document.getElementById('tab-skel-weapon').onclick = () => switchGaniTab('weapon', '#e74c3c', 'ðŸ’¾ Guardar Pivote de Arma', "Arrastra el <b>Punto Rojo</b> al mango de la pistola.");
+document.getElementById('tab-skel-melee').onclick = () => switchGaniTab('melee', '#e67e22', 'ðŸ’¾ Guardar Hitbox y AnimaciÃ³n', "Ajusta los <b>Slidres</b> para definir el Ã¡rea de daÃ±o (Rojo).");
 
-// 1. Añadimos sl-wz, sl-hz, sl-az
+// 1. AÃ±adimos sl-wz, sl-hz, sl-az
 const sliders = [
     'sl-hitx', 'sl-hity', 'sl-hitrot', 'sl-hitlen', 'sl-hitwid',
     'sl-wz', 'sl-wx', 'sl-wy', 'sl-wrot', 'sl-wswg',
@@ -9092,14 +9161,14 @@ const sliders = [
 sliders.forEach(id => {
     const sliderEl = document.getElementById(id);
 
-    // 🛑 EL ESCUDO: Si el slider no existe en el HTML, lo ignoramos silenciosamente
+    // ðŸ›‘ EL ESCUDO: Si el slider no existe en el HTML, lo ignoramos silenciosamente
     if (!sliderEl) return;
 
     sliderEl.addEventListener('input', () => {
         const val = sliderEl.value;
         const labelEl = document.getElementById('val-' + id.split('-')[1]);
 
-        // 🛑 EL ESCUDO 2: Actualizamos el texto solo si la etiqueta visual existe
+        // ðŸ›‘ EL ESCUDO 2: Actualizamos el texto solo si la etiqueta visual existe
         if (labelEl) labelEl.innerText = val;
 
         const wId = player.equippedWeapon;
@@ -9138,12 +9207,12 @@ function updateMeleeLabels() {
     document.getElementById('val-arot').innerText = document.getElementById('sl-arot').value;
 }
 
-// 3. RECARGAR SLIDERS Y ACTUALIZAR ETIQUETA DE DIRECCIÓN
+// 3. RECARGAR SLIDERS Y ACTUALIZAR ETIQUETA DE DIRECCIÃ“N
 let currentEditDir = 0;
 // 2. Cargar datos al cambiar de lado (WASD)
 function loadMeleeSlidersForDirection(dir) {
     currentEditDir = dir;
-    // 🛑 EL FIX: Nuevo orden de los textos en el editor
+    // ðŸ›‘ EL FIX: Nuevo orden de los textos en el editor
     const dirNames = { 0: "ABAJO (0)", 1: "IZQUIERDA (1)", 2: "DERECHA (2)", 3: "ARRIBA (3)" };
     const dirIndicator = document.getElementById('dir-indicator');
     if (dirIndicator) dirIndicator.innerText = `Modificando: ${dirNames[dir]}`;
@@ -9152,7 +9221,7 @@ function loadMeleeSlidersForDirection(dir) {
     if (wId !== "none" && weaponsDB[wId] && weaponsDB[wId].dirStats) {
         const d = weaponsDB[wId].dirStats[dir] || weaponsDB[wId].dirStats[0] || {};
 
-        // 🛑 EL ESCUDO ANTI-CRASH 🛑
+        // ðŸ›‘ EL ESCUDO ANTI-CRASH ðŸ›‘
         const setVal = (id, val) => {
             const slider = document.getElementById('sl-' + id);
             const label = document.getElementById('val-' + id);
@@ -9174,8 +9243,8 @@ function loadMeleeSlidersForDirection(dir) {
     }
 }
 
-// --- BOTÓN DE PROBAR ANIMACIÓN INTELIGENTE ---
-// 🛑 EL FIX: Usar el nombre original de tu botón (btn-preview-swing)
+// --- BOTÃ“N DE PROBAR ANIMACIÃ“N INTELIGENTE ---
+// ðŸ›‘ EL FIX: Usar el nombre original de tu botÃ³n (btn-preview-swing)
 document.getElementById('btn-preview-swing').onclick = () => {
     const wId = player.equippedWeapon;
     if (wId !== "none" && weaponsDB[wId]) {
@@ -9204,7 +9273,7 @@ function animatePreview() {
         updateSkelPreview(); // Reset a postura normal
     }
 }
-// 💥 VARIABLES GLOBALES PARA EL PREVIEW DE ANIMACIONES 💥
+// ðŸ’¥ VARIABLES GLOBALES PARA EL PREVIEW DE ANIMACIONES ðŸ’¥
 let testAnimPlaying = false;
 let testAnimStart = 0;
 
@@ -9214,7 +9283,7 @@ function updateSkelPreview() {
     const centerX = 128 - ((FRAME_WIDTH / 2) * zoom);
     const centerY = 128 - ((FRAME_HEIGHT / 2) * zoom);
 
-    // Fondo y cuadrícula
+    // Fondo y cuadrÃ­cula
     skelCtx.fillStyle = "#1a1a1a"; skelCtx.fillRect(0, 0, 256, 256);
     skelCtx.strokeStyle = "#333"; skelCtx.lineWidth = 1;
     for (let i = 0; i < 256; i += 12) {
@@ -9248,7 +9317,7 @@ function updateSkelPreview() {
         const handGizmoY = centerY + (anchors.handR[1] * zoom) + ((FRAME_HEIGHT / 2) * zoom);
         drawGizmo(handGizmoX, handGizmoY, '#3498db');
 
-        // --- DIBUJAR ARMA DE PREVISUALIZACIÓN EN LA MANO ---
+        // --- DIBUJAR ARMA DE PREVISUALIZACIÃ“N EN LA MANO ---
         if (testWeapon !== "none" && loadedWeaponSprites[testWeapon]) {
             const wSprite = loadedWeaponSprites[testWeapon];
             const wStats = weaponsDB[testWeapon] || {};
@@ -9257,7 +9326,7 @@ function updateSkelPreview() {
             const wW = wSprite.width / 8; const wH = wSprite.height / 6;
 
             skelCtx.save();
-            // 🛑 EL FIX: Usar exactamente la posición calculada del Gizmo Azul para anclar el arma
+            // ðŸ›‘ EL FIX: Usar exactamente la posiciÃ³n calculada del Gizmo Azul para anclar el arma
             skelCtx.translate(handGizmoX, handGizmoY);
             skelCtx.globalAlpha = 0.7;
             skelCtx.drawImage(wSprite, 0, 0, wW, wH, -pX - (wW * zoom / 2), -pY - (wH * zoom / 2), wW * zoom, wH * zoom);
@@ -9274,13 +9343,13 @@ function updateSkelPreview() {
             const pivotX = stats.pivotX || 0; const pivotY = stats.pivotY || 0;
             drawGizmo(128 + (pivotX * zoom), 128 + (pivotY * zoom), '#e74c3c');
         } else {
-            skelCtx.fillStyle = "white"; skelCtx.fillText("Equípate un arma primero", 100, 128);
+            skelCtx.fillStyle = "white"; skelCtx.fillText("EquÃ­pate un arma primero", 100, 128);
         }
     }
     // --- MODO 3: MELEE HITBOX (CAPAS Z-INDEX) ---
     else if (currentGaniTab === 'melee') {
         if (testWeapon === "none" || !loadedWeaponSprites[testWeapon]) {
-            skelCtx.fillStyle = "white"; skelCtx.fillText("Equípate un arma primero", 100, 128); return;
+            skelCtx.fillStyle = "white"; skelCtx.fillText("EquÃ­pate un arma primero", 100, 128); return;
         }
 
         const dir = player.frameY; const frame = player.frameX;
@@ -9288,7 +9357,7 @@ function updateSkelPreview() {
 
         if (dir !== currentEditDir) loadMeleeSlidersForDirection(dir);
 
-        // 🔥 FIX A PRUEBA DE BALAS PARA ANCLAS EN EL EDITOR 🔥
+        // ðŸ”¥ FIX A PRUEBA DE BALAS PARA ANCLAS EN EL EDITOR ðŸ”¥
         const fKey = getFrameKey(state, dir, frame);
         const rawAnchors = SKELETON_DATA.anchors[fKey] || {};
         const headAnc = rawAnchors.head || [0, 0];
@@ -9301,10 +9370,10 @@ function updateSkelPreview() {
         const d = weaponsDB[testWeapon].dirStats ? (weaponsDB[testWeapon].dirStats[dir] || {}) : {};
         const wSprite = loadedWeaponSprites[testWeapon];
 
-        // --- ROTACIÓN MATEMÁTICA AUTOMÁTICA (SOLO PARA MELEE) ---
+        // --- ROTACIÃ“N MATEMÃTICA AUTOMÃTICA (SOLO PARA MELEE) ---
         let aimAngle = 0; let dirMult = 1;
 
-        // Si NO es ranged (ej. es una espada), aplicamos la rotación forzada
+        // Si NO es ranged (ej. es una espada), aplicamos la rotaciÃ³n forzada
         if (weaponsDB[testWeapon] && weaponsDB[testWeapon].type !== 'ranged') {
             if (dir === 0) aimAngle = Math.PI / 2;
             else if (dir === 1) { aimAngle = Math.PI; dirMult = -1; }
@@ -9322,10 +9391,10 @@ function updateSkelPreview() {
         if (isPreviewSwinging) currentAnimRot += (d.wSwg || 90) * ((Date.now() - previewSwingStart) / 200);
         const totalWeaponRot = aimAngle + (currentAnimRot * dirMult * Math.PI / 180);
 
-        // --- 🍕 DIBUJAR HITBOX O PUNTA DEL CAÑÓN ---
+        // --- ðŸ• DIBUJAR HITBOX O PUNTA DEL CAÃ‘Ã“N ---
         skelCtx.save();
 
-        // 🛑 EL FIX: Usamos 128 (El pecho) en lugar de centerX/Y (La esquina superior)
+        // ðŸ›‘ EL FIX: Usamos 128 (El pecho) en lugar de centerX/Y (La esquina superior)
         skelCtx.translate(128 + ((d.hitX || 0) * zoom), 128 + ((d.hitY || 0) * zoom));
 
         if (weaponsDB[testWeapon] && weaponsDB[testWeapon].type === 'ranged') {
@@ -9337,7 +9406,7 @@ function updateSkelPreview() {
             skelCtx.fillStyle = "white"; skelCtx.font = "10px sans-serif";
             skelCtx.fillText("Bala", 6, 4);
         } else {
-            // Si es Melee, dibujamos el cono de daño
+            // Si es Melee, dibujamos el cono de daÃ±o
             const trueHitAngle = aimAngle + ((d.hitRot || 0) * dirMult * Math.PI / 180);
             const halfWidRad = ((d.hitWid || 60) / 2) * Math.PI / 180;
             skelCtx.beginPath(); skelCtx.moveTo(0, 0);
@@ -9371,7 +9440,7 @@ function updateSkelPreview() {
                     if (elapsed < recoilDuration) {
                         const progress = elapsed / recoilDuration;
                         const tiltAmount = Math.sin(progress * Math.PI) * (d.wSwg !== undefined ? d.wSwg : 0);
-                        // 🛑 EL FIX: Se resta directo. ¡Ya no multiplicamos por dirMult para que no salte al revés!
+                        // ðŸ›‘ EL FIX: Se resta directo. Â¡Ya no multiplicamos por dirMult para que no salte al revÃ©s!
                         currentEditorRot -= tiltAmount;
                     } else {
                         testAnimPlaying = false;
@@ -9382,7 +9451,7 @@ function updateSkelPreview() {
                     const elapsed = Date.now() - previewSwingStart;
                     if (elapsed < 200) {
                         const progress = elapsed / 200;
-                        // 🛑 EL FIX: Extraer el ángulo de forma segura
+                        // ðŸ›‘ EL FIX: Extraer el Ã¡ngulo de forma segura
                         const swingArc = d.wSwg !== undefined ? d.wSwg : 90;
                         currentEditorRot += swingArc * progress;
                     }
@@ -9399,7 +9468,7 @@ function updateSkelPreview() {
                 const frameW = 48; // FIJO
                 const frameH = 64; // FIJO
 
-                let srcY = dir * frameH; // Código limpio y estandarizado
+                let srcY = dir * frameH; // CÃ³digo limpio y estandarizado
                 skelCtx.drawImage(wSprite, 0, srcY, frameW, frameH, -pX - (frameW * zoom / 2), -pY - (frameH * zoom / 2), frameW * zoom, frameH * zoom);
             }
             skelCtx.restore();
@@ -9417,7 +9486,7 @@ function updateSkelPreview() {
             }
         };
 
-        // 🔥 SISTEMA Z-INDEX (ORDEN DE RENDERIZADO) 🔥
+        // ðŸ”¥ SISTEMA Z-INDEX (ORDEN DE RENDERIZADO) ðŸ”¥
         if (aZ === 0) drawAccessory();
         if (wZ === 0) drawWeapon();
         if (hZ === 0) drawHand();
@@ -9440,11 +9509,11 @@ function updateSkelPreview() {
     }
 }
 
-// --- EVENTOS DEL RATÓN INTELIGENTES ---
+// --- EVENTOS DEL RATÃ“N INTELIGENTES ---
 if (skelCanvas) {
     const canvasContainer = document.getElementById('skel-canvas-container');
 
-    // --- DETECCIÓN DE CLIC EN EL CANVAS DEL EDITOR ---
+    // --- DETECCIÃ“N DE CLIC EN EL CANVAS DEL EDITOR ---
     skelCanvas.onmousedown = (e) => {
         const rect = skelCanvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
@@ -9468,7 +9537,7 @@ if (skelCanvas) {
             // Buscar el punto rojo (Pivote)
             const wId = player.equippedWeapon;
             if (wId !== "none" && weaponsDB[wId]) {
-                // 🛑 EL FIX: Agregar '|| 0' para evitar errores si el arma es nueva
+                // ðŸ›‘ EL FIX: Agregar '|| 0' para evitar errores si el arma es nueva
                 const px = 128 + ((weaponsDB[wId].pivotX || 0) * zoom);
                 const py = 128 + ((weaponsDB[wId].pivotY || 0) * zoom);
 
@@ -9503,7 +9572,7 @@ if (skelCanvas) {
                 weaponsDB[wId].pivotX = newPx;
                 weaponsDB[wId].pivotY = newPy;
 
-                // 🛑 EL ESCUDO: Actualizar solo si las cajitas existen en el HTML
+                // ðŸ›‘ EL ESCUDO: Actualizar solo si las cajitas existen en el HTML
                 const pXInput = document.getElementById('edit-pivot-x');
                 const pYInput = document.getElementById('edit-pivot-y');
                 if (pXInput) pXInput.value = newPx;
@@ -9518,43 +9587,43 @@ if (skelCanvas) {
         if (canvasContainer) canvasContainer.style.cursor = 'grab';
     });
 
-    // --- BOTÓN MAESTRO DE GUARDADO ---
+    // --- BOTÃ“N MAESTRO DE GUARDADO ---
     document.getElementById('save-skel-btn').onclick = () => {
         const btn = document.getElementById('save-skel-btn');
         const originalText = btn.innerText;
         btn.innerText = "Guardando...";
 
-        // 1. SI ESTAMOS EN LA PESTAÑA "CUERPO" (BODY)
+        // 1. SI ESTAMOS EN LA PESTAÃ‘A "CUERPO" (BODY)
         if (currentGaniTab === 'body') {
             ws.send(MessagePack.encode({
                 type: 'save_skeleton_data',
                 anchors: SKELETON_DATA.anchors
             }));
             btn.style.background = "#2ecc71";
-            btn.innerText = "¡Cuerpo Guardado!";
+            btn.innerText = "Â¡Cuerpo Guardado!";
         }
 
-        // 2. SI ESTAMOS EN LA PESTAÑA "PIVOTE" (WEAPON)
+        // 2. SI ESTAMOS EN LA PESTAÃ‘A "PIVOTE" (WEAPON)
         else if (currentGaniTab === 'weapon') {
             const wId = player.equippedWeapon;
             if (wId !== "none" && weaponsDB[wId]) {
                 ws.send(MessagePack.encode({
                     type: 'update_weapon_pivot',
                     weaponId: wId,
-                    // 🛑 EL FIX: Leemos directo de la memoria RAM, no del HTML
+                    // ðŸ›‘ EL FIX: Leemos directo de la memoria RAM, no del HTML
                     pivotX: weaponsDB[wId].pivotX || 0,
                     pivotY: weaponsDB[wId].pivotY || 0
                 }));
                 btn.style.background = "#2ecc71";
-                btn.innerText = "¡Pivote Guardado!";
+                btn.innerText = "Â¡Pivote Guardado!";
             }
         }
 
-        // 3. SI ESTAMOS EN LA PESTAÑA "MELEE"
+        // 3. SI ESTAMOS EN LA PESTAÃ‘A "MELEE"
         else if (currentGaniTab === 'melee') {
             const wId = player.equippedWeapon;
 
-            // 🛑 EL FIX: Quitamos la regla "&& weaponsDB[wId].type === 'melee'"
+            // ðŸ›‘ EL FIX: Quitamos la regla "&& weaponsDB[wId].type === 'melee'"
             if (wId !== "none" && weaponsDB[wId]) {
 
                 const safeDirStats = (weaponsDB[wId].dirStats && weaponsDB[wId].dirStats[currentEditDir])
@@ -9569,20 +9638,20 @@ if (skelCanvas) {
                     hitWid: parseInt(document.getElementById('sl-hitwid').value) || 60,
 
                     // Arma
-                    wZ: parseInt(document.getElementById('sl-wz').value) === 0 ? 0 : 1, // 🔥 NUEVO Z-INDEX
+                    wZ: parseInt(document.getElementById('sl-wz').value) === 0 ? 0 : 1, // ðŸ”¥ NUEVO Z-INDEX
                     wX: parseInt(document.getElementById('sl-wx').value) || 0,
                     wY: parseInt(document.getElementById('sl-wy').value) || 0,
                     wRot: parseInt(document.getElementById('sl-wrot').value) || 0,
                     wSwg: parseInt(document.getElementById('sl-wswg').value) || 90,
 
                     // Mano
-                    hZ: parseInt(document.getElementById('sl-hz').value) === 0 ? 0 : 1, // 🔥 NUEVO Z-INDEX
+                    hZ: parseInt(document.getElementById('sl-hz').value) === 0 ? 0 : 1, // ðŸ”¥ NUEVO Z-INDEX
                     hX: parseInt(document.getElementById('sl-hx').value) || 0,
                     hY: parseInt(document.getElementById('sl-hy').value) || 0,
                     hRot: parseInt(document.getElementById('sl-hrot').value) || 0,
 
                     // Accesorio
-                    aZ: parseInt(document.getElementById('sl-az').value) === 0 ? 0 : 1, // 🔥 NUEVO Z-INDEX
+                    aZ: parseInt(document.getElementById('sl-az').value) === 0 ? 0 : 1, // ðŸ”¥ NUEVO Z-INDEX
                     aX: parseInt(document.getElementById('sl-ax').value) || 0,
                     aY: parseInt(document.getElementById('sl-ay').value) || 0,
                     aRot: parseInt(document.getElementById('sl-arot').value) || 0,
@@ -9604,17 +9673,17 @@ if (skelCanvas) {
                 }));
 
                 btn.style.background = "#2ecc71";
-                btn.innerText = "¡Dirección Guardada!";
+                btn.innerText = "Â¡DirecciÃ³n Guardada!";
             } else {
-                alert("⚠️ Equipa un arma tipo 'melee' para guardar estas estadísticas.");
+                alert("âš ï¸ Equipa un arma tipo 'melee' para guardar estas estadÃ­sticas.");
                 btn.innerText = originalText;
             }
         }
 
-        // Devolver el botón a su estado normal después de 2 segundos
+        // Devolver el botÃ³n a su estado normal despuÃ©s de 2 segundos
         setTimeout(() => {
             btn.style.background = "#0e639c";
-            btn.innerText = "💾 Guardar Esqueleto";
+            btn.innerText = "ðŸ’¾ Guardar Esqueleto";
         }, 2000);
     };
 }
@@ -9627,12 +9696,12 @@ function drawGizmo(x, y, color) {
 
 function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     // ==========================================================
-    // 🛑 NUEVO SISTEMA DE ROPA (GUARDARROPA DINÁMICO) 🛑
+    // ðŸ›‘ NUEVO SISTEMA DE ROPA (GUARDARROPA DINÃMICO) ðŸ›‘
     // ==========================================================
     const equippedBody = (p.equipped && p.equipped.body) ? p.equipped.body : 'body_default';
     const equippedHead = (p.equipped && p.equipped.head) ? p.equipped.head : 'head_default';
 
-    // Sacamos la imagen del catálogo. Si no existe o no ha cargado, usamos la global por defecto
+    // Sacamos la imagen del catÃ¡logo. Si no existe o no ha cargado, usamos la global por defecto
     const dynBodyImg = (window.loadedItemSprites && window.loadedItemSprites[equippedBody]) ? window.loadedItemSprites[equippedBody] : bodyImg;
     const dynHeadImg = (window.loadedItemSprites && window.loadedItemSprites[equippedHead]) ? window.loadedItemSprites[equippedHead] : headImg;
     // ==========================================================
@@ -9642,17 +9711,17 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     let maxFrames = 4;
     let displayFrameX = p.frameX;
 
-    // --- LÓGICA DE ESTADOS Y ARMAS ---
+    // --- LÃ“GICA DE ESTADOS Y ARMAS ---
 
-    // 🪑 CHEQUEO DE SILLA Y ESTADO DE MOVIMIENTO
+    // ðŸª‘ CHEQUEO DE SILLA Y ESTADO DE MOVIMIENTO
     let isSitting = p.isSitting || false;
 
-    // 🚀 FIX ANIMACIONES: Usamos isVisuallyMoving para los otros (suavizado) y isMoving para el local (instantáneo)
+    // ðŸš€ FIX ANIMACIONES: Usamos isVisuallyMoving para los otros (suavizado) y isMoving para el local (instantÃ¡neo)
     const currentlyMoving = p.isVisuallyMoving !== undefined ? p.isVisuallyMoving : p.isMoving;
 
     if (isSitting) {
         state = "sit";
-        maxFrames = 1; // Solo 1 frame (estático)
+        maxFrames = 1; // Solo 1 frame (estÃ¡tico)
         displayFrameX = 0;
     } else if (p.equippedWeapon && p.equippedWeapon !== "none") {
         state = "walk_armed";
@@ -9682,7 +9751,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     const handX = drawX + (handAnc[0] * zoom);
     const handY = drawY + (handAnc[1] * zoom);
 
-    // --- EXTRAER ESTADÍSTICAS Y CAPAS (Z-INDEX) ---
+    // --- EXTRAER ESTADÃSTICAS Y CAPAS (Z-INDEX) ---
     let stats = {}; let d = {};
     let aZ = 1, wZ = 1, hZ = 1;
 
@@ -9694,49 +9763,49 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         hZ = d.hZ !== undefined ? d.hZ : 1;
     }
 
-    // --- ROTACIÓN MATEMÁTICA AUTOMÁTICA (SOLO PARA MELEE) ---
+    // --- ROTACIÃ“N MATEMÃTICA AUTOMÃTICA (SOLO PARA MELEE) ---
     let baseAimAngle = 0; let dirM = 1;
 
-    // Si NO es ranged, aplicamos la rotación forzada
+    // Si NO es ranged, aplicamos la rotaciÃ³n forzada
     if (stats.type !== 'ranged') {
         if (dirIdx === 0) baseAimAngle = Math.PI / 2;
         else if (dirIdx === 1) { baseAimAngle = Math.PI; dirM = -1; }
         else if (dirIdx === 3) { baseAimAngle = -Math.PI / 2; dirM = -1; }
     }
 
-    // 🔥 LA ANIMACIÓN DINÁMICA DEL JUEGO REAL 🔥
+    // ðŸ”¥ LA ANIMACIÃ“N DINÃMICA DEL JUEGO REAL ðŸ”¥
     let currentAnimRot = d.wRot || 0;
 
-    // 🛑 NUEVAS VARIABLES PARA EL EMPUJE (STAB)
+    // ðŸ›‘ NUEVAS VARIABLES PARA EL EMPUJE (STAB)
     let stabOffsetX = 0;
     let stabOffsetY = 0;
 
-    // 1. Animación de Ataque Melee (Swing o Stab)
+    // 1. AnimaciÃ³n de Ataque Melee (Swing o Stab)
     if (p.isSwinging && stats.type !== 'ranged') {
         const elapsed = Date.now() - (p.swingStartTime || 0);
         if (elapsed < (p.swingDuration || 200)) {
             const progress = elapsed / (p.swingDuration || 200);
 
-            // 🛑 BIFURCACIÓN: ¿Es el recogedor de basura u otra arma?
+            // ðŸ›‘ BIFURCACIÃ“N: Â¿Es el recogedor de basura u otra arma?
             if (stats.id === 'trash_picker') {
-                // Animación STAB: Efecto resorte (Math.sin) para ir hacia adelante y regresar
-                const stabDistance = 14; // Píxeles que se estira el brazo
+                // AnimaciÃ³n STAB: Efecto resorte (Math.sin) para ir hacia adelante y regresar
+                const stabDistance = 14; // PÃ­xeles que se estira el brazo
                 const stabProgress = Math.sin(progress * Math.PI);
 
-                // Empujamos en la dirección a la que mira
+                // Empujamos en la direcciÃ³n a la que mira
                 if (dirIdx === 0) stabOffsetY = stabProgress * stabDistance;
                 else if (dirIdx === 1) stabOffsetX = -stabProgress * stabDistance;
                 else if (dirIdx === 2) stabOffsetX = stabProgress * stabDistance;
                 else if (dirIdx === 3) stabOffsetY = -stabProgress * stabDistance;
             } else {
-                // Animación SWING NORMAL (Giro de espada)
+                // AnimaciÃ³n SWING NORMAL (Giro de espada)
                 currentAnimRot += (d.wSwg || 90) * progress;
             }
         } else {
             p.isSwinging = false;
         }
     }
-    // 2. Animación de Pistola (Recoil / Tilt)
+    // 2. AnimaciÃ³n de Pistola (Recoil / Tilt)
     else if (stats.type === 'ranged') {
         const timeSinceShot = Date.now() - (p.lastShotTime || 0);
         const recoilDuration = Math.min(150, (stats.fireRate || 300) / 2);
@@ -9750,7 +9819,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     const totalWeaponRot = baseAimAngle + (currentAnimRot * dirM * Math.PI / 180);
 
     // ==========================================================
-    // 🔥 MINI-FUNCIONES DE DIBUJO MODULAR (SINCRONIZADAS AL 100%) 🔥
+    // ðŸ”¥ MINI-FUNCIONES DE DIBUJO MODULAR (SINCRONIZADAS AL 100%) ðŸ”¥
     // ==========================================================
     const drawAccessory = () => {
         if (p.equippedWeapon && loadedWeaponSprites[p.equippedWeapon]) {
@@ -9790,7 +9859,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     };
 
     const drawHand = () => {
-        // 🛑 EL FIX DE ROPA DINÁMICA: Usamos dynBodyImg para asegurar que recorta la piel correcta
+        // ðŸ›‘ EL FIX DE ROPA DINÃMICA: Usamos dynBodyImg para asegurar que recorta la piel correcta
         if (p.equippedWeapon && loadedWeaponSprites[p.equippedWeapon] && dynBodyImg && dynBodyImg.complete) {
             ctx.save();
             ctx.translate(handX + ((d.wX || 0) * zoom) + (stabOffsetX * zoom), handY + ((d.wY || 0) * zoom) + (stabOffsetY * zoom));
@@ -9804,13 +9873,13 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     };
 
     // ==========================================================
-    // 🔥 RENDERIZADO POR CAPAS (Z-INDEX) 🔥
+    // ðŸ”¥ RENDERIZADO POR CAPAS (Z-INDEX) ðŸ”¥
     // ==========================================================
     if (aZ === 0 && !isSitting) drawAccessory();
     if (wZ === 0 && !isSitting) drawWeapon();
     if (hZ === 0 && !isSitting) drawHand();
 
-    // 🛑 EL FIX DE ROPA DINÁMICA: Dibujamos el cuerpo con la textura del jugador actual
+    // ðŸ›‘ EL FIX DE ROPA DINÃMICA: Dibujamos el cuerpo con la textura del jugador actual
     if (dynBodyImg && dynBodyImg.complete) {
         ctx.drawImage(
             dynBodyImg,
@@ -9819,7 +9888,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         );
     }
 
-    // 🛑 EL FIX DE ROPA DINÁMICA: Dibujamos la cabeza con la textura del jugador actual
+    // ðŸ›‘ EL FIX DE ROPA DINÃMICA: Dibujamos la cabeza con la textura del jugador actual
     if (dynHeadImg && dynHeadImg.complete) {
         const headSafeFrame = displayFrameX % 4;
         ctx.drawImage(
@@ -9830,7 +9899,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     }
 
     // ==========================================================
-    // 🧠 EL WOBBLE (BAMBOLEO) MATEMÁTICO: Cabeza y Sombrero
+    // ðŸ§  EL WOBBLE (BAMBOLEO) MATEMÃTICO: Cabeza y Sombrero
     // ==========================================================
     // Secuencia: Centro(0), Abajo(1), Centro(0), Arriba(-1)
     const WOBBLE_PATTERN = [0, 1, 0, -1, 0, 1, 0, -1];
@@ -9851,7 +9920,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         );
     }
 
-    // 2. Dibujar SOMBRERO (Pegado a la cabeza matemáticamente)
+    // 2. Dibujar SOMBRERO (Pegado a la cabeza matemÃ¡ticamente)
     const equippedHat = (p.equipped && p.equipped.hat) ? p.equipped.hat : 'none';
     const dynHatImg = (window.loadedItemSprites && window.loadedItemSprites[equippedHat]);
 
@@ -9869,7 +9938,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     if (wZ === 1 && !isSitting) drawWeapon();
     if (hZ === 1 && !isSitting) drawHand();
 
-    // 🛡️ RESPAWN SHIELD: Blue pulsing circle while invulnerable
+    // ðŸ›¡ï¸ RESPAWN SHIELD: Blue pulsing circle while invulnerable
     if (p.shieldUntil && Date.now() < p.shieldUntil) {
         const shieldRemaining = p.shieldUntil - Date.now();
         const shieldTotal = 2000;
@@ -9893,7 +9962,7 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         ctx.fill();
         ctx.restore();
     }
-} // <--- Fin de la función drawModularCharacter
+} // <--- Fin de la funciÃ³n drawModularCharacter
 
 function executeTileLogic(logicTile, tileKey) {
     if (logicTile.triggerType === 'teleport') {
@@ -9922,13 +9991,13 @@ function executeTileLogic(logicTile, tileKey) {
         }
     }
     else if (logicTile.triggerType === 'npc' && logicTile.npcMessage) {
-        // 👇 EL FIX: Evitar que el juego intente abrir el mensaje 60 veces por segundo 👇
+        // ðŸ‘‡ EL FIX: Evitar que el juego intente abrir el mensaje 60 veces por segundo ðŸ‘‡
         const box = document.getElementById('retro-dialog-box');
         const isBoxOpen = box && box.style.display === 'block';
 
-        // Solo actuamos si la caja de texto NO está abierta en este momento
+        // Solo actuamos si la caja de texto NO estÃ¡ abierta en este momento
         if (!isBoxOpen) {
-            // Si es un NPC de "pisar", verificamos que no lo hayamos leído ya
+            // Si es un NPC de "pisar", verificamos que no lo hayamos leÃ­do ya
             if (!logicTile.requiresClick && lastNpcTile === tileKey) return;
 
             showRetroDialog(logicTile.npcMessage);
@@ -9940,14 +10009,14 @@ function executeTileLogic(logicTile, tileKey) {
         }
     }
     else if (logicTile.triggerType === 'arena') {
-        // 🔧 FIX DE ID: El servidor guarda arenas como "arena_X_Y" (guiones bajos)
-        // El tileKey puede venir como "X,Y" o "X,Y,15" — lo parseamos para extraer X e Y
+        // ðŸ”§ FIX DE ID: El servidor guarda arenas como "arena_X_Y" (guiones bajos)
+        // El tileKey puede venir como "X,Y" o "X,Y,15" â€” lo parseamos para extraer X e Y
         const parts = tileKey.toString().split(',');
         const arenaGridX = parseInt(parts[0]);
         const arenaGridY = parseInt(parts[1]);
         const correctArenaId = `arena_${arenaGridX}_${arenaGridY}`;
 
-        // Guard: solo abrir/consultar si no está ya abierto con este mismo arenaId
+        // Guard: solo abrir/consultar si no estÃ¡ ya abierto con este mismo arenaId
         if (window.currentViewingArenaId !== correctArenaId) {
             window.currentViewingArenaId = correctArenaId;
             ws.send(MessagePack.encode({ type: 'get_arena_info', arenaId: correctArenaId }));
@@ -9986,44 +10055,44 @@ function getPlayerRank(elo) {
 }
 
 // =========================================================
-// ⭐ SISTEMA QUICK SWAP (HOTKEYS DESLIZABLES) ⭐
+// â­ SISTEMA QUICK SWAP (HOTKEYS DESLIZABLES) â­
 // =========================================================
 const btnQuickSwap = document.getElementById('btn-quickswap-item');
 const quickSwapMenu = document.getElementById('quickswap-menu');
 const quickSwapList = document.getElementById('quickswap-list');
 
-// 1. Conectar el Botón del Inspector
+// 1. Conectar el BotÃ³n del Inspector
 btnQuickSwap.onclick = () => {
     if (!player.quickSwaps) player.quickSwaps = [];
 
     // Si ya lo tiene, lo quitamos. Si no, lo agregamos.
     if (player.quickSwaps.includes(currentInspectingItemId)) {
         player.quickSwaps = player.quickSwaps.filter(id => id !== currentInspectingItemId);
-        btnQuickSwap.innerText = "⭐ Hotkey";
+        btnQuickSwap.innerText = "â­ Hotkey";
         btnQuickSwap.style.background = "#9b59b6";
         btnQuickSwap.style.boxShadow = "0 4px 0 #8e44ad";
     } else {
-        // Límite de 4 armas para que el menú no mida 3 metros
+        // LÃ­mite de 4 armas para que el menÃº no mida 3 metros
         if (player.quickSwaps.length >= 16) player.quickSwaps.shift(); // Ahora soporta hasta 16 armas favoritas
         player.quickSwaps.push(currentInspectingItemId);
 
-        btnQuickSwap.innerText = "✅ Guardado";
+        btnQuickSwap.innerText = "âœ… Guardado";
         btnQuickSwap.style.background = "#7f8c8d";
         btnQuickSwap.style.boxShadow = "0 4px 0 #34495e";
     }
 
-    // 👇 LA LÍNEA MÁGICA: Enviar al servidor en tiempo real 👇
+    // ðŸ‘‡ LA LÃNEA MÃGICA: Enviar al servidor en tiempo real ðŸ‘‡
     if (ws.readyState === WebSocket.OPEN) {
         ws.send(MessagePack.encode({ type: 'update_quickswaps', quickSwaps: player.quickSwaps }));
     }
 };
 
-// 3. Función para Abrir el Cajón de Armas
+// 3. FunciÃ³n para Abrir el CajÃ³n de Armas
 const openQuickSwapDrawer = () => {
     quickSwapList.innerHTML = "";
 
     if (!player.quickSwaps || player.quickSwaps.length === 0) {
-        quickSwapList.innerHTML = "<div style='color:#aaa; font-size:10px; text-align:center;'>Vacío</div>";
+        quickSwapList.innerHTML = "<div style='color:#aaa; font-size:10px; text-align:center;'>VacÃ­o</div>";
     } else {
         player.quickSwaps.forEach(itemId => {
             const btn = document.createElement('div');
@@ -10040,14 +10109,14 @@ const openQuickSwapDrawer = () => {
 
             const icon = getWeaponIcon(itemId);
             if (icon) {
-                icon.style.transform = "scale(1.3)"; // 🔥 Súper Zoom del 150%
+                icon.style.transform = "scale(1.3)"; // ðŸ”¥ SÃºper Zoom del 150%
                 btn.appendChild(icon);
             }
 
             btn.onpointerdown = (e) => {
                 if (e) e.preventDefault();
 
-                // 💾 GUARDAR EL ESTADO ANTES DEL SWAP
+                // ðŸ’¾ GUARDAR EL ESTADO ANTES DEL SWAP
                 const previousWeapon = player.equippedWeapon;
                 if (previousWeapon !== "none" && WEAPONS[previousWeapon] && WEAPONS[previousWeapon].type === 'ranged') {
                     player.weaponAmmo[previousWeapon] = player.ammo;
@@ -10062,7 +10131,7 @@ const openQuickSwapDrawer = () => {
 
                 const stats = WEAPONS[itemId];
                 if (stats && stats.type !== 'melee') {
-                    // 💾 CARGAR EL ESTADO
+                    // ðŸ’¾ CARGAR EL ESTADO
                     if (player.weaponAmmo[itemId] === undefined) {
                         player.weaponAmmo[itemId] = stats.magSize;
                     }
@@ -10101,7 +10170,7 @@ const openQuickSwapDrawer = () => {
     quickSwapMenu.style.display = 'flex';
 };
 
-// 4. Detección de Gestos (Swipe Left & Long Press)
+// 4. DetecciÃ³n de Gestos (Swipe Left & Long Press)
 const hudHotbarEl = document.getElementById('hud-hotbar');
 let hotbarTouchStartX = 0;
 let hotbarTouchStartY = 0;
@@ -10111,7 +10180,7 @@ hudHotbarEl.addEventListener('touchstart', (e) => {
     hotbarTouchStartX = e.touches[0].clientX;
     hotbarTouchStartY = e.touches[0].clientY;
 
-    // Si mantienes el dedo 400ms, se abre el menú
+    // Si mantienes el dedo 400ms, se abre el menÃº
     qsLongPressTimer = setTimeout(() => {
         openQuickSwapDrawer();
     }, 400);
@@ -10125,7 +10194,7 @@ hudHotbarEl.addEventListener('touchmove', (e) => {
     let diffX = hotbarTouchStartX - currentX; // Positivo = Swipe a la izquierda
     let diffY = Math.abs(hotbarTouchStartY - currentY);
 
-    // Si deslizas rápido a la izquierda (más de 30px)
+    // Si deslizas rÃ¡pido a la izquierda (mÃ¡s de 30px)
     if (diffX > 30 && diffY < 40) {
         clearTimeout(qsLongPressTimer); // Cancelamos el long-press
         openQuickSwapDrawer();
@@ -10134,17 +10203,17 @@ hudHotbarEl.addEventListener('touchmove', (e) => {
 }, { passive: true });
 
 hudHotbarEl.addEventListener('touchend', () => {
-    clearTimeout(qsLongPressTimer); // Si sueltas el dedo rápido, no se abre
+    clearTimeout(qsLongPressTimer); // Si sueltas el dedo rÃ¡pido, no se abre
     hotbarTouchStartX = null;
 });
 
-// Soporte para PC: Clic Derecho en el Hotbar abre el menú
+// Soporte para PC: Clic Derecho en el Hotbar abre el menÃº
 hudHotbarEl.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     openQuickSwapDrawer();
 });
 
-// Cerrar el menú si haces clic o tocas cualquier otra parte de la pantalla
+// Cerrar el menÃº si haces clic o tocas cualquier otra parte de la pantalla
 window.addEventListener('mousedown', (e) => {
     if (quickSwapMenu.style.display === 'flex' && !quickSwapMenu.contains(e.target) && !hudHotbarEl.contains(e.target)) {
         quickSwapMenu.style.display = 'none';
@@ -10156,12 +10225,12 @@ window.addEventListener('touchstart', (e) => {
     }
 });
 
-// ⏱️ VARIABLES DEL GAME LOOP (FPS cap dinámico segun gameSettings)
+// â±ï¸ VARIABLES DEL GAME LOOP (FPS cap dinÃ¡mico segun gameSettings)
 let lastFrameTime = performance.now();
 const FPS_TARGET = 60;
 const FRAME_MIN_TIME = 1000 / FPS_TARGET; // ~16.66ms
 
-// 📱 ROLLING AVERAGE DELTATIME (Absorbs single spike frames)
+// ðŸ“± ROLLING AVERAGE DELTATIME (Absorbs single spike frames)
 const DT_HISTORY_SIZE = 4;
 const dtHistory = [FRAME_MIN_TIME, FRAME_MIN_TIME, FRAME_MIN_TIME, FRAME_MIN_TIME];
 let dtHistoryIdx = 0;
@@ -10169,7 +10238,7 @@ let dtHistoryIdx = 0;
 let networkTimer = 0;
 const NETWORK_TICK_RATE = 50; // Enviar datos cada 50ms (20 veces por segundo)
 
-// 📊 Variables del Monitor
+// ðŸ“Š Variables del Monitor
 let fpsFrameCount = 0;
 let fpsLastUpdate = performance.now();
 let frameTimesTotal = 0; // Acumulador para promediar el Frame Time
@@ -10179,9 +10248,9 @@ const uiAmmoCurrent = document.getElementById('ammo-current');
 const uiAmmoMax = document.getElementById('ammo-max');
 const uiPerfMonitor = document.getElementById('perf-monitor');
 
-// ⚡ HELPER: envuelve ctx.shadowBlur para respetar disableShadows.
+// âš¡ HELPER: envuelve ctx.shadowBlur para respetar disableShadows.
 // Todos los draws que usaban !isTouchDevice ya no necesitan cambio,
-// solo reemplazamos la asignación directa por setShadow().
+// solo reemplazamos la asignaciÃ³n directa por setShadow().
 function setShadow(blur, color) {
     if (gameSettings.disableShadows || isTouchDevice) {
         ctx.shadowBlur = 0;
@@ -10198,11 +10267,11 @@ function update(currentTime) {
     if (!currentTime) currentTime = performance.now();
     let rawDelta = currentTime - lastFrameTime;
 
-    // ⚡ FPS CAP DINÁMICO
+    // âš¡ FPS CAP DINÃMICO
     const minFrameMs = gameSettings.fpsCap >= 60 ? 10 : (1000 / gameSettings.fpsCap) - 2;
     if (rawDelta < minFrameMs) return;
 
-    // 📱 ROLLING AVERAGE: smooth out single spike frames
+    // ðŸ“± ROLLING AVERAGE: smooth out single spike frames
     const dtClamped = Math.min(rawDelta, 50); // hard cap 50ms to stop teleport on resume
     dtHistory[dtHistoryIdx] = dtClamped;
     dtHistoryIdx = (dtHistoryIdx + 1) % DT_HISTORY_SIZE;
@@ -10210,12 +10279,12 @@ function update(currentTime) {
 
     lastFrameTime = currentTime;
 
-    // 🛑 THE DASH FIX: Cap dtScale so physics don't rubber-band forward during lag spikes
+    // ðŸ›‘ THE DASH FIX: Cap dtScale so physics don't rubber-band forward during lag spikes
     let dtScale = dtMs / FRAME_MIN_TIME;
     if (dtScale > 1.2) dtScale = 1.2;
     if (dtScale < 0.8) dtScale = 0.8;
 
-    // 📊 CALCULADORA MAESTRA DE RENDIMIENTO (Siempre activa para proteger el celular)
+    // ðŸ“Š CALCULADORA MAESTRA DE RENDIMIENTO (Siempre activa para proteger el celular)
     fpsFrameCount++;
     frameTimesTotal += rawDelta; // Sumamos el MS real de la computadora
 
@@ -10224,21 +10293,21 @@ function update(currentTime) {
         const avgFrameTime = (frameTimesTotal / fpsFrameCount).toFixed(1);
 
         // =========================================================
-        // 🚀 LA MAGIA DE LA RESOLUCIÓN DINÁMICA AUTÓNOMA
+        // ðŸš€ LA MAGIA DE LA RESOLUCIÃ“N DINÃMICA AUTÃ“NOMA
         // =========================================================
         fpsHistory.push(currentFps);
         if (fpsHistory.length > 3) fpsHistory.shift(); // Memoria de 3 segundos
 
-        // Analizar si el dispositivo se está ahogando
+        // Analizar si el dispositivo se estÃ¡ ahogando
         if (currentTime - lastResolutionCheck > 3000 && fpsHistory.length === 3) {
             const avgFps = (fpsHistory[0] + fpsHistory[1] + fpsHistory[2]) / 3;
 
-            // Si el promedio cae por debajo de 40 FPS, encogemos los gráficos internos
+            // Si el promedio cae por debajo de 40 FPS, encogemos los grÃ¡ficos internos
             if (avgFps < 40 && dynamicRenderScale > 0.5) {
                 dynamicRenderScale -= 0.25; // Baja al 75%, luego al 50% si es necesario
-                resize(); // Detonar el recálculo al instante
+                resize(); // Detonar el recÃ¡lculo al instante
 
-                spawnDamageText(player.worldX, player.worldY, "📉 Optimizando", true);
+                spawnDamageText(player.worldX, player.worldY, "ðŸ“‰ Optimizando", true);
 
                 fpsHistory = []; // Reset para darle tiempo al celular de respirar
                 lastResolutionCheck = currentTime + 2000; // Extra cooldown de gracia
@@ -10247,7 +10316,7 @@ function update(currentTime) {
         }
         // =========================================================
 
-        // Dibujado del Monitor en Pantalla (Si el usuario lo prendió en Opciones)
+        // Dibujado del Monitor en Pantalla (Si el usuario lo prendiÃ³ en Opciones)
         if (gameSettings.showPerformance && uiPerfMonitor) {
             const hexColor = currentFps >= 55 ? '#2ecc71' : (currentFps >= 30 ? '#f1c40f' : '#e74c3c');
             uiPerfMonitor.style.color = hexColor;
@@ -10265,7 +10334,7 @@ function update(currentTime) {
 
     const now = Date.now();
 
-    // 🪑 CHEQUEO GLOBAL DE SILLA PARA ESTE FRAME
+    // ðŸª‘ CHEQUEO GLOBAL DE SILLA PARA ESTE FRAME
     if (player) {
         player.isSitting = false;
         const gX = Math.floor(player.worldX / TILE_SIZE);
@@ -10279,10 +10348,10 @@ function update(currentTime) {
         }
     }
 
-    // 🧹 CLIENT-SIDE GARBAGE COLLECTOR
+    // ðŸ§¹ CLIENT-SIDE GARBAGE COLLECTOR
     // If we haven't heard from a player in 5 seconds, assume they walked out of our Zone and delete them.
     for (let id in otherPlayers) {
-        // 🛑 FAILSAFE 3: Proteger contra variables nulas
+        // ðŸ›‘ FAILSAFE 3: Proteger contra variables nulas
         if (!otherPlayers[id]) {
             delete otherPlayers[id];
             continue;
@@ -10291,15 +10360,15 @@ function update(currentTime) {
             delete otherPlayers[id];
         }
     }
-    // Si por algún error el loading se queda pegado, lo forzamos a cerrar al movernos
+    // Si por algÃºn error el loading se queda pegado, lo forzamos a cerrar al movernos
     if (isCinematicLoading && (player.vx !== 0 || player.vy !== 0 || isMouseDown)) {
         isCinematicLoading = false;
         floorDirty = false;
         if (uiLoadingScreen) uiLoadingScreen.style.display = 'none';
     }
-    // ... resto del código ...
-    // 🎮 CAMERA: direct player position, no lag, no lerp.
-    // Smooth camera caused 'dash and come back' jitter — the lag created
+    // ... resto del cÃ³digo ...
+    // ðŸŽ® CAMERA: direct player position, no lag, no lerp.
+    // Smooth camera caused 'dash and come back' jitter â€” the lag created
     // a rubber-band effect as the camera rushed to catch up each frame.
     // Teleport detection: if player jumped > 80 units, mark floor dirty so
     // the map redraws immediately at the new position.
@@ -10311,17 +10380,17 @@ function update(currentTime) {
     window._lastRenderX = player.worldX;
     window._lastRenderY = player.worldY;
 
-    // Use player position directly — no pixel-snap, just Math.floor at draw time
+    // Use player position directly â€” no pixel-snap, just Math.floor at draw time
     const renderWorldX = player.worldX;
     const renderWorldY = player.worldY;
 
-    // Centro de pantalla en píxeles CSS enteros
+    // Centro de pantalla en pÃ­xeles CSS enteros
     const screenCenterX = Math.floor(cachedScreenWidth / 2);
     const screenCenterY = Math.floor(cachedScreenHeight / 2);
     // --- NEW: SLIDING COLLISION CHECK ---
     const checkWall = (x, y) => {
         if (window.adminNoclip) return false;
-        // 👇 NUEVO: COLISIÓN LOCAL DE LA BASE (Mismo código que en el servidor) 👇
+        // ðŸ‘‡ NUEVO: COLISIÃ“N LOCAL DE LA BASE (Mismo cÃ³digo que en el servidor) ðŸ‘‡
         if (centralBase) {
             const bx = centralBase.worldX + (centralBase.hitboxOffsetX || 0);
             const by = centralBase.worldY + (centralBase.hitboxOffsetY || 0);
@@ -10350,7 +10419,7 @@ function update(currentTime) {
         player.vx = 0;
         player.vy = 0;
         player.isMoving = false;
-        isShooting = false; // 🛑 Apaga el gatillo para que no salgan balas fantasma
+        isShooting = false; // ðŸ›‘ Apaga el gatillo para que no salgan balas fantasma
 
         // Limpiar teclas en PC por si se quedaron pegadas
         if (!isTouchDevice) {
@@ -10365,10 +10434,10 @@ function update(currentTime) {
         player.isMoving = false;
     }
 
-    /// --- CONTROLES HÍBRIDOS (MOUSE + TOUCH) ---
+    /// --- CONTROLES HÃBRIDOS (MOUSE + TOUCH) ---
     if (!player.isDead) {
 
-        // 🛑 EL FIX: SISTEMA DE HIT-STOP SUAVE (SIN JITTER) 🛑
+        // ðŸ›‘ EL FIX: SISTEMA DE HIT-STOP SUAVE (SIN JITTER) ðŸ›‘
         let speedMult = 1;
         if (player.equippedWeapon !== "none" && WEAPONS[player.equippedWeapon]) {
             const wStats = WEAPONS[player.equippedWeapon];
@@ -10379,7 +10448,7 @@ function update(currentTime) {
                 const timeSinceAttack = Date.now() - Math.max(player.swingStartTime || 0, player.lastShotTime || 0);
                 if (timeSinceAttack < freezeMs) {
                     // En lugar de detenerlo a 0, lo ralentizamos al 10%. 
-                    // Da sensación de "impacto pesado" pero sin trabar la cámara.
+                    // Da sensaciÃ³n de "impacto pesado" pero sin trabar la cÃ¡mara.
                     speedMult = 0.1;
                 }
             }
@@ -10397,7 +10466,7 @@ function update(currentTime) {
                 if (moveX !== 0 || moveY !== 0) {
                     const length = Math.sqrt(moveX * moveX + moveY * moveY);
                     moveX /= length; moveY /= length;
-                    // 🚀 EL FIX FÍSICO: Usamos dtScale (1.0) en vez del viejo cálculo
+                    // ðŸš€ EL FIX FÃSICO: Usamos dtScale (1.0) en vez del viejo cÃ¡lculo
                     player.vx = moveX * (player.speed * speedMult) * dtScale;
                     player.vy = moveY * (player.speed * speedMult) * dtScale;
                     player.isMoving = true;
@@ -10405,7 +10474,7 @@ function update(currentTime) {
                     player.vx = 0; player.vy = 0; player.isMoving = false;
                 }
             } else {
-                // 📱 MOVIMIENTO INSTANTÁNEO 1:1 (Sin aceleración ni retraso)
+                // ðŸ“± MOVIMIENTO INSTANTÃNEO 1:1 (Sin aceleraciÃ³n ni retraso)
                 player.vx = (player.joyX || 0) * (player.speed * speedMult) * dtScale;
                 player.vy = (player.joyY || 0) * (player.speed * speedMult) * dtScale;
                 player.isMoving = (Math.abs(player.joyX || 0) > 0.02 || Math.abs(player.joyY || 0) > 0.02);
@@ -10414,7 +10483,7 @@ function update(currentTime) {
             player.vx = 0; player.vy = 0; player.isMoving = false;
         }
 
-        // 💥 NUEVO: MOTOR DE INERCIA Y FRICCIÓN (KNOCKBACK) 💥
+        // ðŸ’¥ NUEVO: MOTOR DE INERCIA Y FRICCIÃ“N (KNOCKBACK) ðŸ’¥
         player.kbX = player.kbX || 0;
         player.kbY = player.kbY || 0;
 
@@ -10426,15 +10495,15 @@ function update(currentTime) {
         if (Math.abs(player.kbX) < 0.2) player.kbX = 0;
         if (Math.abs(player.kbY) < 0.2) player.kbY = 0;
 
-        // 🛑 EL FIX 3: La animación se mantiene viva mientras resbales 
-        // O mientras el cronómetro de 300ms siga activo.
+        // ðŸ›‘ EL FIX 3: La animaciÃ³n se mantiene viva mientras resbales 
+        // O mientras el cronÃ³metro de 300ms siga activo.
         if (player.kbX !== 0 || player.kbY !== 0 || (Date.now() - (player.staggerTimer || 0) < 1000)) {
             player.isMoving = true;
         }
 
         // 2. APUNTADO Y DISPARO
         if (!editMode) {
-            // 💻 Si estamos en PC, el Ratón controla hacia dónde miramos SIEMPRE
+            // ðŸ’» Si estamos en PC, el RatÃ³n controla hacia dÃ³nde miramos SIEMPRE
             if (!isTouchDevice) {
                 const dx = mouseX - screenCenterX;
                 const dy = mouseY - screenCenterY;
@@ -10446,14 +10515,14 @@ function update(currentTime) {
                     isShooting = false;
                 }
             }
-            // 📱 Si estamos en CELULAR, el Joystick Derecho (aimZone) ya controló 
-            // 'shootAngle' e 'isShooting' al mover el dedo, no sobreescribimos nada aquí.
+            // ðŸ“± Si estamos en CELULAR, el Joystick Derecho (aimZone) ya controlÃ³ 
+            // 'shootAngle' e 'isShooting' al mover el dedo, no sobreescribimos nada aquÃ­.
         }
     }
 
 
 
-    // --- DETECCIÓN DE LÓGICA PASIVA (CAPA 15 AL PISAR) ---
+    // --- DETECCIÃ“N DE LÃ“GICA PASIVA (CAPA 15 AL PISAR) ---
     player.inSafeZone = false;
 
     if (!player.isDead && !editMode && !player.isTeleporting) {
@@ -10463,36 +10532,36 @@ function update(currentTime) {
         const currentTileKey = getMapKey(currentGridX, currentGridY, 15);
         const logicTile = worldMap.get(currentTileKey);
 
-        // 🛑 EL FIX: Solo lo activamos automáticamente si NO requiere clic
+        // ðŸ›‘ EL FIX: Solo lo activamos automÃ¡ticamente si NO requiere clic
         if (logicTile && !logicTile.requiresClick) {
             executeTileLogic(logicTile, currentTileKey);
         } else {
             if (lastShopTile !== currentTileKey && !isShopOpen) lastShopTile = null;
             if (lastJunkyardTile !== currentTileKey && !isJunkyardOpen) lastJunkyardTile = null;
-            if (lastJewelerTile !== currentTileKey && !isJewelerOpen) lastJewelerTile = null; // 👈 AÑADE ESTO
-            // 👇 NUEVO FIX: Liberar al NPC cuando te bajas del bloque 👇
+            if (lastJewelerTile !== currentTileKey && !isJewelerOpen) lastJewelerTile = null; // ðŸ‘ˆ AÃ‘ADE ESTO
+            // ðŸ‘‡ NUEVO FIX: Liberar al NPC cuando te bajas del bloque ðŸ‘‡
             const box = document.getElementById('retro-dialog-box');
             if (lastNpcTile !== currentTileKey && (!box || box.style.display === 'none')) {
                 lastNpcTile = null;
             }
         }
     }
-    // 👇 NUEVO: ESCÁNER MATEMÁTICO DE ZONAS HÍBRIDO (Safezones + Techos) 👇
+    // ðŸ‘‡ NUEVO: ESCÃNER MATEMÃTICO DE ZONAS HÃBRIDO (Safezones + Techos) ðŸ‘‡
     player.inSafeZone = false;
-    let isUnderRoof = false; // 🏠 Variable del techo inicializada por defecto
+    let isUnderRoof = false; // ðŸ  Variable del techo inicializada por defecto
 
     for (let i = 0; i < safeZones.length; i++) {
         let z = safeZones[i];
 
-        // Si estamos parados dentro de ESTE rectángulo específico:
+        // Si estamos parados dentro de ESTE rectÃ¡ngulo especÃ­fico:
         if (player.worldX >= z.xMin && player.worldX <= z.xMax && player.worldY >= z.yMin && player.worldY <= z.yMax) {
 
-            // ¿Es zona segura?
+            // Â¿Es zona segura?
             if (!z.zoneType || z.zoneType === 'safe') {
                 player.inSafeZone = true;
             }
 
-            // ¿Es una zona de Techo/Interior?
+            // Â¿Es una zona de Techo/Interior?
             if (z.zoneType === 'indoor') {
                 isUnderRoof = true;
             }
@@ -10505,14 +10574,14 @@ function update(currentTime) {
     }
 
     // --- NUEVO FIX: EL HITBOX REAL DEL JUGADOR ---
-    // Definimos el tamaño del cuerpo físico. Si el TILE_SIZE es 16, 
-    // un hitbox de 10x10 píxeles evita que te atores en las esquinas.
+    // Definimos el tamaÃ±o del cuerpo fÃ­sico. Si el TILE_SIZE es 16, 
+    // un hitbox de 10x10 pÃ­xeles evita que te atores en las esquinas.
     const hitX = 5; // Mitad del ancho (Left/Right)
     const hitY = 5; // Mitad del alto (Up/Down)
 
-    // Esta función revisa las 4 esquinas del hitbox en lugar de solo el centro
+    // Esta funciÃ³n revisa las 4 esquinas del hitbox en lugar de solo el centro
     const isColliding = (x, y) => {
-        // OffsetY: Lo bajamos un poco (+3 píxeles) para simular perspectiva 3D (RPG).
+        // OffsetY: Lo bajamos un poco (+3 pÃ­xeles) para simular perspectiva 3D (RPG).
         // Esto permite que tu cabeza "tape" las paredes de arriba, pero tus pies choquen.
         const offsetY = 3;
         return checkWall(x - hitX, y - hitY + offsetY) || // Esquina Arriba-Izquierda
@@ -10526,7 +10595,7 @@ function update(currentTime) {
     player.worldX += player.vx;
     if (isColliding(player.worldX, player.worldY)) {
         player.worldX = oldX;
-        // 🛑 EL FIX: "Aproximación fina" pixel por pixel para pegar al jugador a la pared sin rebotar
+        // ðŸ›‘ EL FIX: "AproximaciÃ³n fina" pixel por pixel para pegar al jugador a la pared sin rebotar
         const stepX = Math.sign(player.vx);
         if (stepX !== 0) {
             let steps = Math.floor(Math.abs(player.vx));
@@ -10542,7 +10611,7 @@ function update(currentTime) {
     player.worldY += player.vy;
     if (isColliding(player.worldX, player.worldY)) {
         player.worldY = oldY;
-        // 🛑 EL FIX: "Aproximación fina" en Y
+        // ðŸ›‘ EL FIX: "AproximaciÃ³n fina" en Y
         const stepY = Math.sign(player.vy);
         if (stepY !== 0) {
             let steps = Math.floor(Math.abs(player.vy));
@@ -10554,7 +10623,7 @@ function update(currentTime) {
     }
 
     // --- 3. SHOOTING & COMBAT PHYSICS ---
-    // 🛑 EL FIX: Si el objeto no es un arma real, usamos las estadísticas de "none" (Manos vacías)
+    // ðŸ›‘ EL FIX: Si el objeto no es un arma real, usamos las estadÃ­sticas de "none" (Manos vacÃ­as)
     let currentWeaponStats = WEAPONS[player.equippedWeapon];
     if (!currentWeaponStats) {
         currentWeaponStats = WEAPONS["none"] || { type: 'melee', fireRate: 400, reach: 24, hitW: 24, hitH: 24, damage: 0 };
@@ -10562,20 +10631,20 @@ function update(currentTime) {
 
     if (isShooting && !player.isReloading && !player.inSafeZone && !player.isSitting) {
         if (Date.now() - lastShotTime > (currentWeaponStats.fireRate || 300)) {
-            // 🔊 THE FIX: Play the sound locally the exact millisecond you attack!
+            // ðŸ”Š THE FIX: Play the sound locally the exact millisecond you attack!
             playItemSound(player.equippedWeapon, 'use', 0.8);
             // =========================================================
-            // 🔥 LÓGICA DE COMBATE MELEE (El Hitbox de Pizza) 🔥
+            // ðŸ”¥ LÃ“GICA DE COMBATE MELEE (El Hitbox de Pizza) ðŸ”¥
             // =========================================================
             if (currentWeaponStats.type === 'melee') {
-                // 🛑 EL FIX DEL MELEE BUG: Forzar el cuerpo a mirar hacia donde apuntas INSTANTÁNEAMENTE
+                // ðŸ›‘ EL FIX DEL MELEE BUG: Forzar el cuerpo a mirar hacia donde apuntas INSTANTÃNEAMENTE
                 let deg = shootAngle * (180 / Math.PI);
                 if (deg > 45 && deg <= 135) player.frameY = 0;
                 else if (deg > 135 || deg <= -135) player.frameY = 1;
                 else if (deg > -45 && deg <= 45) player.frameY = 2;
                 else if (deg > -135 && deg <= -45) player.frameY = 3;
 
-                // 1. Activar animación visual del jugador
+                // 1. Activar animaciÃ³n visual del jugador
                 player.isSwinging = true;
                 player.swingStartTime = Date.now();
                 player.swingDuration = 200;
@@ -10584,7 +10653,7 @@ function update(currentTime) {
                     ws.send(MessagePack.encode({ type: 'melee_swing', weaponId: player.equippedWeapon }));
                 }
 
-                // 2. Extraer datos matemáticos (Ahora usa la dirección corregida al instante)
+                // 2. Extraer datos matemÃ¡ticos (Ahora usa la direcciÃ³n corregida al instante)
                 const dir = player.frameY;
                 let aimAngle = 0; let dirMult = 1;
                 if (dir === 0) aimAngle = Math.PI / 2;
@@ -10605,10 +10674,10 @@ function update(currentTime) {
                 for (let id in otherPlayers) {
                     let enemy = otherPlayers[id];
                     if (enemy.worldX !== undefined && !enemy.isDead) {
-                        // A. ¿Está suficientemente cerca?
+                        // A. Â¿EstÃ¡ suficientemente cerca?
                         const dist = Math.hypot(enemy.worldX - hitOriginX, enemy.worldY - hitOriginY);
                         if (dist <= hitRange) {
-                            // B. ¿Está dentro del ángulo de la espada?
+                            // B. Â¿EstÃ¡ dentro del Ã¡ngulo de la espada?
                             const angleToEnemy = Math.atan2(enemy.worldY - hitOriginY, enemy.worldX - hitOriginX);
                             let angleDiff = angleToEnemy - trueHitAngle;
 
@@ -10617,9 +10686,9 @@ function update(currentTime) {
                             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
 
                             if (Math.abs(angleDiff) <= halfWidRad) {
-                                // 🛑 SERVER-AUTHORITATIVE COMBAT:
-                                // Ya no enviamos damage_player. El servidor lo calcula automáticamente
-                                // usando las físicas del melee_swing.
+                                // ðŸ›‘ SERVER-AUTHORITATIVE COMBAT:
+                                // Ya no enviamos damage_player. El servidor lo calcula automÃ¡ticamente
+                                // usando las fÃ­sicas del melee_swing.
                             }
                         }
                     }
@@ -10636,7 +10705,7 @@ function update(currentTime) {
                     const hw = (centralBase.hitboxW || 32) / 2;
                     const hh = (centralBase.hitboxH || 32) / 2;
 
-                    // 🛑 EL FIX MATEMÁTICO: Encontrar el borde exacto de la base más cercano a tu espada
+                    // ðŸ›‘ EL FIX MATEMÃTICO: Encontrar el borde exacto de la base mÃ¡s cercano a tu espada
                     let closestX = Math.max(bx - hw, Math.min(hitOriginX, bx + hw));
                     let closestY = Math.max(by - hh, Math.min(hitOriginY, by + hh));
 
@@ -10645,19 +10714,19 @@ function update(currentTime) {
 
                     // Si la espada alcanza a tocar ese borde...
                     if (distToBaseEdge <= hitRange) {
-                        // Calculamos el ángulo hacia ese borde exacto
+                        // Calculamos el Ã¡ngulo hacia ese borde exacto
                         const angleToEdge = Math.atan2(closestY - hitOriginY, closestX - hitOriginX);
                         let angleDiffBase = angleToEdge - trueHitAngle;
 
-                        // Normalizar el ángulo
+                        // Normalizar el Ã¡ngulo
                         while (angleDiffBase <= -Math.PI) angleDiffBase += Math.PI * 2;
                         while (angleDiffBase > Math.PI) angleDiffBase -= Math.PI * 2;
 
-                        // Si el borde está dentro del "abanico" (cono) de tu espadazo
+                        // Si el borde estÃ¡ dentro del "abanico" (cono) de tu espadazo
                         if (Math.abs(angleDiffBase) <= halfWidRad) {
-                            // ¡GOLPE CONFIRMADO A LA BASE!
+                            // Â¡GOLPE CONFIRMADO A LA BASE!
 
-                            // 💥 NUEVO: CREAR CHISPA DE IMPACTO MELEE (OPTIMIZADO CON POOLING) 💥
+                            // ðŸ’¥ NUEVO: CREAR CHISPA DE IMPACTO MELEE (OPTIMIZADO CON POOLING) ðŸ’¥
                             spawnSpark(
                                 closestX + (Math.random() * 12 - 6),
                                 closestY + (Math.random() * 12 - 6),
@@ -10665,7 +10734,7 @@ function update(currentTime) {
                                 currentWeaponStats.color || '#e67e22'
                             );
 
-                            // Enviamos el daño al servidor
+                            // Enviamos el daÃ±o al servidor
                             if (ws.readyState === WebSocket.OPEN) {
                                 ws.send(MessagePack.encode({
                                     type: 'damage_base',
@@ -10676,25 +10745,25 @@ function update(currentTime) {
                     }
                 }
 
-                // 🛑 LA PIEZA QUE FALTABA: ESCANEAR BASURA EN EL PISO
+                // ðŸ›‘ LA PIEZA QUE FALTABA: ESCANEAR BASURA EN EL PISO
                 if (player.equippedWeapon === 'trash_picker') {
                     for (let itemId in groundItems) {
                         let item = groundItems[itemId];
                         // Distancia desde el jugador hasta la pieza de basura
                         const distToTrash = Math.hypot(item.x - hitOriginX, item.y - hitOriginY);
 
-                        // Si está en el rango de alcance de tu recogedor...
+                        // Si estÃ¡ en el rango de alcance de tu recogedor...
                         if (distToTrash <= hitRange) {
                             const angleToTrash = Math.atan2(item.y - hitOriginY, item.x - hitOriginX);
                             let angleDiffTrash = angleToTrash - trueHitAngle;
 
-                            // Normalizar ángulo
+                            // Normalizar Ã¡ngulo
                             while (angleDiffTrash <= -Math.PI) angleDiffTrash += Math.PI * 2;
                             while (angleDiffTrash > Math.PI) angleDiffTrash -= Math.PI * 2;
 
-                            // Si está justo enfrente de ti (en el ángulo del pinchazo)
+                            // Si estÃ¡ justo enfrente de ti (en el Ã¡ngulo del pinchazo)
                             if (Math.abs(angleDiffTrash) <= halfWidRad) {
-                                // ¡PINCHASTE LA BASURA! Mandamos cobrar al servidor
+                                // Â¡PINCHASTE LA BASURA! Mandamos cobrar al servidor
                                 if (ws.readyState === WebSocket.OPEN) {
                                     ws.send(MessagePack.encode({ type: 'pickup_trash', itemId: itemId }));
                                 }
@@ -10704,10 +10773,10 @@ function update(currentTime) {
                             }
                         }
                     }
-                }// 👇 NUEVO: SI EL ARMA ES UNA PALA, MANDAR EXCAVAR 👇
+                }// ðŸ‘‡ NUEVO: SI EL ARMA ES UNA PALA, MANDAR EXCAVAR ðŸ‘‡
                 else if (player.equippedWeapon === 'shovel' || currentWeaponStats.name.toLowerCase().includes('pala')) {
                     if (ws.readyState === WebSocket.OPEN) {
-                        // Enviamos la punta exacta donde pegó la pala
+                        // Enviamos la punta exacta donde pegÃ³ la pala
                         ws.send(MessagePack.encode({
                             type: 'dig',
                             hitX: hitOriginX,
@@ -10717,13 +10786,13 @@ function update(currentTime) {
                 }
             }
             // =========================================================
-            // 🔫 LÓGICA DE DISPARO RANGED (Pistolas y Escopetas)
+            // ðŸ”« LÃ“GICA DE DISPARO RANGED (Pistolas y Escopetas)
             // =========================================================
             else {
                 if (player.ammo > 0) {
                     player.ammo--;
 
-                    // 🔥 LEER LA PUNTA DEL CAÑÓN DESDE EL EDITOR GANI 🔥
+                    // ðŸ”¥ LEER LA PUNTA DEL CAÃ‘Ã“N DESDE EL EDITOR GANI ðŸ”¥
                     const dir = player.frameY;
                     const d = currentWeaponStats.dirStats ? (currentWeaponStats.dirStats[dir] || {}) : {};
 
@@ -10731,13 +10800,13 @@ function update(currentTime) {
                     let spawnX = player.worldX + (d.hitX || 0);
                     let spawnY = player.worldY + (d.hitY || 0);
 
-                    // 🔥 EL FIX DE PARALAJE PARA PC (Ratón) 🔥
+                    // ðŸ”¥ EL FIX DE PARALAJE PARA PC (RatÃ³n) ðŸ”¥
                     let finalAngle = shootAngle; // Por defecto usa el del Joystick (Celular)
                     if (!isTouchDevice) {
-                        // Convertir la mira del ratón a coordenadas del mapa real
+                        // Convertir la mira del ratÃ³n a coordenadas del mapa real
                         const mouseWorldX = player.worldX + (mouseX - window.innerWidth / 2) / zoomLevel;
                         const mouseWorldY = player.worldY + (mouseY - window.innerHeight / 2) / zoomLevel;
-                        // Calcular ángulo desde el cañón de la pistola hacia el ratón
+                        // Calcular Ã¡ngulo desde el caÃ±Ã³n de la pistola hacia el ratÃ³n
                         finalAngle = Math.atan2(mouseWorldY - spawnY, mouseWorldX - spawnX);
                     }
 
@@ -10746,18 +10815,18 @@ function update(currentTime) {
                     player.lastShotTime = Date.now();
 
                     // ==========================================================
-                    // 💥 NUEVO: SISTEMA DE MÚLTIPLES BALAS (ESCOPETAS / SPREAD)
+                    // ðŸ’¥ NUEVO: SISTEMA DE MÃšLTIPLES BALAS (ESCOPETAS / SPREAD)
                     // ==========================================================
 
-                    // ¿Cuántas balas salen y qué tan abierto es el abanico?
+                    // Â¿CuÃ¡ntas balas salen y quÃ© tan abierto es el abanico?
                     // Si el arma no tiene estos valores, asume 1 bala y 0 grados de apertura (pistola normal)
                     const bulletCount = currentWeaponStats.pellets || 1;
                     const spreadAngleDegrees = currentWeaponStats.spread || 0;
 
-                    // Convertir los grados de apertura a radianes para la matemática
+                    // Convertir los grados de apertura a radianes para la matemÃ¡tica
                     const spreadAngleRads = spreadAngleDegrees * (Math.PI / 180);
 
-                    // Creamos una "caja" vacía para guardar las balas
+                    // Creamos una "caja" vacÃ­a para guardar las balas
                     let anglesArray = [];
 
                     for (let i = 0; i < bulletCount; i++) {
@@ -10772,14 +10841,14 @@ function update(currentTime) {
                         // 1. Creamos la bala en nuestra pantalla al instante
                         spawnProjectile(spawnX, spawnY, bulletAngle, myId, player.equippedWeapon);
 
-                        // 2. Guardamos el ángulo en nuestra caja
+                        // 2. Guardamos el Ã¡ngulo en nuestra caja
                         anglesArray.push(bulletAngle);
                     }
 
                     // 3. Enviamos LA CAJA COMPLETA al servidor de forma inteligente
                     if (ws.readyState === WebSocket.OPEN) {
                         if (bulletCount > 1) {
-                            // 📦 Si es escopeta, enviamos el arreglo múltiple 
+                            // ðŸ“¦ Si es escopeta, enviamos el arreglo mÃºltiple 
                             // (NOTA: Para que otros vean la escopeta, debes actualizar tu Server Node.js para que retransmita 'shoot_shotgun')
                             ws.send(MessagePack.encode({
                                 type: 'shoot_shotgun',
@@ -10789,25 +10858,25 @@ function update(currentTime) {
                                 weaponId: player.equippedWeapon
                             }));
                         } else {
-                            // 🔫 EL FIX: Si es pistola normal, mandamos el paquete clásico que el servidor SÍ conoce
+                            // ðŸ”« EL FIX: Si es pistola normal, mandamos el paquete clÃ¡sico que el servidor SÃ conoce
                             ws.send(MessagePack.encode({
                                 type: 'shoot',
                                 x: spawnX,
                                 y: spawnY,
-                                angle: finalAngle, // Mandamos el ángulo único en vez del Array
+                                angle: finalAngle, // Mandamos el Ã¡ngulo Ãºnico en vez del Array
                                 weaponId: player.equippedWeapon
                             }));
                         }
                     }
                     // ==========================================================
 
-                    /// 💥 EL FIX: RETROCESO FÍSICO SUAVE (SELF-KNOCKBACK) 💥
+                    /// ðŸ’¥ EL FIX: RETROCESO FÃSICO SUAVE (SELF-KNOCKBACK) ðŸ’¥
                     const kbForce = Number(d.kb) || 0;
                     if (kbForce > 0) {
                         player.kbX = -(Math.cos(finalAngle) * (kbForce / 2));
                         player.kbY = -(Math.sin(finalAngle) * (kbForce / 2));
 
-                        // 🛑 EL FIX 2: Arrancamos el cronómetro de retroceso
+                        // ðŸ›‘ EL FIX 2: Arrancamos el cronÃ³metro de retroceso
                         player.staggerTimer = Date.now();
                     }
 
@@ -10816,9 +10885,9 @@ function update(currentTime) {
                     playItemSound(player.equippedWeapon, 'reload', 0.7);
                     setTimeout(() => {
                         player.ammo = currentWeaponStats.magSize;
-                        player.weaponAmmo[player.equippedWeapon] = currentWeaponStats.magSize; // 💾 Sincronizar memoria
+                        player.weaponAmmo[player.equippedWeapon] = currentWeaponStats.magSize; // ðŸ’¾ Sincronizar memoria
 
-                        // 🚀 EL FIX MÁGICO: ¡Avisarle al servidor que el cargador está lleno de nuevo!
+                        // ðŸš€ EL FIX MÃGICO: Â¡Avisarle al servidor que el cargador estÃ¡ lleno de nuevo!
                         if (ws.readyState === WebSocket.OPEN) {
                             ws.send(MessagePack.encode({ type: 'reload_weapon', weaponId: player.equippedWeapon }));
                         }
@@ -10830,7 +10899,7 @@ function update(currentTime) {
         }
     }
 
-    // --- ACTUALIZAR UI DE MUNICIÓN EN TIEMPO REAL (OPTIMIZADO DE VERDAD) ---
+    // --- ACTUALIZAR UI DE MUNICIÃ“N EN TIEMPO REAL (OPTIMIZADO DE VERDAD) ---
     if (player.equippedWeapon !== "none" && WEAPONS[player.equippedWeapon]) {
 
         if (WEAPONS[player.equippedWeapon].type === 'melee') {
@@ -10844,7 +10913,7 @@ function update(currentTime) {
                 window.lastAmmoState = 'visible';
             }
 
-            // 🚀 EL FIX MÁXIMO: Mover la caja SOLO si cambiaste de slot (Adiós getBoundingClientRect por frame)
+            // ðŸš€ EL FIX MÃXIMO: Mover la caja SOLO si cambiaste de slot (AdiÃ³s getBoundingClientRect por frame)
             if (window.lastRenderedSlot !== player.activeSlot) {
                 const activeSlotElem = document.getElementById('hud-slot-' + player.activeSlot);
                 if (activeSlotElem) {
@@ -10857,11 +10926,11 @@ function update(currentTime) {
 
             const maxAmmo = WEAPONS[player.equippedWeapon].magSize;
 
-            // 🚀 EL FIX: Solo actualizar el DOM (texto HTML) si las balas o el estado de recarga realmente cambiaron
+            // ðŸš€ EL FIX: Solo actualizar el DOM (texto HTML) si las balas o el estado de recarga realmente cambiaron
             if (window.lastRenderedAmmo !== player.ammo || window.lastRenderedReloading !== player.isReloading) {
                 if (player.isReloading) {
                     uiAmmoCurrent.style.color = "#e74c3c";
-                    uiAmmoCurrent.innerText = "↻";
+                    uiAmmoCurrent.innerText = "â†»";
                     uiAmmoMax.innerText = "RELOAD";
                     uiAmmoDisplay.style.borderColor = "#e74c3c";
                 } else {
@@ -10895,55 +10964,55 @@ function update(currentTime) {
     for (let i = 0; i < MAX_PROJECTILES; i++) {
         let p = projectiles[i];
 
-        // Si la bala está apagada, la ignoramos para no gastar procesador
+        // Si la bala estÃ¡ apagada, la ignoramos para no gastar procesador
         if (!p.active) continue;
 
         // === FIX: DESINTEGRAR BALAS DE MUERTOS ===
         if (p.owner === myId) {
             if (player.isDead) {
-                p.active = false; // 🛑 APAGAR
+                p.active = false; // ðŸ›‘ APAGAR
                 continue;
             }
         } else {
             const bulletOwner = otherPlayers[p.owner];
             if (bulletOwner && bulletOwner.isDead) {
-                p.active = false; // 🛑 APAGAR
+                p.active = false; // ðŸ›‘ APAGAR
                 continue;
             }
         }
 
         // Movimiento normal de la bala
-        // 🚀 EL FIX FÍSICO: Balas sincronizadas con el lag (Delta Time)
+        // ðŸš€ EL FIX FÃSICO: Balas sincronizadas con el lag (Delta Time)
         p.x += p.vx * dtScale;
         p.y += p.vy * dtScale;
         p.life -= dtScale;
 
         let hitSomeone = false;
-        // ⚡ Hitbox ligeramente más grande (14px en vez de 12) para que el
+        // âš¡ Hitbox ligeramente mÃ¡s grande (14px en vez de 12) para que el
         // hit registration sea consistente entre ambas pantallas
         const HITBOX_RADIUS = 14;
 
-        // A. ¿La bala chocó contra MÍ? 
+        // A. Â¿La bala chocÃ³ contra MÃ? 
         if (p.owner !== myId && !player.isDead && Math.hypot(p.x - player.worldX, p.y - player.worldY) < HITBOX_RADIUS) {
             hitSomeone = true;
         }
 
-        // B. ¿La bala chocó contra ALGUIEN MÁS?
+        // B. Â¿La bala chocÃ³ contra ALGUIEN MÃS?
         if (!hitSomeone) {
             for (let id in otherPlayers) {
                 let enemy = otherPlayers[id];
 
                 if (enemy.worldX !== undefined && !enemy.isDead && p.owner !== id && Math.hypot(p.x - enemy.worldX, p.y - enemy.worldY) < HITBOX_RADIUS) {
                     hitSomeone = true;
-                    // 🛑 SERVER-AUTHORITATIVE COMBAT:
-                    // La bala local es solo visual. Se destruirá al chocar, 
-                    // pero es el SERVIDOR quien decide si bajó vida o no.
+                    // ðŸ›‘ SERVER-AUTHORITATIVE COMBAT:
+                    // La bala local es solo visual. Se destruirÃ¡ al chocar, 
+                    // pero es el SERVIDOR quien decide si bajÃ³ vida o no.
                     break;
                 }
             }
         }
 
-        // C. ¿La bala chocó contra la BASE CENTRAL?
+        // C. Â¿La bala chocÃ³ contra la BASE CENTRAL?
         if (!hitSomeone && centralBase) {
             const baseHitX = centralBase.worldX + (centralBase.hitboxOffsetX || 0);
             const baseHitY = centralBase.worldY + (centralBase.hitboxOffsetY || 0);
@@ -10952,7 +11021,7 @@ function update(currentTime) {
 
             if (p.x >= baseHitX - hw && p.x <= baseHitX + hw && p.y >= baseHitY - hh && p.y <= baseHitY + hh) {
                 hitSomeone = true;
-                // 💥 CHISPA DE BALA (OPTIMIZADO CON POOLING) 💥
+                // ðŸ’¥ CHISPA DE BALA (OPTIMIZADO CON POOLING) ðŸ’¥
                 spawnSpark(p.x, p.y, 12, p.color || "#f1c40f");
 
                 if (p.owner === myId && player.squad) {
@@ -10967,19 +11036,19 @@ function update(currentTime) {
 
         // Destruir la bala (Simplemente apagarla, NUNCA usar splice)
         if (p.life <= 0 || checkWall(p.x, p.y) || hitSomeone) {
-            p.active = false; // 🛑 LA MAGIA DE RECICLAJE
+            p.active = false; // ðŸ›‘ LA MAGIA DE RECICLAJE
         }
     }
 
-    // === EL HACK MAESTRO DE LA CÁMARA CINEMÁTICA ===
+    // === EL HACK MAESTRO DE LA CÃMARA CINEMÃTICA ===
     let realPlayerX = player.worldX;
     let realPlayerY = player.worldY;
 
     if (isCinematicLoading) {
-        cinematicTimer += 0.002; // Velocidad del dron (súbela a 0.005 si quieres que vuele más rápido)
+        cinematicTimer += 0.002; // Velocidad del dron (sÃºbela a 0.005 si quieres que vuele mÃ¡s rÃ¡pido)
 
-        // EL FIX: Usamos realPlayerX y realPlayerY como el centro de la órbita.
-        // 400 y 300 es la distancia en píxeles hacia afuera (una órbita ovalada).
+        // EL FIX: Usamos realPlayerX y realPlayerY como el centro de la Ã³rbita.
+        // 400 y 300 es la distancia en pÃ­xeles hacia afuera (una Ã³rbita ovalada).
         player.worldX = realPlayerX + (Math.cos(cinematicTimer) * 400);
         player.worldY = realPlayerY + (Math.sin(cinematicTimer) * 300);
     }
@@ -11002,7 +11071,7 @@ function update(currentTime) {
         const cameraOffsetX = screenCenterX - (player.worldX * zoomLevel);
         const cameraOffsetY = screenCenterY - (player.worldY * zoomLevel);
 
-        // 🚀 EL FIX: Dar la orden de nitidez UNA SOLA VEZ antes del bucle masivo
+        // ðŸš€ EL FIX: Dar la orden de nitidez UNA SOLA VEZ antes del bucle masivo
         ctx.imageSmoothingEnabled = false;
 
         // 2. RENDER ONLY WHAT IS VISIBLE
@@ -11022,19 +11091,19 @@ function update(currentTime) {
 
                     if (!tileData) continue;
 
-                    // 👇 LA MAGIA ANTI-GELATINA (ANCLAJE CONTINUO) 👇
+                    // ðŸ‘‡ LA MAGIA ANTI-GELATINA (ANCLAJE CONTINUO) ðŸ‘‡
                     const exactScaledSize = TILE_SIZE * zoomLevel;
 
-                    // 🛑 EL FIX DE CUADRÍCULA UNIFICADA 🛑
-                    // Calculamos la posición con decimales atados a la cámara global
+                    // ðŸ›‘ EL FIX DE CUADRÃCULA UNIFICADA ðŸ›‘
+                    // Calculamos la posiciÃ³n con decimales atados a la cÃ¡mara global
                     const exactX = cameraOffsetX + (gridX * scaledSize);
                     const exactY = cameraOffsetY + (gridY * scaledSize);
 
-                    // Anclamos al píxel más cercano
+                    // Anclamos al pÃ­xel mÃ¡s cercano
                     const drawX = Math.floor(exactX);
                     const drawY = Math.floor(exactY);
 
-                    // Calculamos dónde empieza el vecino para saber el ancho exacto
+                    // Calculamos dÃ³nde empieza el vecino para saber el ancho exacto
                     const nextX = Math.floor(cameraOffsetX + ((gridX + 1) * scaledSize));
                     const nextY = Math.floor(cameraOffsetY + ((gridY + 1) * scaledSize));
 
@@ -11044,13 +11113,13 @@ function update(currentTime) {
                     const drawH = (nextY - drawY) + 0.7;
                     // =========================================================
                     // =========================================================
-                    // 🌟 NUEVO: DIBUJAR ARMAS DE TIENDA (CON AJUSTE MANUAL Y PRECIO) 🌟
+                    // ðŸŒŸ NUEVO: DIBUJAR ARMAS DE TIENDA (CON AJUSTE MANUAL Y PRECIO) ðŸŒŸ
                     // =========================================================
                     if (currentLayer === 15 && tileData.triggerType === 'shop' && tileData.itemId) {
                         const wSprite = window.loadedItemSprites[tileData.itemId];
                         if (wSprite && wSprite.complete) {
 
-                            // 1. Buscar si el ítem tiene un ajuste manual en tu Catálogo (Opcional)
+                            // 1. Buscar si el Ã­tem tiene un ajuste manual en tu CatÃ¡logo (Opcional)
                             const itemStats = weaponsDB[tileData.itemId] || window.MASTER_CATALOG[tileData.itemId] || {};
                             const tweakX = (tileData.shelfX || 0) * zoomLevel;
                             const tweakY = (tileData.shelfY || 0) * zoomLevel;
@@ -11081,7 +11150,7 @@ function update(currentTime) {
                             );
                             ctx.restore(); // Restauramos para no afectar el texto
 
-                            // 👇 NUEVO: DIBUJAR EL PRECIO DEBAJO DEL TILE (ESTÁTICO) 👇
+                            // ðŸ‘‡ NUEVO: DIBUJAR EL PRECIO DEBAJO DEL TILE (ESTÃTICO) ðŸ‘‡
                             if (itemStats.price !== undefined) {
                                 ctx.save();
 
@@ -11091,8 +11160,8 @@ function update(currentTime) {
                                 ctx.font = `900 ${fontSize}px sans-serif`;
                                 ctx.textAlign = "center";
 
-                                // 🛑 EL FIX: Anclamos el texto al centro exacto del bloque y justo debajo de él.
-                                // Ya no usamos tweakX ni tweakY aquí, para que todos los precios estén alineados perfectamente.
+                                // ðŸ›‘ EL FIX: Anclamos el texto al centro exacto del bloque y justo debajo de Ã©l.
+                                // Ya no usamos tweakX ni tweakY aquÃ­, para que todos los precios estÃ©n alineados perfectamente.
                                 const textX = drawX + (scaledTile / 2);
                                 const textY = drawY + scaledTile + (5 * zoomLevel);
 
@@ -11110,10 +11179,10 @@ function update(currentTime) {
                             }
                         }
                     }
-                    // 🛑 EL ESCUDO: Si no estamos en Modo Edición, ocultamos la "caja de color" de la capa 15
+                    // ðŸ›‘ EL ESCUDO: Si no estamos en Modo EdiciÃ³n, ocultamos la "caja de color" de la capa 15
                     if (!editMode && currentLayer === 15) continue;
 
-                    // --- LÓGICA ORIGINAL DE DIBUJO DE TILES DEL MAPA ---
+                    // --- LÃ“GICA ORIGINAL DE DIBUJO DE TILES DEL MAPA ---
                     const tsData = getTilesetData(tileData.tileId);
                     if (!tsData || !tsData.img) continue;
 
@@ -11131,7 +11200,7 @@ function update(currentTime) {
                         ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, -drawW / 2, -drawH / 2, drawW, drawH);
                         ctx.restore();
                     } else {
-                        // Dibujo estándar con sellado hermético
+                        // Dibujo estÃ¡ndar con sellado hermÃ©tico
                         ctx.drawImage(tsData.img, sx, sy, TILE_SIZE, TILE_SIZE, drawX, drawY, drawW, drawH);
                     }
                 }
@@ -11140,7 +11209,7 @@ function update(currentTime) {
         ctx.globalAlpha = 1.0;
     }
     // === 1. DRAW GROUND LAYERS (BELOW PLAYER: L0 - L7) ===
-    // 🚀 EL FIX: Declaramos las variables de cámara AFUERA para que el techo también pueda usarlas
+    // ðŸš€ EL FIX: Declaramos las variables de cÃ¡mara AFUERA para que el techo tambiÃ©n pueda usarlas
     let dX = 0, dY = 0, dW = 0, dH = 0;
 
     if (editMode) {
@@ -11167,8 +11236,8 @@ function update(currentTime) {
         const minCY = Math.floor((minWorldY / TILE_SIZE) / CHUNK_SIZE);
         const maxCY = Math.floor((maxWorldY / TILE_SIZE) / CHUNK_SIZE);
 
-        // 🚀 EL FIX MAXIMO DE MEMORIA (JIT BAKING & GARBAGE COLLECTION)
-        // Mantén solo los chunks cercanos en la memoria RAM para no crashear iOS
+        // ðŸš€ EL FIX MAXIMO DE MEMORIA (JIT BAKING & GARBAGE COLLECTION)
+        // MantÃ©n solo los chunks cercanos en la memoria RAM para no crashear iOS
         const activeChunkKeys = new Set();
         for (let cy = minCY - 1; cy <= maxCY + 1; cy++) {
             for (let cx = minCX - 1; cx <= maxCX + 1; cx++) {
@@ -11233,9 +11302,9 @@ function update(currentTime) {
     }
 
     // =========================================================
-    // 🌟 CAPA 15: EFECTOS VISUALES DE TILES DE LÓGICA
-    // El tile de color en sí está oculto, pero dibujamos encima
-    // todo lo que la lógica debe mostrar (armas de tienda, precios, etc.)
+    // ðŸŒŸ CAPA 15: EFECTOS VISUALES DE TILES DE LÃ“GICA
+    // El tile de color en sÃ­ estÃ¡ oculto, pero dibujamos encima
+    // todo lo que la lÃ³gica debe mostrar (armas de tienda, precios, etc.)
     // =========================================================
     if (!editMode) {
         const l15screenW = cachedScreenWidth / zoomLevel;
@@ -11257,11 +11326,11 @@ function update(currentTime) {
                 const l15tile = worldMap.get(l15key);
                 if (!l15tile) continue;
 
-                // Posición en pantalla de este tile (igual que drawWorldLayers)
+                // PosiciÃ³n en pantalla de este tile (igual que drawWorldLayers)
                 const l15drawX = Math.floor(l15cameraOffX + (gx * l15scaledSize));
                 const l15drawY = Math.floor(l15cameraOffY + (gy * l15scaledSize));
 
-                // 🏪 TIENDA: dibujar el arma expuesta y su precio
+                // ðŸª TIENDA: dibujar el arma expuesta y su precio
                 if (l15tile.triggerType === 'shop' && l15tile.itemId) {
                     const wSprite = window.loadedItemSprites && window.loadedItemSprites[l15tile.itemId];
                     if (wSprite && wSprite.complete) {
@@ -11307,14 +11376,14 @@ function update(currentTime) {
                     }
                 }
 
-                // 🔧 Aquí puedes añadir más casos de lógica visual en el futuro
-                // (NPCs, portales, puertas, etc.) siguiendo el mismo patrón
+                // ðŸ”§ AquÃ­ puedes aÃ±adir mÃ¡s casos de lÃ³gica visual en el futuro
+                // (NPCs, portales, puertas, etc.) siguiendo el mismo patrÃ³n
             }
         }
     }
     // =========================================================
 
-    // === 🛑 DIBUJAR LA BASURA EN EL PISO ===
+    // === ðŸ›‘ DIBUJAR LA BASURA EN EL PISO ===
     for (let itemId in groundItems) {
         let item = groundItems[itemId];
         const iDrawX = Math.floor(screenCenterX + (item.x - renderWorldX) * zoomLevel);
@@ -11322,7 +11391,7 @@ function update(currentTime) {
 
         if (trashSpritesheet.complete && trashSpritesheet.naturalWidth > 0) {
             const drawSize = 16 * zoomLevel;
-            // Extrae exactamente el cuadrito usando item.sx y item.sy que mandó el servidor
+            // Extrae exactamente el cuadrito usando item.sx y item.sy que mandÃ³ el servidor
             ctx.drawImage(
                 trashSpritesheet,
                 item.sx, item.sy, 16, 16,
@@ -11331,7 +11400,7 @@ function update(currentTime) {
         }
     }
 
-    // === 🕳️ DIBUJAR HOYOS DE EXCAVACIÓN ===
+    // === ðŸ•³ï¸ DIBUJAR HOYOS DE EXCAVACIÃ“N ===
     for (let i = digHoles.length - 1; i >= 0; i--) {
         let hole = digHoles[i];
         hole.life--;
@@ -11342,9 +11411,9 @@ function update(currentTime) {
         // El hoyo se desvanece suavemente antes de desaparecer
         ctx.globalAlpha = Math.min(1, hole.life / 50);
 
-        ctx.fillStyle = "rgba(62, 39, 35, 0.8)"; // Café oscuro tierra
+        ctx.fillStyle = "rgba(62, 39, 35, 0.8)"; // CafÃ© oscuro tierra
         ctx.beginPath();
-        // Dibujamos un óvalo para que parezca que está en perspectiva 3D
+        // Dibujamos un Ã³valo para que parezca que estÃ¡ en perspectiva 3D
         ctx.ellipse(hDrawX, hDrawY, 12 * zoomLevel, 6 * zoomLevel, 0, 0, Math.PI * 2);
         ctx.fill();
 
@@ -11370,16 +11439,16 @@ function update(currentTime) {
         const p = otherPlayers[id];
         if (!p || p.worldX === undefined || !p.username || p.invisibleEnabled) continue;
 
-        // 🛑 THE PERFECT MOVEMENT FIX v3 (DELTA-TIME LERP) 🛑
+        // ðŸ›‘ THE PERFECT MOVEMENT FIX v3 (DELTA-TIME LERP) ðŸ›‘
         let dx = p.targetX - p.worldX;
         let dy = p.targetY - p.worldY;
         let dist = Math.hypot(dx, dy);
 
-        // 1. 🚀 FIX JITTER OTROS JUGADORES: Lerp atado a dtScale.
+        // 1. ðŸš€ FIX JITTER OTROS JUGADORES: Lerp atado a dtScale.
         // Con factor fijo 0.3, en frames irregulares el jugador avanza
-        // distinto cada frame → tirones. Con dtScale el movimiento es
-        // proporcional al tiempo real transcurrido → suave en cualquier fps.
-        // 🟢 SMOOTHER LERP: tighter factor catches up faster without overshooting
+        // distinto cada frame â†’ tirones. Con dtScale el movimiento es
+        // proporcional al tiempo real transcurrido â†’ suave en cualquier fps.
+        // ðŸŸ¢ SMOOTHER LERP: tighter factor catches up faster without overshooting
         const lerpFactor = Math.min(1.0, 0.22 * dtScale);
         p.worldX += dx * lerpFactor;
         p.worldY += dy * lerpFactor;
@@ -11387,20 +11456,20 @@ function update(currentTime) {
         // 2. Truco visual: Forzar que las piernas se muevan mientras haya deslizamiento
         if (!p.isMoving) {
             if (dist < 3) {
-                // Ya llegó a la meta, lo clavamos y paramos las piernas
+                // Ya llegÃ³ a la meta, lo clavamos y paramos las piernas
                 p.worldX = p.targetX;
                 p.worldY = p.targetY;
                 p.isVisuallyMoving = false;
             } else {
-                // El jugador soltó el control, pero por el lag de internet aún se está deslizando.
-                // Mantenemos las piernas moviéndose para ocultar el patinaje.
+                // El jugador soltÃ³ el control, pero por el lag de internet aÃºn se estÃ¡ deslizando.
+                // Mantenemos las piernas moviÃ©ndose para ocultar el patinaje.
                 p.isVisuallyMoving = true;
             }
         } else {
             p.isVisuallyMoving = true;
         }
 
-        // 3. Animación local para otros jugadores (Usando isVisuallyMoving)
+        // 3. AnimaciÃ³n local para otros jugadores (Usando isVisuallyMoving)
         p.tickCount = p.tickCount || 0;
         p.tickCount++;
 
@@ -11419,7 +11488,7 @@ function update(currentTime) {
         }
 
         if (p.frameY > 3) p.frameY = 0; // Escudo anti-crash
-        // 🚀 EL FIX DEL JITTER 2: Usar Math.floor igual que el piso, NUNCA Math.round
+        // ðŸš€ EL FIX DEL JITTER 2: Usar Math.floor igual que el piso, NUNCA Math.round
         const pDrawX = screenCenterX + ((p.worldX - renderWorldX) * zoomLevel);
         const pDrawY = screenCenterY + ((p.worldY - renderWorldY) * zoomLevel);
         const timeSinceHit = Date.now() - (p.lastHitTime || 0);
@@ -11430,7 +11499,7 @@ function update(currentTime) {
             setShadow(20 * zoomLevel, 'red');
             ctx.globalAlpha = 0.6;
         }
-        // 👇 DIBUJO LIMPIO DEL ENSAMBLADOR 👇
+        // ðŸ‘‡ DIBUJO LIMPIO DEL ENSAMBLADOR ðŸ‘‡
         drawModularCharacter(ctx, p, pDrawX, pDrawY, zoomLevel);
 
         if (isHit && !p.isDead) {
@@ -11461,11 +11530,11 @@ function update(currentTime) {
         ctx.globalAlpha = 0.6;
     }
 
-    // 🚀 EL FIX DEL JITTER: Pegar el personaje a la cuadrícula del mapa!
+    // ðŸš€ EL FIX DEL JITTER: Pegar el personaje a la cuadrÃ­cula del mapa!
     const myDrawX = screenCenterX + (window.camErrorX || 0);
     const myDrawY = screenCenterY + (window.camErrorY || 0);
 
-    // 👇 DIBUJO LIMPIO DEL ENSAMBLADOR PARA TI 👇
+    // ðŸ‘‡ DIBUJO LIMPIO DEL ENSAMBLADOR PARA TI ðŸ‘‡
     drawModularCharacter(ctx, player, myDrawX, myDrawY, zoomLevel);
 
     if (localIsHit && !player.isDead) {
@@ -11474,31 +11543,31 @@ function update(currentTime) {
     }
     ctx.shadowBlur = 0; ctx.globalAlpha = 1.0;
 
-    // --- ISLA DINÁMICA AVATAR (Simplificado para evitar lag) ---
+    // --- ISLA DINÃMICA AVATAR (Simplificado para evitar lag) ---
     const avatarCanvas = document.getElementById('island-avatar');
     if (avatarCanvas && headImg && headImg.complete) {
         const aCtx = avatarCanvas.getContext('2d');
         aCtx.clearRect(0, 0, avatarCanvas.width, avatarCanvas.height);
         if (player.isDead) aCtx.globalAlpha = 0.3;
-        // Antes decía 48, 48, 48, 48
+        // Antes decÃ­a 48, 48, 48, 48
         aCtx.drawImage(headImg, player.frameX * FRAME_SIZE, player.frameY * FRAME_SIZE, FRAME_SIZE, FRAME_SIZE, -4, -8, 24, 24);
         aCtx.globalAlpha = 1.0;
     }
 
-    // --- ⚽ SOCCER MINIGAME DRAW ---
+    // --- âš½ SOCCER MINIGAME DRAW ---
     if (window.soccerMinigame && window.soccerMinigame.ball.active) {
         const camOffX = screenCenterX - (renderWorldX * zoomLevel);
         const camOffY = screenCenterY - (renderWorldY * zoomLevel);
         window.soccerMinigame.draw(ctx, camOffX, camOffY, zoomLevel);
     }
 
-    // --- NEW: DRAW PROJECTILES DINÁMICOS ---
+    // --- NEW: DRAW PROJECTILES DINÃMICOS ---
     for (let p of projectiles) {
-        if (!p.active) continue; // 🛑 IGNORAR BALAS APAGADAS
+        if (!p.active) continue; // ðŸ›‘ IGNORAR BALAS APAGADAS
         const pDrawX = Math.floor(screenCenterX + (p.x - renderWorldX) * zoomLevel);
         const pDrawY = Math.floor(screenCenterY + (p.y - renderWorldY) * zoomLevel);
 
-        // 🛑 EL FIX DEL COLOR: Escudo de seguridad por si p.color es null o undefined
+        // ðŸ›‘ EL FIX DEL COLOR: Escudo de seguridad por si p.color es null o undefined
         const safeColor = p.color ? p.color : "#f1c40f"; // Amarillo brillante por defecto
 
         // Brillo de bala (respeta disableShadows)
@@ -11507,7 +11576,7 @@ function update(currentTime) {
         ctx.beginPath();
         ctx.arc(pDrawX, pDrawY, 3 * zoomLevel, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0; // Apagarlo siempre después de usarlo
+        ctx.shadowBlur = 0; // Apagarlo siempre despuÃ©s de usarlo
     }
     // Reset shadows so the rest of the game doesn't glow!
     ctx.shadowBlur = 0;
@@ -11516,8 +11585,8 @@ function update(currentTime) {
     if (editMode) {
         drawWorldLayers(8, 15); // En modo editor seguimos dibujando manual para ver las transparencias
     } else {
-        // 🌟 MAGIA PURA: 1 sola instrucción en vez de miles de iteraciones
-        if (isUnderRoof) ctx.globalAlpha = 0.3; // Hacer techos transparentes si estás en casa
+        // ðŸŒŸ MAGIA PURA: 1 sola instrucciÃ³n en vez de miles de iteraciones
+        if (isUnderRoof) ctx.globalAlpha = 0.3; // Hacer techos transparentes si estÃ¡s en casa
 
         ctx.imageSmoothingEnabled = false;
 
@@ -11568,17 +11637,17 @@ function update(currentTime) {
         const offsetX = (centralBase.spriteOffsetX || 0) * zoomLevel;
         const offsetY = (centralBase.spriteOffsetY || 0) * zoomLevel;
 
-        // 1. Matemáticas de Flote Suave (Hover)
+        // 1. MatemÃ¡ticas de Flote Suave (Hover)
         const hoverY = Math.sin(Date.now() / 300) * 5 * zoomLevel;
 
-        // 2. Dibujar Sombra Fija (Anclada al piso, ¡NO USA LOS OFFSETS!)
+        // 2. Dibujar Sombra Fija (Anclada al piso, Â¡NO USA LOS OFFSETS!)
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         ctx.beginPath();
         ctx.ellipse(bDrawX, bDrawY + (8 * zoomLevel), 14 * zoomLevel, 5 * zoomLevel, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // ==========================================
-        // 🧠 MOTOR DE ESTADOS: IDLE vs HIT
+        // ðŸ§  MOTOR DE ESTADOS: IDLE vs HIT
         // ==========================================
         const timeSinceBaseHit = Date.now() - (centralBase.lastHitTime || 0);
         const isUnderAttack = timeSinceBaseHit < 30000; // 30,000 ms = 30 segundos
@@ -11600,7 +11669,7 @@ function update(currentTime) {
                 const frameH = 64;
 
                 const totalFrames = Math.max(1, Math.floor(bImg.naturalWidth / frameW));
-                const animSpeed = isUnderAttack ? 100 : 150; // Gira más rápido si le disparan
+                const animSpeed = isUnderAttack ? 100 : 150; // Gira mÃ¡s rÃ¡pido si le disparan
 
                 let currentFrameX = 0;
                 if (totalFrames > 1) {
@@ -11611,7 +11680,7 @@ function update(currentTime) {
                 const finalW = frameW * renderScale * zoomLevel;
                 const finalH = frameH * renderScale * zoomLevel;
 
-                // 🌟 MAGIA: Le sumamos offsetX y offsetY SOLAMENTE al dibujo de la imagen
+                // ðŸŒŸ MAGIA: Le sumamos offsetX y offsetY SOLAMENTE al dibujo de la imagen
                 ctx.drawImage(
                     bImg,
                     currentFrameX, 0, frameW, frameH,
@@ -11621,7 +11690,7 @@ function update(currentTime) {
                 );
             }
         } else {
-            // Poste Gris de emergencia (también le aplicamos los offsets por si acaso)
+            // Poste Gris de emergencia (tambiÃ©n le aplicamos los offsets por si acaso)
             ctx.fillStyle = "#555";
             ctx.fillRect(bDrawX - (8 * zoomLevel) + offsetX, bDrawY - (20 * zoomLevel) + hoverY + offsetY, 16 * zoomLevel, 32 * zoomLevel);
         }
@@ -11671,7 +11740,7 @@ function update(currentTime) {
         ctx.lineWidth = 2 * zoomLevel;
         ctx.setLineDash([5, 5]);
 
-        // Dibujamos el RECTÁNGULO centrado
+        // Dibujamos el RECTÃNGULO centrado
         ctx.strokeRect(hitDrawX - (drawW / 2), hitDrawY - (drawH / 2), drawW, drawH);
         ctx.setLineDash([]);
 
@@ -11742,7 +11811,7 @@ function update(currentTime) {
 
             ctx.strokeStyle = '#8e44ad'; ctx.lineWidth = 2 * zoomLevel; ctx.strokeRect(bx, by, w, h);
             ctx.fillStyle = 'rgba(142, 68, 173, 0.3)'; ctx.fillRect(bx, by, w, h);
-            // 👇 NUEVO: EFECTO FANTASMA AL ARRASTRAR 👇
+            // ðŸ‘‡ NUEVO: EFECTO FANTASMA AL ARRASTRAR ðŸ‘‡
             if (isDraggingSelection) {
                 ctx.globalAlpha = 0.6; // Transparente
                 const dx = mapSelectionBox.minX - dragOriginalMinX;
@@ -11775,7 +11844,7 @@ function update(currentTime) {
             }
         } // END of if(box)
 
-        // 👇 NUEVO: EFECTO FANTASMA AL PINTAR MULTIPLES TILES (BLUEPRINT PREVIEW) 👇
+        // ðŸ‘‡ NUEVO: EFECTO FANTASMA AL PINTAR MULTIPLES TILES (BLUEPRINT PREVIEW) ðŸ‘‡
         if (worldMode === 'paint' && selectedGrid && (selectedGrid.w > 1 || selectedGrid.h > 1 || selectedGrid.isMultiLayer)) {
             ctx.globalAlpha = 0.5; // Fantasma semitransparente
             const sGridX = editorMouseGridX;
@@ -11841,7 +11910,7 @@ function update(currentTime) {
             ctx.globalAlpha = 1.0;
         }
 
-        // 👇 NUEVO: GRID OVERLAY 👇
+        // ðŸ‘‡ NUEVO: GRID OVERLAY ðŸ‘‡
         if (showGridOverlay) {
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.lineWidth = 1;
@@ -11876,19 +11945,19 @@ function update(currentTime) {
                 ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 2 * zoomLevel; ctx.strokeRect(bx, by, TILE_SIZE * zoomLevel, TILE_SIZE * zoomLevel);
             }
         }
-        // --- VISUALIZAR ZONAS UNIVERSALES (CON FILTROS Y ESTILOS DINÁMICOS) ---
+        // --- VISUALIZAR ZONAS UNIVERSALES (CON FILTROS Y ESTILOS DINÃMICOS) ---
         if (showSafeZoneVisuals && window.ZONE_CONFIG) {
             for (let i = 0; i < safeZones.length; i++) {
                 let z = safeZones[i];
                 const zType = z.zoneType || 'safe';
 
-                // 🛑 EL FIX DEL FILTRO: ¿Deberíamos dibujar esta zona?
+                // ðŸ›‘ EL FIX DEL FILTRO: Â¿DeberÃ­amos dibujar esta zona?
                 if (activeZoneFilter !== 'all' && activeZoneFilter !== zType) {
                     continue; // Saltar al siguiente ciclo si no coincide con el filtro activo
                 }
 
                 // Buscar colores en el Diccionario Maestro (Failsafe a blanco si la zona es muy vieja)
-                const config = window.ZONE_CONFIG[zType] || { icon: "❓", colorBorder: "white", colorFill: "rgba(255,255,255,0.2)" };
+                const config = window.ZONE_CONFIG[zType] || { icon: "â“", colorBorder: "white", colorFill: "rgba(255,255,255,0.2)" };
 
                 const w = (z.xMax - z.xMin) * zoomLevel;
                 const h = (z.yMax - z.yMin) * zoomLevel;
@@ -11921,14 +11990,18 @@ function update(currentTime) {
     if (Date.now() - lastShotTime < 50 && player.equippedWeapon !== "none") {
         const stats = WEAPONS[player.equippedWeapon];
 
-        // 🛑 EL FIX: Solo dibujar la luz brillante si el arma es "ranged"
+        // ðŸ›‘ EL FIX: Solo dibujar la luz brillante si el arma es "ranged"
         if (stats && stats.type === 'ranged') {
-            const fX = Math.floor(screenCenterX + (player.lastShotX - renderWorldX) * zoomLevel);
-            const fY = Math.floor(screenCenterY + (player.lastShotY - renderWorldY) * zoomLevel);
+            const dir = player.frameY;
+            const d = stats.dirStats ? (stats.dirStats[dir] || {}) : {};
+            const currentMuzzleX = player.worldX + (d.hitX || 0);
+            const currentMuzzleY = player.worldY + (d.hitY || 0);
+            const fX = Math.floor(screenCenterX + (currentMuzzleX - renderWorldX) * zoomLevel);
+            const fY = Math.floor(screenCenterY + (currentMuzzleY - renderWorldY) * zoomLevel);
 
             ctx.fillStyle = stats.color || "#ffcc00"; // Usar el color del arma
 
-            // 🛡️ EL FIX DE RENDIMIENTO MÓVIL: Sombra solo en PC
+            // ðŸ›¡ï¸ EL FIX DE RENDIMIENTO MÃ“VIL: Sombra solo en PC
             if (!isTouchDevice) {
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = stats.color || "#ffcc00";
@@ -11941,7 +12014,7 @@ function update(currentTime) {
         }
     }
 
-    // --- HELPER: Dibujar Barra de Vida Dinámica ---
+    // --- HELPER: Dibujar Barra de Vida DinÃ¡mica ---
     function drawHealthBar(x, y, hp, maxHp, scaledWidth, lastHpUpdate) {
         // Si nunca se ha actualizado y tiene la vida llena, no dibujar
         if (!lastHpUpdate && hp === maxHp) return;
@@ -11951,7 +12024,7 @@ function update(currentTime) {
         // Si pasaron 4 segundos sin CAMBIOS de vida, ocultar
         if (timeSinceUpdate > 4000) return;
 
-        // Fade out el último segundo
+        // Fade out el Ãºltimo segundo
         let alpha = 1.0;
         if (timeSinceUpdate > 3000) {
             alpha = 1.0 - ((timeSinceUpdate - 3000) / 1000);
@@ -11991,10 +12064,10 @@ function update(currentTime) {
 
         const currentHp = p.hp !== undefined ? p.hp : 100;
         drawHealthBar(pTopLeftX, pTopLeftY, currentHp, 100, scaledWidth, p.lastHpUpdateTime);
-        drawDynamicBubble(p.message, p.messageTimer, p.isTyping, pTopLeftX, pTopLeftY, scaledWidth);
+        drawDynamicBubble(p.message, p.messageTimer, p.isTyping, p.isSpeaking, pTopLeftX, pTopLeftY, scaledWidth);
         drawNametag(p, pTopLeftX, pTopLeftY, scaledWidth, scaledHeight, getColorForString(p.username));
 
-        // ⏱️ Decrement locally so bubble fades without needing constant network updates
+        // â±ï¸ Decrement locally so bubble fades without needing constant network updates
         if (p.messageTimer > 0) p.messageTimer--;
     }
 
@@ -12003,17 +12076,17 @@ function update(currentTime) {
     const myTopLeftY = myDrawY - (scaledHeight / 2);
 
     drawHealthBar(myTopLeftX, myTopLeftY, player.hp, player.maxHp || 100, scaledWidth, player.lastHpUpdateTime);
-    drawDynamicBubble(player.message, player.messageTimer, player.isTyping, myTopLeftX, myTopLeftY, scaledWidth);
+    drawDynamicBubble(player.message, player.messageTimer, player.isTyping, player.isSpeaking, myTopLeftX, myTopLeftY, scaledWidth);
     drawNametag(player, myTopLeftX, myTopLeftY, scaledWidth, scaledHeight, "#f1c40f");
 
     if (player.messageTimer > 0) {
         player.messageTimer--;
         if (player.messageTimer === 0) {
-            player.message = ''; // Clear so the network broadcasts empty → others hide bubble
+            player.message = ''; // Clear so the network broadcasts empty â†’ others hide bubble
         }
     }
 
-    // === DIBUJAR NÚMEROS DE DAÑO (CON POOLING) ===
+    // === DIBUJAR NÃšMEROS DE DAÃ‘O (CON POOLING) ===
     for (let i = 0; i < MAX_FX; i++) {
         let dt = damageTexts[i];
         if (!dt.active) continue; // Ignorar los apagados
@@ -12036,11 +12109,11 @@ function update(currentTime) {
         ctx.fillStyle = dt.color;
         ctx.fillText(dt.text, dtDrawX, dtDrawY);
 
-        if (dt.life <= 0) dt.active = false; // 🛑 LA MAGIA: Apagar en vez de splice()
+        if (dt.life <= 0) dt.active = false; // ðŸ›‘ LA MAGIA: Apagar en vez de splice()
     }
     ctx.globalAlpha = 1.0;
 
-    // === 💥 DIBUJAR EFECTOS DE IMPACTO (CON POOLING) 💥 ===
+    // === ðŸ’¥ DIBUJAR EFECTOS DE IMPACTO (CON POOLING) ðŸ’¥ ===
     for (let i = 0; i < MAX_FX; i++) {
         let spark = hitSparks[i];
         if (!spark.active) continue; // Ignorar apagados
@@ -12056,16 +12129,16 @@ function update(currentTime) {
         ctx.beginPath(); ctx.arc(sDrawX, sDrawY, radius, 0, Math.PI * 2);
         ctx.strokeStyle = "white"; ctx.lineWidth = 2 * zoomLevel; ctx.stroke();
 
-        // Efecto 2: Núcleo brillante
+        // Efecto 2: NÃºcleo brillante
         ctx.beginPath(); ctx.arc(sDrawX, sDrawY, radius * 0.5, 0, Math.PI * 2);
         ctx.fillStyle = spark.color; ctx.fill();
 
-        if (spark.life <= 0) spark.active = false; // 🛑 APAGAR
+        if (spark.life <= 0) spark.active = false; // ðŸ›‘ APAGAR
     }
     ctx.globalAlpha = 1.0;
 
     // ==========================================================
-    // ⛅ AMBIENT WEATHER & DAY/NIGHT ENGINE ⛅
+    // â›… AMBIENT WEATHER & DAY/NIGHT ENGINE â›…
     // ==========================================================
 
     // 1. NIGHT CYCLE (With Local Player Lantern Effect)
@@ -12096,12 +12169,12 @@ function update(currentTime) {
     }
 
     // ==========================================================
-    // ⛅ AMBIENT WEATHER & DAY/NIGHT ENGINE ⛅
+    // â›… AMBIENT WEATHER & DAY/NIGHT ENGINE â›…
     // ==========================================================
     // 2. RAIN PARTICLE SYSTEM (Screen-space) WITH SPLASHES (OBJECT POOLING)
     if (gameSettings.rainEnabled && !isUnderRoof) {
 
-        // 1. Activar 3 gotas nuevas por frame (buscar las que estén apagadas)
+        // 1. Activar 3 gotas nuevas por frame (buscar las que estÃ©n apagadas)
         let spawned = 0;
         for (let i = 0; i < MAX_RAIN && spawned < 3; i++) {
             if (!window.rainParticles[i].active) {
@@ -12149,15 +12222,15 @@ function update(currentTime) {
                 ctx.ellipse(r.x, r.y, splashRadius * 2, splashRadius, 0, 0, Math.PI * 2);
                 ctx.stroke();
 
-                if (r.splashLife <= 0) r.active = false; // 🛑 APAGAR EN VEZ DE BORRAR
+                if (r.splashLife <= 0) r.active = false; // ðŸ›‘ APAGAR EN VEZ DE BORRAR
             }
         }
     } else if (isUnderRoof) {
-        // Apagar toda la lluvia instantáneamente si entras a una casa
+        // Apagar toda la lluvia instantÃ¡neamente si entras a una casa
         for (let i = 0; i < MAX_RAIN; i++) window.rainParticles[i].active = false;
     }
     // --- NEW: UPDATE THE MINIMAP IF OPEN ---
-    // Afuera de tu función update()
+    // Afuera de tu funciÃ³n update()
     let lastMinimapUpdate = 0;
 
     // Adentro de update(), en lugar de if (isMapOpen) drawMinimap(); pon esto:
@@ -12169,7 +12242,7 @@ function update(currentTime) {
         }
     }
 
-    // Restaurar la posición física real para que la red y la física sigan perfectas
+    // Restaurar la posiciÃ³n fÃ­sica real para que la red y la fÃ­sica sigan perfectas
     if (isCinematicLoading) {
         player.worldX = realPlayerX;
         player.worldY = realPlayerY;
@@ -12180,13 +12253,13 @@ function update(currentTime) {
         updateSkelPreview();
     }
 
-    // --- ACTUALIZAR LA ANIMACIÓN DE LA TIENDA A 60 FPS ---
+    // --- ACTUALIZAR LA ANIMACIÃ“N DE LA TIENDA A 60 FPS ---
     if (isShopOpen) {
         drawShopPlayerPreview();
     }
 
     // ==========================================================
-    // 🌐 7. MOTOR DE RED SINCRONIZADO (CERO JSON.STRINGIFY LAG)
+    // ðŸŒ 7. MOTOR DE RED SINCRONIZADO (CERO JSON.STRINGIFY LAG)
     // ==========================================================
     networkTimer += dtMs;
 
@@ -12198,7 +12271,7 @@ function update(currentTime) {
             const rx = Math.round(player.worldX);
             const ry = Math.round(player.worldY);
 
-            // 🛑 EL FIX: Condicional matemático puro (Costo CPU = 0%)
+            // ðŸ›‘ EL FIX: Condicional matemÃ¡tico puro (Costo CPU = 0%)
             const isDirty = (
                 rx !== window.lastNetX ||
                 ry !== window.lastNetY ||
@@ -12210,13 +12283,13 @@ function update(currentTime) {
                 player.isSitting !== window.lastNetSitting
             );
 
-            // Solo enviamos si algo cambió, o si pasaron 2 segundos por seguridad
+            // Solo enviamos si algo cambiÃ³, o si pasaron 2 segundos por seguridad
             if (isDirty || timeNow - (window.lastForceSendTime || 0) > 2000) {
                 ws.send(MessagePack.encode({
                     type: 'update',
                     player: {
                         username: player.username,
-                        worldX: rx, worldY: ry, // Enviamos números enteros, ahorra datos
+                        worldX: rx, worldY: ry, // Enviamos nÃºmeros enteros, ahorra datos
                         frameX: player.frameX, frameY: player.frameY,
                         isMoving: player.isMoving,
                         message: player.message, messageTimer: player.messageTimer,
@@ -12226,7 +12299,7 @@ function update(currentTime) {
                     }
                 }));
 
-                // Actualizar la memoria rápida
+                // Actualizar la memoria rÃ¡pida
                 window.lastNetX = rx; window.lastNetY = ry;
                 window.lastNetDir = player.frameY; window.lastNetMoving = player.isMoving;
                 window.lastNetWep = player.equippedWeapon; window.lastNetMsg = player.message;
@@ -12237,7 +12310,7 @@ function update(currentTime) {
     }
 }
 
-// 🌟 SISTEMA DE LOGROS Y TAREAS (LOGICA UI) 🌟
+// ðŸŒŸ SISTEMA DE LOGROS Y TAREAS (LOGICA UI) ðŸŒŸ
 if (typeof globalTasks === 'undefined') {
     window.globalTasks = {};
     window.myTaskProgress = {};
@@ -12250,16 +12323,16 @@ const closeTasksBtn = document.getElementById('close-tasks-modal');
 const tasksBadge = document.getElementById('tasks-badge');
 const tasksList = document.getElementById('tasks-list');
 
-// 👇 NUEVA VARIABLE PARA EL RELOJ
+// ðŸ‘‡ NUEVA VARIABLE PARA EL RELOJ
 let activeTasksInterval = null;
 
 tasksBtn.addEventListener('click', () => {
-    if (!player || !player.accountId) return alert("⚠️ You must log in to view achievements.");
+    if (!player || !player.accountId) return alert("âš ï¸ You must log in to view achievements.");
     tasksModal.style.display = 'flex';
     renderTasksModal();
 });
 
-// 👇 ACTUALIZAR EL BOTÓN DE CERRAR
+// ðŸ‘‡ ACTUALIZAR EL BOTÃ“N DE CERRAR
 closeTasksBtn.addEventListener('click', () => {
     tasksModal.style.display = 'none';
     if (activeTasksInterval) {
@@ -12276,7 +12349,7 @@ function checkTaskBadge() {
     for (let taskId in globalTasks) {
         const task = globalTasks[taskId];
 
-        // Misma lógica a prueba de fallos
+        // Misma lÃ³gica a prueba de fallos
         let isClaimed = false;
         if (Array.isArray(myClaimedTasks)) {
             isClaimed = myClaimedTasks.includes(taskId);
@@ -12288,7 +12361,7 @@ function checkTaskBadge() {
             }
         }
 
-        if (isClaimed) continue; // Si ya la reclamó, la saltamos
+        if (isClaimed) continue; // Si ya la reclamÃ³, la saltamos
 
         let completed = false;
         if (task.requirementType === 'login') completed = true;
@@ -12348,9 +12421,8 @@ document.querySelectorAll('.task-tab-btn').forEach(btn => {
 
 function renderTasksModal() {
     if (!tasksList) return;
-    tasksList.innerHTML = '';
+    tasksList.innerHTML = "";
 
-    // Limpiar cualquier reloj previo antes de redibujar
     if (activeTasksInterval) clearInterval(activeTasksInterval);
 
     const now = Date.now();
@@ -12359,22 +12431,19 @@ function renderTasksModal() {
         const task = globalTasks[taskId];
         if (task.category !== currentTaskCategory) continue;
 
-        // 🛑 EL FIX: Asumir que si está en 'daily', ES repetible automáticamente
-        const isRepeatable = task.isRepeatable || task.category === 'daily';
-        const cooldownMs = task.resetIntervalMs || 86400000; // 24 horas por defecto
+        const isRepeatable = task.isRepeatable || task.category === "daily";
+        const cooldownMs = task.resetIntervalMs || 86400000; 
 
         let isClaimed = false;
         let lastClaimedTime = null;
         let timeRemainingMs = 0;
 
-        // Detectamos cómo manda el servidor los datos
         if (Array.isArray(myClaimedTasks)) {
             isClaimed = myClaimedTasks.includes(taskId);
-            // Como es un array, no tenemos la hora exacta. Inventaremos un tiempo positivo para activar la UI amarilla.
             if (isClaimed && isRepeatable) {
                 timeRemainingMs = 1;
             }
-        } else if (myClaimedTasks && typeof myClaimedTasks === 'object') {
+        } else if (myClaimedTasks && typeof myClaimedTasks === "object") {
             if (myClaimedTasks[taskId]) {
                 lastClaimedTime = Number(myClaimedTasks[taskId]);
                 if (!isRepeatable) {
@@ -12386,15 +12455,14 @@ function renderTasksModal() {
             }
         }
 
-        // Cálculo del progreso actual
         let currentVal = 0;
         let lockedByAntiCheat = false;
         let antiCheatMsg = "";
-        if (task.requirementType === 'login') currentVal = 1;
-        else if (task.requirementType === 'kills') currentVal = player.kills;
-        else if (task.requirementType === 'elo') currentVal = player.elo;
-        else if (task.requirementType === 'play_hours') currentVal = myTaskProgress[taskId] || 0;
-        else if (task.requirementType === 'squad_base_minutes') {
+        if (task.requirementType === "login") currentVal = 1;
+        else if (task.requirementType === "kills") currentVal = player.kills;
+        else if (task.requirementType === "elo") currentVal = player.elo;
+        else if (task.requirementType === "play_hours") currentVal = myTaskProgress[taskId] || 0;
+        else if (task.requirementType === "squad_base_minutes") {
             currentVal = (window.mySquadData && window.mySquadData.territoryTimeMinutes) ? window.mySquadData.territoryTimeMinutes : 0;
             if (window.mySquadData && window.mySquadData.members) {
                 const isLeader = window.mySquadData.leader && window.mySquadData.leader.accountId === player.accountId;
@@ -12408,14 +12476,12 @@ function renderTasksModal() {
                         }
 
                         if (milestoneDate && joinedTime > milestoneDate) {
-                            // Player joined after milestone was achieved.
-                            // Completely hide the achievement so they don't feel left out.
                             continue;
                         } else {
                             const daysInSquad = (Date.now() - joinedTime) / (1000 * 60 * 60 * 24);
                             if (daysInSquad < 15 && !milestoneDate) {
                                 lockedByAntiCheat = true;
-                                antiCheatMsg = `\uD83D\uDD12 Disponible en ${Math.ceil(15 - daysInSquad)} d\u00edas`;
+                                antiCheatMsg = `Y"' Disponible en ${Math.ceil(15 - daysInSquad)} días`;
                             }
                         }
                     }
@@ -12426,7 +12492,7 @@ function renderTasksModal() {
         const progressPercent = Math.min(100, Math.floor((currentVal / task.requirementValue) * 100));
         const canClaim = (currentVal >= task.requirementValue) && !isClaimed && !lockedByAntiCheat;
 
-        const card = document.createElement('div');
+        const card = document.createElement("div");
         card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 10px; transition: 0.3s;";
 
         if (isClaimed) {
@@ -12436,39 +12502,40 @@ function renderTasksModal() {
         }
 
         let rewardDisplay = "";
-        if (task.rewardType === 'coins') {
-            rewardDisplay = `<span style="font-size: 16px; margin-right: 4px; vertical-align: middle;">💰</span> <span style="color: gold; font-weight: bold;">+${task.rewardValue}</span>`;
+        if (task.rewardType === "coins") {
+            rewardDisplay = `<span style="font-size: 16px; margin-right: 4px; vertical-align: middle;">Y'</span> <span style="color: gold; font-weight: bold;">+${task.rewardValue}</span>`;
+        } else if (task.rewardType === "bp_xp") {
+            rewardDisplay = `<span style="font-size: 16px; margin-right: 4px; vertical-align: middle;">⭐</span> <span style="color: #00ffcc; font-weight: bold;">+${task.rewardValue} BP XP</span>`;
         } else {
             rewardDisplay = `<span style="color: #2ecc71; font-weight: bold;">Item: ${task.rewardValue}</span>`;
         }
+        
+        if (task.bpXpReward && task.rewardType !== "bp_xp") {
+            rewardDisplay += ` | <span style="font-size: 14px; margin-left: 4px; vertical-align: middle;">⭐</span> <span style="color: #00ffcc; font-weight: bold;">+${task.bpXpReward} BP XP</span>`;
+        }
 
-        // 🛑 LA MAGIA DE LA UI: Generar botón dinámico según el estado
         let btnHtml = "";
         if (isClaimed && isRepeatable) {
             if (lastClaimedTime) {
-                // SI HAY HORA: Mostrar Temporizador Real
                 const expireTime = lastClaimedTime + cooldownMs;
                 btnHtml = `<button class="claim-btn task-timer" data-expire="${expireTime}" disabled style="background: transparent; color: #f1c40f; border: 1px solid #f1c40f; padding: 8px; border-radius: 5px; font-weight: bold; cursor: not-allowed; font-family: monospace; font-size: 14px; transition: 0.2s; margin-top: 5px; text-shadow: 1px 1px 0px black;">
                             ⏳ --:--:--
                         </button>`;
             } else {
-                // NO HAY HORA (Servidor manda Array): Mostrar texto de espera sin temporizador vivo
                 btnHtml = `<button class="claim-btn" disabled style="background: transparent; color: #f1c40f; border: 1px solid #f1c40f; padding: 8px; border-radius: 5px; font-weight: bold; cursor: not-allowed; font-family: monospace; font-size: 14px; transition: 0.2s; margin-top: 5px; text-shadow: 1px 1px 0px black;">
                             ⏳ En enfriamiento (Vuelve más tarde)
                         </button>`;
             }
         } else if (isClaimed && !isRepeatable) {
-            // Reclamado para siempre (Milestones)
             btnHtml = `<button class="claim-btn" disabled style="background: #555; color: #888; border: none; padding: 8px; border-radius: 5px; font-weight: bold; cursor: not-allowed; font-family: sans-serif; transition: 0.2s; margin-top: 5px;">
                         CLAIMED
                     </button>`;
         } else if (lockedByAntiCheat) {
             btnHtml = `<button class="claim-btn" disabled style="background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 8px; border-radius: 5px; font-weight: bold; cursor: not-allowed; font-family: monospace; font-size: 14px; transition: 0.2s; margin-top: 5px; text-shadow: 1px 1px 0px black;">
-                        🔒 ${antiCheatMsg}
+                        ${antiCheatMsg}
                     </button>`;
         } else {
-            // Botón Normal para reclamar (o bloqueado si no hay progreso suficiente)
-            btnHtml = `<button class="claim-btn" ${canClaim ? '' : 'disabled'} style="background: ${canClaim ? '#2ecc71' : '#555'}; color: ${canClaim ? 'black' : '#888'}; border: none; padding: 8px; border-radius: 5px; font-weight: bold; cursor: ${canClaim ? 'pointer' : 'not-allowed'}; font-family: sans-serif; transition: 0.2s; margin-top: 5px;">
+            btnHtml = `<button class="claim-btn" ${canClaim ? "" : "disabled"} style="background: ${canClaim ? "#2ecc71" : "#555"}; color: ${canClaim ? "black" : "#888"}; border: none; padding: 8px; border-radius: 5px; font-weight: bold; cursor: ${canClaim ? "pointer" : "not-allowed"}; font-family: sans-serif; transition: 0.2s; margin-top: 5px;">
                         CLAIM REWARD
                     </button>`;
         }
@@ -12485,7 +12552,7 @@ function renderTasksModal() {
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1; background: rgba(0,0,0,0.5); height: 8px; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                            <div style="background: ${canClaim ? '#2ecc71' : '#3498db'}; width: ${progressPercent}%; height: 100%; transition: width 0.3s;"></div>
+                            <div style="background: ${canClaim ? "#2ecc71" : "#3498db"}; width: ${progressPercent}%; height: 100%; transition: width 0.3s;"></div>
                         </div>
                         <div style="color: white; font-size: 10px; font-weight: bold; min-width: 40px; text-align: right;">${Math.min(currentVal, task.requirementValue)} / ${task.requirementValue}</div>
                     </div>
@@ -12493,47 +12560,426 @@ function renderTasksModal() {
                 `;
 
         if (canClaim) {
-            const btn = card.querySelector('.claim-btn');
-            btn.addEventListener('click', (e) => {
+            const btn = card.querySelector(".claim-btn");
+            btn.addEventListener("click", (e) => {
                 e.target.innerText = "Procesando...";
                 e.target.style.background = "#f1c40f";
                 e.target.disabled = true;
-                ws.send(MessagePack.encode({ type: 'claim_task', taskId: taskId }));
+                ws.send(MessagePack.encode({ type: "claim_task", taskId: taskId }));
             });
         }
 
         tasksList.appendChild(card);
     }
 
-    // Iniciar o reiniciar el motor del reloj
     if (activeTasksInterval) clearInterval(activeTasksInterval);
     activeTasksInterval = setInterval(updateTaskTimers, 1000);
-    updateTaskTimers(); // Ejecutar el primer frame de inmediato
+    updateTaskTimers();
 }
 
 function updateTaskTimers() {
-    const timers = document.querySelectorAll('.task-timer');
+    const timers = document.querySelectorAll(".task-timer");
     const now = Date.now();
 
     timers.forEach(timerEl => {
-        const expireTime = Number(timerEl.getAttribute('data-expire'));
+        const expireTime = Number(timerEl.getAttribute("data-expire"));
         const diffMs = expireTime - now;
 
         if (diffMs <= 0) {
-            // ¡El tiempo acabó! El botón amarillo desaparece y volvemos a dibujar
-            // la ventana completa para que se pinte verde
             renderTasksModal();
-            if (typeof checkTaskBadge === 'function') checkTaskBadge();
+            if (typeof checkTaskBadge === "function") checkTaskBadge();
         } else {
-            // Matemáticas simples para sacar Horas, Minutos y Segundos
             const totalSeconds = Math.floor(diffMs / 1000);
-            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+            const seconds = (totalSeconds % 60).toString().padStart(2, "0");
             timerEl.innerText = `⏳ Disponible en ${hours}:${minutes}:${seconds}`;
         }
     });
 }
 
 update();
+
+// --- BATTLE PASS SYSTEM ---
+let bpActiveSeason = null;
+let bpXP = 0;
+let bpPremium = false;
+let bpClaimedFree = [];
+let bpClaimedPremium = [];
+
+const bpBtn = document.getElementById("bp-btn");
+const bpModal = document.getElementById("bp-modal");
+const closeBpBtn = document.getElementById("close-bp-btn");
+const buyPremiumBtn = document.getElementById("buy-premium-btn");
+const bpTrackContainer = document.getElementById("bp-track-container");
+const bpXpText = document.getElementById("bp-xp-text");
+const bpXpBar = document.getElementById("bp-xp-bar");
+
+if (bpBtn) {
+    bpBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openBattlePass();
+    });
+}
+if (closeBpBtn) {
+    closeBpBtn.addEventListener("click", () => {
+        bpModal.style.display = "none";
+        isTypingOrMenu = false;
+    });
+}
+if (buyPremiumBtn) {
+    buyPremiumBtn.addEventListener("click", () => {
+        if (!bpActiveSeason) return;
+        if (bpPremium) return alert("You already own the Premium Pass!");
+        if (confirm(`Unlock Premium Pass for ${bpActiveSeason.costArgems} Argems?`)) {
+            ws.send(MessagePack.encode({ type: "buy_premium_bp" }));
+        }
+    });
+}
+
+function openBattlePass() {
+    if (!bpActiveSeason) {
+        alert("Battle Pass is not active right now.");
+        return;
+    }
+    isTypingOrMenu = true;
+    bpModal.style.display = "flex";
+    renderBattlePass();
+}
+
+function renderBattlePass() {
+    if (!bpActiveSeason) return;
+    document.getElementById("bp-title").innerText = bpActiveSeason.name;
+    bpXpText.innerText = bpXP;
+    
+    if (bpPremium) {
+        buyPremiumBtn.innerText = "PREMIUM UNLOCKED";
+        buyPremiumBtn.style.background = "linear-gradient(90deg, #00ffcc, #0066ff)";
+        buyPremiumBtn.disabled = true;
+    }
+
+    bpTrackContainer.innerHTML = "";
+    
+    const sortedRewards = [...bpActiveSeason.rewards].sort((a,b) => a.level - b.level);
+    
+    let currentLevel = 0;
+    let nextXpReq = 0;
+
+    sortedRewards.forEach((r, index) => {
+        if (bpXP >= r.xpRequired) {
+            currentLevel = r.level;
+        }
+        if (bpXP < r.xpRequired && nextXpReq === 0) {
+            nextXpReq = r.xpRequired;
+        }
+
+        const col = document.createElement("div");
+        col.style.display = "flex";
+        col.style.flexDirection = "column";
+        col.style.gap = "10px";
+        col.style.minWidth = "120px";
+        col.style.alignItems = "center";
+
+        const title = document.createElement("div");
+        title.innerText = `Lv ${r.level}`;
+        title.style.fontSize = "12px";
+        title.style.color = (bpXP >= r.xpRequired) ? "#00ffcc" : "#888";
+        col.appendChild(title);
+
+        const freeBox = createBpBox(r, "free");
+        col.appendChild(freeBox);
+
+        const premiumBox = createBpBox(r, "premium");
+        col.appendChild(premiumBox);
+
+        bpTrackContainer.appendChild(col);
+    });
+
+    if (nextXpReq > 0) {
+        const prevReq = currentLevel > 0 ? sortedRewards.find(r=>r.level===currentLevel).xpRequired : 0;
+        const progress = ((bpXP - prevReq) / (nextXpReq - prevReq)) * 100;
+        bpXpBar.style.width = Math.min(100, progress) + "%";
+        bpXpText.innerText = `${bpXP} / ${nextXpReq} XP`;
+    } else {
+        bpXpBar.style.width = "100%";
+        bpXpText.innerText = `${bpXP} XP (MAX)`;
+    }
+}
+
+function createBpBox(rewardObj, track) {
+    const box = document.createElement("div");
+    box.style.width = "100%";
+    box.style.height = "120px";
+    box.style.background = track === "premium" ? "rgba(255,204,0,0.1)" : "rgba(255,255,255,0.1)";
+    box.style.border = track === "premium" ? "2px solid #ffcc00" : "2px solid #aaa";
+    box.style.borderRadius = "8px";
+    box.style.display = "flex";
+    box.style.flexDirection = "column";
+    box.style.justifyContent = "center";
+    box.style.alignItems = "center";
+    box.style.position = "relative";
+    box.style.cursor = "pointer";
+
+    const reward = track === "free" ? rewardObj.free : rewardObj.premium;
+    const isUnlocked = bpXP >= rewardObj.xpRequired;
+    const claimedArray = track === "free" ? bpClaimedFree : bpClaimedPremium;
+    const isClaimed = claimedArray.includes(rewardObj.level);
+    const lockedByPremium = track === "premium" && !bpPremium;
+
+    if (!reward) {
+        box.style.opacity = "0.3";
+        return box;
+    }
+
+    if (!isUnlocked || lockedByPremium) {
+        box.style.opacity = "0.5";
+    }
+
+    const icon = document.createElement("div");
+    icon.style.width = "48px";
+    icon.style.height = "48px";
+    icon.style.display = "flex";
+    icon.style.justifyContent = "center";
+    icon.style.alignItems = "center";
+    icon.style.fontSize = "30px"; // Fallback size para emojis
+
+    if (reward.type === "coins") {
+        icon.innerHTML = '<img src="items/icons/aargon.png" onerror="this.outerHTML=\'💰\'" style="width:100%; height:100%; object-fit:contain; image-rendering: pixelated; transform: scale(1.2);">';
+    } 
+    else if (reward.type === "argems") {
+        icon.innerHTML = '<img src="items/icons/argem.png" onerror="this.outerHTML=\'💎\'" style="width:100%; height:100%; object-fit:contain; image-rendering: pixelated; transform: scale(1.2);">';
+    } 
+    else if (reward.type === "item") {
+        let itemSrc = null;
+        if (window.WEAPONS && window.WEAPONS[reward.id]) {
+            itemSrc = window.WEAPONS[reward.id].srcPreview || window.WEAPONS[reward.id].src;
+        } else if (window.MASTER_CATALOG && window.MASTER_CATALOG[reward.id]) {
+            itemSrc = window.MASTER_CATALOG[reward.id].srcPreview || window.MASTER_CATALOG[reward.id].src;
+        }
+
+        if (itemSrc) {
+            icon.innerHTML = `<img src="${itemSrc}" style="max-width:150%; max-height:150%; object-fit:contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">`;
+        } else {
+            icon.innerText = "🎁";
+        }
+    }
+    
+    const label = document.createElement("div");
+    label.style.fontSize = "10px";
+    label.style.marginTop = "10px";
+    label.innerText = reward.type === "item" ? reward.id : `${reward.amount} ${reward.type}`;
+
+    box.appendChild(icon);
+    box.appendChild(label);
+
+    if (isClaimed) {
+        const check = document.createElement("div");
+        check.innerText = "✔️";
+        check.innerText = "✅";
+        check.style.color = "#00ff00";
+        check.style.fontSize = "40px";
+        box.appendChild(check);
+        box.style.opacity = "0.4";
+    } else if (lockedByPremium) {
+        const lock = document.createElement("div");
+        lock.innerText = "🔒";
+        lock.style.position = "absolute";
+        lock.style.fontSize = "30px";
+        box.appendChild(lock);
+    } else if (isUnlocked) {
+        box.style.boxShadow = "0 0 10px #00ffcc";
+        box.addEventListener("click", () => {
+            ws.send(MessagePack.encode({
+                type: "claim_bp_reward",
+                level: rewardObj.level,
+                track: track
+            }));
+        });
+    }
+
+    return box;
+}
+
+function showNotification(msg) {
+    const notif = document.createElement('div');
+    notif.innerText = msg;
+    notif.style.position = 'fixed';
+    notif.style.top = '20px';
+    notif.style.left = '50%';
+    notif.style.transform = 'translateX(-50%) translateY(-20px)';
+    notif.style.background = 'linear-gradient(90deg, #ffcc00, #ff6699)';
+    notif.style.color = 'black';
+    notif.style.padding = '10px 20px';
+    notif.style.borderRadius = '5px';
+    notif.style.fontFamily = '"Press Start 2P", monospace';
+    notif.style.fontSize = '12px';
+    notif.style.boxShadow = '0 0 15px rgba(255,204,0,0.8)';
+    notif.style.zIndex = '9999';
+    notif.style.opacity = '0';
+    notif.style.transition = 'all 0.3s ease';
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.style.opacity = '1';
+        notif.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// =========================================================
+// ? ADMIN VOICE CHAT (MEGAPHONE / PA SYSTEM) ?
+// =========================================================
+let adminMediaRecorder = null;
+let adminAudioStream = null;
+
+async function getAdminMic() {
+    if (!adminAudioStream) {
+        adminAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    }
+    return adminAudioStream;
+}
+
+document.addEventListener('keydown', async (e) => {
+    // Solo se activa con la tecla V, sin estar escribiendo en chat, y si el rol es admin
+    if (e.code === 'KeyV' && !(document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) && player.role === 'admin' && !adminMediaRecorder) {
+        try {
+            const stream = await getAdminMic();
+            
+            // Usamos formato WebM con codec Opus (ligero y estándar)
+            adminMediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+            
+            adminMediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+                    event.data.arrayBuffer().then(buffer => {
+                        ws.send(MessagePack.encode({
+                            type: 'admin_voice_chunk',
+                            audio: new Uint8Array(buffer)
+                        }));
+                    });
+                }
+            };
+            
+            // Pedazos de 200 milisegundos
+            adminMediaRecorder.start(200);
+            
+            // Avisar que estamos hablando
+            ws.send(MessagePack.encode({ type: 'admin_voice_status', isSpeaking: true }));
+            player.isSpeaking = true;
+            
+        } catch (err) {
+            console.error("Error al acceder al micrófono para Megáfono:", err);
+            showNotification("Permiso de micrófono denegado.");
+        }
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'KeyV' && adminMediaRecorder) {
+        adminMediaRecorder.stop();
+        // NOTA: NO detenemos adminAudioStream.getTracks() para que el microfono siga encendido (sin latencia al presionar V otra vez)
+        
+        adminMediaRecorder = null;
+        
+        ws.send(MessagePack.encode({ type: 'admin_voice_status', isSpeaking: false }));
+        player.isSpeaking = false;
+    }
+});
+
+// --- RECEPTOR Y REPRODUCTOR DE AUDIO ---
+let voiceMediaSource = null;
+let voiceSourceBuffer = null;
+let voiceQueue = [];
+
+function updateSpatialAudio(adminX, adminY) {
+    const audioEl = document.getElementById('admin-voice-audio');
+    if (!audioEl) return;
+    
+    if (adminX === undefined || adminY === undefined || !player) {
+        audioEl.volume = 1.0;
+        return;
+    }
+    
+    const dx = player.worldX - adminX;
+    const dy = player.worldY - adminY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    const minDistance = 100;
+    const maxDistance = 700;
+    
+    if (distance <= minDistance) {
+        audioEl.volume = 1.0;
+    } else if (distance >= maxDistance) {
+        audioEl.volume = 0.0;
+    } else {
+        // Atenuación lineal
+        const vol = 1.0 - ((distance - minDistance) / (maxDistance - minDistance));
+        audioEl.volume = Math.max(0, Math.min(1, vol));
+    }
+}
+
+function resetVoiceMediaSource() {
+    voiceMediaSource = null;
+    voiceSourceBuffer = null;
+    voiceQueue = [];
+    const audioEl = document.getElementById('admin-voice-audio');
+    if (audioEl) {
+        audioEl.src = ""; // Stop current playback
+    }
+}
+
+function initVoiceMediaSource() {
+    if (voiceMediaSource) return;
+    const audioEl = document.getElementById('admin-voice-audio');
+    if (!audioEl) return;
+    
+    voiceMediaSource = new MediaSource();
+    audioEl.src = URL.createObjectURL(voiceMediaSource);
+    
+    voiceMediaSource.addEventListener('sourceopen', () => {
+        try {
+            // El mimeType exacto que grabó el Admin
+            voiceSourceBuffer = voiceMediaSource.addSourceBuffer('audio/webm;codecs=opus');
+            voiceSourceBuffer.addEventListener('updateend', () => {
+                if (voiceQueue.length > 0 && !voiceSourceBuffer.updating) {
+                    voiceSourceBuffer.appendBuffer(voiceQueue.shift());
+                }
+                if (audioEl.paused) {
+                    audioEl.play().catch(e => console.warn("Autoplay block:", e));
+                }
+            });
+            
+            // Procesar la cola inicial (el header WebM crítico está aquí)
+            if (voiceQueue.length > 0 && !voiceSourceBuffer.updating) {
+                voiceSourceBuffer.appendBuffer(voiceQueue.shift());
+            }
+        } catch (e) {
+            console.error("Error al crear SourceBuffer:", e);
+        }
+    });
+}
+
+function handleAdminVoiceChunk(uint8Array, adminX, adminY) {
+    if (!voiceMediaSource) {
+        initVoiceMediaSource();
+    }
+    
+    // Actualizar Audio Espacial
+    if (adminX !== undefined && adminY !== undefined) {
+        updateSpatialAudio(adminX, adminY);
+    }
+    
+    if (voiceSourceBuffer && !voiceSourceBuffer.updating) {
+        try {
+            voiceSourceBuffer.appendBuffer(uint8Array);
+        } catch (e) {
+            voiceQueue.push(uint8Array);
+        }
+    } else {
+        voiceQueue.push(uint8Array);
+    }
+}
