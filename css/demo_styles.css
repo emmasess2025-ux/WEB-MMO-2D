@@ -1213,3 +1213,26 @@
     animation: iconPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+
+
+/* ========================================= */
+/* SLEEK SPA-LIKE TRANSITION FADE-IN         */
+/* ========================================= */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    z-index: 9999999;
+    pointer-events: none;
+    animation: fadeOutScreen 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes fadeOutScreen {
+    0% { opacity: 1; }
+    20% { opacity: 1; }
+    100% { opacity: 0; }
+}
