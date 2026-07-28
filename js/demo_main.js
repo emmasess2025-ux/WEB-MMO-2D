@@ -12932,17 +12932,32 @@ function resetVoiceMediaSource() {
     }
 }
 
+
+// ==========================================================
+// 🍏 iOS MEDIASOURCE FALLBACK VARIABLES
+// ==========================================================
+let iosVoiceFallbackActive = false;
+let voiceHeader = null;
+let voiceAccumulator = [];
+let voiceFallbackTimer = null;
+
 function initVoiceMediaSource() {
-    if (voiceMediaSource) return;
+    if (voiceMediaSource || iosVoiceFallbackActive) return;
     const audioEl = document.getElementById('admin-voice-audio');
     if (!audioEl) return;
+    
+    // iOS Safari / Unsupported Browsers check
+    if (typeof MediaSource === 'undefined' || (typeof MediaSource !== 'undefined' && !MediaSource.isTypeSupported('audio/webm;codecs=opus'))) {
+        console.warn("MediaSource / WebM not supported! Enabling iOS Audio Fallback.");
+        iosVoiceFallbackActive = true;
+        return;
+    }
     
     voiceMediaSource = new MediaSource();
     audioEl.src = URL.createObjectURL(voiceMediaSource);
     
     voiceMediaSource.addEventListener('sourceopen', () => {
         try {
-            // El mimeType exacto que grabó el Admin
             voiceSourceBuffer = voiceMediaSource.addSourceBuffer('audio/webm;codecs=opus');
             voiceSourceBuffer.addEventListener('updateend', () => {
                 if (voiceQueue.length > 0 && !voiceSourceBuffer.updating) {
@@ -12953,24 +12968,48 @@ function initVoiceMediaSource() {
                 }
             });
             
-            // Procesar la cola inicial (el header WebM crítico está aquí)
             if (voiceQueue.length > 0 && !voiceSourceBuffer.updating) {
                 voiceSourceBuffer.appendBuffer(voiceQueue.shift());
             }
         } catch (e) {
             console.error("Error al crear SourceBuffer:", e);
+            iosVoiceFallbackActive = true;
         }
     });
 }
 
 function handleAdminVoiceChunk(uint8Array, adminX, adminY) {
+    if (!voiceHeader) voiceHeader = uint8Array; // THE GOLDEN WEBM HEADER
+    
+    // iOS FALLBACK
+    if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive) {
+        voiceAccumulator.push(uint8Array);
+        if (!voiceFallbackTimer) {
+            voiceFallbackTimer = setTimeout(() => {
+                try {
+                    const blob = new Blob([voiceHeader, ...voiceAccumulator], { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = new Audio(url);
+                    a.play().catch(e => console.warn("iOS Fallback Block:", e));
+                } catch(e) {}
+                voiceAccumulator = [];
+                voiceFallbackTimer = null;
+            }, 600); 
+        }
+        return;
+    }
+
     if (!voiceMediaSource) {
         initVoiceMediaSource();
+        if (iosVoiceFallbackActive) {
+            handleAdminVoiceChunk(uint8Array, adminX, adminY); // Retry with fallback
+            return;
+        }
     }
     
     // Actualizar Audio Espacial
     if (adminX !== undefined && adminY !== undefined) {
-        updateSpatialAudio(adminX, adminY);
+        if (typeof updateSpatialAudio === 'function') updateSpatialAudio(adminX, adminY);
     }
     
     if (voiceSourceBuffer && !voiceSourceBuffer.updating) {
@@ -12983,3 +13022,77 @@ function handleAdminVoiceChunk(uint8Array, adminX, adminY) {
         voiceQueue.push(uint8Array);
     }
 }
+
+// ==========================================================
+// 💤 SLEEP / ABORT LOGIC
+// ==========================================================
+// Force disconnect if the user minimizes the tab or locks the device
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        console.log("Tab hidden / Device locked. Forcing disconnect to prevent ghost clones.");
+        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
+            ws.close(1000, "Background");
+        }
+    }
+});
+
+
+// --- PAGEHIDE FADE OUT TRANSITION ---
+window.addEventListener('beforeunload', () => {
+    const overlay = document.createElement('div');
+    overlay.id = 'demo-exit-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = '#000';
+    overlay.style.zIndex = '9999999';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+    overlay.style.pointerEvents = 'none';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+        });
+    });
+});
+
+
+// --- HANDLE FORWARD NAVIGATION BFCache ---
+window.addEventListener('pageshow', (event) => {
+    const o = document.getElementById('demo-exit-overlay');
+    if (o) o.remove();
+
+            if (event.persisted) {
+                window.location.reload();
+            }
+
+});
+
+
+// ==========================================================
+// 🍏 iOS AUDIO AUTOPLAY UNLOCKER
+// ==========================================================
+let iosAudioUnlocked = false;
+function unlockiOSAudio() {
+    if (iosAudioUnlocked) return;
+    const audioEl = document.getElementById('admin-voice-audio');
+    if (audioEl) {
+        audioEl.play().catch(e => {}); 
+    }
+    const AudioCtxt = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtxt) {
+        const ctx = new AudioCtxt();
+        const osc = ctx.createOscillator();
+        osc.connect(ctx.destination);
+        osc.start(0);
+        osc.stop(0.01);
+    }
+    iosAudioUnlocked = true;
+    document.removeEventListener('pointerdown', unlockiOSAudio);
+    document.removeEventListener('keydown', unlockiOSAudio);
+}
+document.addEventListener('pointerdown', unlockiOSAudio, { once: true });
+document.addEventListener('keydown', unlockiOSAudio, { once: true });
