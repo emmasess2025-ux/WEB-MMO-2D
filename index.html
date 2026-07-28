@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argon MMO - Free Open World Browser Sandbox</title>
+
+    <!-- SEO & Search Engine Tags -->
+    <meta name="description"
+        content="Argon MMO is a free-to-play, browser-based open world sandbox game. Gather resources, form squads, build your base, and survive the wasteland in this early pre-alpha test.">
+    <meta name="keywords"
+        content="MMO, browser game, open world, sandbox, multiplayer, 2D game, crafting, survival, free to play">
+
+    <!-- Open Graph / Discord / Facebook Sharing Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Argon MMO - Open World Browser Sandbox">
+    <meta property="og:description"
+        content="Form squads, build your base, and survive the wasteland in this completely player-driven browser MMO. Play the pre-alpha now.">
+    <meta property="og:image" content="lp/aargon.png">
+
+    <!-- Twitter Sharing Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Argon MMO - Open World Browser Sandbox">
+    <meta name="twitter:description"
+        content="Form squads, build your base, and survive the wasteland in this completely player-driven browser MMO. Play the pre-alpha now.">
+    <meta name="twitter:image" content="lp/aargon.png">
+
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- MessagePack for Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack/dist.es5+umd/msgpack.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #d1383b;
+            --secondary: #245f46;
+            --accent: #c7734a;
+            --text-main: #ffffff;
+            --text-muted: #a0a5b1;
+            --bg-dark: #0a0a0f;
+
+            /* Interactive Variables */
+            --mouse-x: 0px;
+            --mouse-y: 0px;
+            --scroll-rot: 0deg;
+            --scroll-offset: 0px;
+            --scroll-hue: 0deg;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- DYNAMIC ANIMATED BACKGROUND --- */
+        .bg-interactive-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -2;
+            filter: hue-rotate(var(--scroll-hue));
+            transition: filter 0.1s ease-out;
+            pointer-events: none;
+        }
+
+        .bg-animated {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, #2a1213 0%, #0a0a0f 40%),
+                linear-gradient(45deg, #0a0a0f, #121c16, #0a0a0f);
+            animation: rotateBg 20s linear infinite;
+            transform: rotate(var(--scroll-rot));
+            transition: transform 0.2s ease-out;
+            z-index: -3;
+        }
+
+        .orb-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+        }
+
+        .orb-w1 {
+            transform: translate(calc(var(--mouse-x) * -3), calc(var(--mouse-y) * -3 + var(--scroll-offset) * 0.5));
+        }
+
+        .orb-w2 {
+            transform: translate(calc(var(--mouse-x) * 2), calc(var(--mouse-y) * 2 - var(--scroll-offset) * 0.3));
+        }
+
+        .orb-w3 {
+            transform: translate(calc(var(--mouse-x) * -1), calc(var(--mouse-y) * 1 + var(--scroll-offset) * 0.8));
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: floatOrb 12s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            top: 10%;
+            left: 20%;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--secondary);
+            bottom: 15%;
+            right: 15%;
+            animation-delay: -4s;
+            animation-duration: 18s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent);
+            top: 40%;
+            left: 60%;
+            opacity: 0.3;
+            animation-duration: 15s;
+            animation-delay: -8s;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #npc-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+            pointer-events: none;
+            image-rendering: pixelated;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+
+        .glass-container {
+            position: relative;
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem 4rem;
+            text-align: center;
+            max-width: 750px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(209, 56, 59, 0.1);
+            border: 1px solid rgba(209, 56, 59, 0.3);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .hero-logo {
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            /* Scales it up significantly */
+            height: auto;
+            margin: 1rem auto 1.5rem auto;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.6));
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* --- BUTTONS --- */
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .play-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 1rem 3.5rem;
+            border-radius: 100px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(209, 56, 59, 0.3);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(209, 56, 59, 0.5);
+        }
+
+        .play-btn:hover::before {
+            opacity: 1;
+        }
+
+        .play-btn:active {
+            transform: translateY(1px);
+        }
+
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(88, 101, 242, 0.1);
+            border: 2px solid #5865F2;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 0.9rem 2.5rem;
+            border-radius: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .discord-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #fff;
+        }
+
+        .discord-btn:hover {
+            background: #5865F2;
+            box-shadow: 0 10px 20px rgba(88, 101, 242, 0.4);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        /* --- MINI BUTTONS FOR TOP NAV --- */
+        .top-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .mini-btn {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+            border-radius: 100px;
+            cursor: pointer;
+            border: none;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .mini-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .ghost-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .ghost-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .player-profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .coin-balance {
+            color: #ffd700;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 300;
+        }
+
+        .footer-note strong {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* --- FEATURES SECTION --- */
+        .features-section,
+        .roadmap-section {
+            padding: 5rem 2rem 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .features-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(209, 56, 59, 0.4);
+            box-shadow: 0 20px 40px rgba(209, 56, 59, 0.15);
+        }
+
+        .feature-canvas {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem auto;
+            image-rendering: pixelated;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(209, 56, 59, 0.1) 0%, transparent 70%);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        /* --- ROADMAP SECTION --- */
+        .roadmap-section {
+            max-width: 800px;
+            padding-bottom: 10rem;
+        }
+
+        .timeline {
+            position: relative;
+            margin-top: 4rem;
+            padding-left: 4rem;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary) 0%, rgba(209, 56, 59, 0.2) 60%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 4px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 4rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -4rem;
+            top: 24px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-dark);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+            z-index: 2;
+        }
+
+        .timeline-item.completed .timeline-dot {
+            border-color: var(--primary);
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .timeline-item.active .timeline-dot.half-filled {
+            border-color: var(--primary);
+            background: linear-gradient(to bottom, var(--primary) 50%, var(--bg-dark) 50%);
+            box-shadow: 0 0 10px rgba(209, 56, 59, 0.5);
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -6.0rem;
+            top: 90px;
+            width: 112px;
+            height: 112px;
+            z-index: 3;
+        }
+
+        .timeline-marker canvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        .timeline-content {
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item.active .timeline-content {
+            border-color: rgba(209, 56, 59, 0.4);
+            box-shadow: 0 10px 30px rgba(209, 56, 59, 0.15);
+        }
+
+        .timeline-content h3 {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .timeline-content p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .status-tag {
+            background: rgba(209, 56, 59, 0.15);
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            font-weight: bold;
+            border: 1px solid rgba(209, 56, 59, 0.4);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes rotateBg {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes floatOrb {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(150px, -150px) scale(1.3);
+            }
+
+            66% {
+                transform: translate(-100px, 100px) scale(0.8);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideUpFade {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- AUTH & STATS UI --- */
+        .live-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            margin-left: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-divider {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .pulse-dot.green {
+            background-color: #245f46;
+            box-shadow: 0 0 10px #245f46;
+        }
+
+        .auth-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .auth-box {
+            padding: 2.5rem;
+            max-width: 400px;
+            text-align: left;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .founder-banner {
+            background: rgba(209, 56, 59, 0.2);
+            border: 1px solid var(--primary);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-box h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .full-width {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .auth-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        /* --- PROMO CARD --- */
+        .founder-promo-card {
+            position: absolute;
+            top: 50%;
+            right: -220px;
+            transform: translateY(-50%);
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: none;
+            /* Merges visually with the main container */
+            padding: 1.5rem;
+            border-radius: 0 16px 16px 0;
+            width: 220px;
+            text-align: left;
+            box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: -1;
+            /* tucks slightly behind the main container's border */
+            transition: all 0.3s ease;
+        }
+
+        .founder-promo-card h3 {
+            color: #fff;
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+        }
+
+        .founder-promo-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .founder-promo-card p strong {
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .founder-promo-card {
+                position: relative;
+                top: auto;
+                right: auto;
+                transform: none;
+                margin: 20px auto 0 auto;
+                border-radius: 16px;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 1;
+                text-align: center;
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .glass-container {
+                padding: 2rem;
+            }
+
+            .title {
+                font-size: 3rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .features-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .play-btn,
+            .discord-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .timeline {
+                padding-left: 2rem;
+            }
+
+            .timeline-line {
+                left: 4px;
+            }
+
+            .timeline-marker {
+                left: -4.0rem;
+                top: 80px;
+            }
+        }
+
+        /* Properly close the media query here! */
+
+        /* --- TOP BAR --- */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transform: translateY(-100%);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .top-bar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .top-logo {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .top-logo img {
+            height: 32px;
+            width: auto;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .top-logo:hover {
+            transform: scale(1.1) translateY(-2px);
+        }
+
+        /* --- SCROLL INDICATOR --- */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            animation: bounceDown 2s infinite;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .scroll-indicator:hover {
+            color: var(--primary);
+        }
+
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+        }
+
+        @keyframes bounceDown {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0) translateX(-50%);
+            }
+
+            40% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+
+            60% {
+                transform: translateY(-5px) translateX(-50%);
+            }
+        }
+
+        /* --- SIDE NAV PILLS --- */
+        .side-nav {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 100;
+            align-items: flex-end;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .pill-label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item:hover .pill-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:has(.nav-pill.active) .pill-label {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(209, 56, 59, 0.5);
+        }
+
+        .nav-pill {
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-item:hover .nav-pill,
+        .nav-pill.active {
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            transform: scale(1.5);
+        }
+
+        @media (max-width: 768px) {
+            .side-nav {
+                display: none;
+            }
+
+            .top-bar {
+                padding: 1rem;
+            }
+
+            .top-nav {
+                display: none;
+                /* hide buttons on very small screens to save space */
+            }
+
+            .top-logo img {
+                height: 24px;
+            }
+
+            .hero-logo {
+                max-height: 120px;
+            }
+        }
+    </style>
+
+    <style>
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999999;
+            pointer-events: none;
+            animation: fadeOutScreen 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        @keyframes fadeOutScreen {
+            0% { opacity: 1; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Dynamic Background Elements (Fixed) -->
+    <div class="bg-interactive-container">
+        <div class="bg-animated"></div>
+        <div class="orb-wrapper orb-w1">
+            <div class="orb orb-1"></div>
+        </div>
+        <div class="orb-wrapper orb-w2">
+            <div class="orb orb-2"></div>
+        </div>
+        <div class="orb-wrapper orb-w3">
+            <div class="orb orb-3"></div>
+        </div>
+    </div>
+    <div class="grid-overlay"></div>
+
+    <!-- Top Bar Navigation -->
+    <header class="top-bar" id="top-bar">
+        <a href="#hero" class="top-logo" aria-label="Top">
+            <img src="lp/aargon.png" alt="Argon MMO Logo">
+        </a>
+
+        <div class="top-nav" id="top-nav-unauth">
+            <button class="ghost-btn mini-btn" onclick="openAuthModal('login')">SIGN IN</button>
+            <button class="play-btn mini-btn" onclick="openAuthModal('register')">SIGN UP</button>
+        </div>
+
+        <div class="top-nav" id="top-nav-auth" style="display: none;">
+            <div class="player-profile-pill" style="position: relative;">
+                <canvas id="nav-player-head-canvas" width="48" height="48"
+                    style="margin: -32px -9px -16px -16px; position: relative; z-index: 2; image-rendering: pixelated; display: none;"></canvas>
+                <span id="nav-player-name">Player</span>
+                <span class="coin-balance" style="margin-left:8px;"><span id="nav-coins">0</span> 🪙</span>
+            </div>
+            <a href="demo.html" class="play-btn mini-btn">PLAY NOW</a>
+            <button class="ghost-btn mini-btn" onclick="logout()">LOGOUT</button>
+        </div>
+    </header>
+
+    <!-- NPC Canvas Overlay -->
+    <canvas id="npc-canvas"></canvas>
+
+    <!-- Side Navigation Pills -->
+    <div class="side-nav">
+        <a href="#hero" class="nav-item">
+            <span class="pill-label">Welcome</span>
+            <div class="nav-pill active"></div>
+        </a>
+        <a href="#features" class="nav-item">
+            <span class="pill-label">The Vision</span>
+            <div class="nav-pill"></div>
+        </a>
+        <a href="#roadmap" class="nav-item">
+            <span class="pill-label">Roadmap</span>
+            <div class="nav-pill"></div>
+        </a>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+        <div class="glass-container">
+            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <div class="status-badge" style="margin-bottom: 0;">
+                    <div class="pulse-dot"></div>
+                    Pre-Alpha Live
+                </div>
+
+                <div class="live-stats" id="live-stats-container" style="margin-bottom: 0;">
+                    <span class="stat-item"><span id="stat-registered">---</span> Registered</span>
+                    <span class="stat-divider">|</span>
+                    <span class="stat-item"><span class="pulse-dot green"></span> <span id="stat-online">--</span>
+                        Online</span>
+                </div>
+            </div>
+
+            <div
+                style="position: relative; display: inline-block; width: 100%; max-width: 600px; margin: 1rem auto 1.5rem auto;">
+                <img src="lp/aargon.png" alt="Argon MMO Logo" class="hero-logo" style="margin: 0; max-width: 100%;">
+            </div>
+
+            <p class="subtitle">
+                Welcome to the early sandbox build. The core game loop is heavily under construction, but you can jump
+                in, test mechanics, and explore the safe zone.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="demo.html" class="play-btn">ENTER SANDBOX</a>
+                <a href="https://discord.gg/7WyCq2DQgD" target="_blank" class="discord-btn">
+                    <svg viewBox="0 0 127.14 96.36">
+                        <path
+                            d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.9-80.21ZM42.56,65.3c-5.39,0-9.81-4.85-9.81-10.82s4.34-10.82,9.81-10.82,9.88,4.85,9.81,10.82C52.36,60.45,48,65.3,42.56,65.3Zm42,0c-5.39,0-9.81-4.85-9.81-10.82s4.34-10.82,9.81-10.82,9.88,4.85,9.81,10.82C94.46,60.45,90.1,65.3,84.56,65.3Z" />
+                    </svg>
+                    JOIN DISCORD
+                </a>
+            </div>
+
+            <p class="footer-note">
+                <strong>Pro Tip:</strong> Admins are frequently online to give guided tours of the wasteland. Stick
+                around!
+            </p>
+        </div>
+
+        <a href="#features" class="scroll-indicator">
+            SCROLL FOR MORE
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </a>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="features-header">
+            <h2 class="features-title">The Vision</h2>
+            <p class="features-subtitle">Discover the mechanics that will drive the complete Argon ecosystem.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-econ" width="64" height="64"></canvas>
+                <h3>Dynamic Economy</h3>
+                <p>Don't just hunt monsters. Become a miner, collect rare scrap, master diverse jobs, and build your
+                    wealth in a fully player-driven market.</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-combat" width="64" height="64"></canvas>
+                <h3>Skill-Based Combat</h3>
+                <p>Equip firearms, melee weapons, and tools. A fluid, responsive combat system where your aim,
+                    positioning, and reflexes matter more than your level.</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-squads" width="64" height="64"></canvas>
+                <h3>Squads & Territory</h3>
+                <p>Form squads and claim territory. Holding territory over time rewards you with premium, personalized
+                    cosmetics—from unique guns to exclusive assets. Gather at your own Squad Base to socialize and
+                    strategize!</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-housing" width="64" height="64"></canvas>
+                <h3>Player Housing</h3>
+                <p>Purchase a default home base or earn unique fortified home houses through stores and the Battle Pass.
+                    Decorate and upgrade your personal open-world sanctuary over time.</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-world" width="64" height="64"></canvas>
+                <h3>Persistent World</h3>
+                <p>Your actions leave a mark. The structures you build remain, the economies you disrupt shift, and the
+                    ecosystem reacts to your squad's dominance.</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-battlepass" width="64" height="64"></canvas>
+                <h3>Battle Pass & Gems</h3>
+                <p>Zero pay-to-win. Unlock exclusive cosmetics, earn premium Argems, and trade regional currencies in
+                    our dual-gem economy system. Progression that rewards your playtime.</p>
+            </div>
+
+            <div class="feature-card">
+                <canvas class="feature-canvas" id="canvas-events" width="64" height="64"></canvas>
+                <h3>Minigames & Events</h3>
+                <p>Jump into diverse minigames like boss rushes, sparring matches, soccer, or battle royales. Plus,
+                    admins regularly host live events like hide-and-seek or 'Kill the Admin' for exclusive gifts!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="roadmap-section">
+        <div class="features-header">
+            <h2 class="features-title">Development Roadmap</h2>
+            <p class="features-subtitle">Two years in the making. See where we are and where we're going.</p>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-line"></div>
+
+            <!-- Phase 1 -->
+            <div class="timeline-item completed">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3>Phase 1: Foundation</h3>
+                    <p>Custom HTML5 Canvas Engine, WebSocket Multiplayer Networking, Modular Character System, Proximity
+                        Voice Chat, and Core Combat Mechanics.</p>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="timeline-item completed">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3>Phase 2: Ecosystem</h3>
+                    <p>Dynamic Jobs & Economy (Mining, Scavenging), Squad Formation, Territory Control, and UI/UX
+                        Refinements.</p>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="timeline-item active">
+                <div class="timeline-dot half-filled"></div>
+                <!-- Our custom canvas marker -->
+                <div class="timeline-marker">
+                    <canvas id="canvas-marker" width="112" height="112"></canvas>
+                </div>
+                <div class="timeline-content">
+                    <h3>Phase 3: World Building & Cosmetics <span class="status-tag">WE ARE HERE</span></h3>
+                    <p>Comprehensive World Design (Tile placement, biome revision, and building structures), Player
+                        Cosmetics, Dual-Gem Economy, and Admin-Hosted Live Minigames.</p>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="timeline-item planned">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3>Phase 4: First Testing Waves</h3>
+                    <p>Final gameplay polish, economy balancing, bug squashing, and officially opening the server doors
+                        for the first wave of early community testers!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal-overlay" id="auth-modal">
+        <div class="glass-container auth-box">
+            <button class="close-btn" onclick="closeAuthModal()">✕</button>
+
+            <div class="founder-banner" id="founder-banner" style="display: none;">
+                🔥 Register now for <strong style="color: #ffd700;">5000 Coins</strong> & <strong
+                    style="color: #ffd700;">Founder Hat</strong>!
+            </div>
+
+            <h2 id="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle" id="auth-subtitle">Log in to enter the sandbox.</p>
+
+            <div class="auth-error" id="auth-error" style="display: none;"></div>
+
+            <div class="input-group">
+                <input type="email" id="auth-email" placeholder="Email Address">
+            </div>
+            <div class="input-group" id="username-group" style="display: none;">
+                <input type="text" id="auth-username" placeholder="Display Name">
+            </div>
+            <div class="input-group">
+                <input type="password" id="auth-password" placeholder="Password">
+            </div>
+
+            <button class="play-btn full-width" id="auth-submit-btn" onclick="submitAuth()">LOG IN</button>
+
+            <p class="auth-switch">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <a href="#" onclick="toggleAuthMode(); return false;" id="auth-switch-link">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const FRAME_WIDTH = 48;
+        const FRAME_HEIGHT = 64;
+        const WALK_UNARMED_ROW = 8;
+        const ZOOM = 2.5;
+
+        // ==========================================
+        // 1. BACKGROUND NPC ANIMATION
+        // ==========================================
+        const bgCanvas = document.getElementById('npc-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        function resizeBgCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            bgCtx.imageSmoothingEnabled = false;
+        }
+        window.addEventListener('resize', resizeBgCanvas);
+        resizeBgCanvas();
+
+        const bodySources = ['items/players/body/B_D1.png', 'items/players/body/B_D2.png', 'items/players/body/B_D3.png'];
+        const bodyImgs = bodySources.map(src => { const img = new Image(); img.src = src; return img; });
+        const headSources = ['items/players/head/H_P.png', 'items/players/head/H_P1.png', 'items/players/head/H_P2.png', 'items/players/head/L.png', 'items/players/head/ck.png'];
+        const headImgs = headSources.map(src => { const img = new Image(); img.src = src; return img; });
+
+        const npcs = [];
+        for (let i = 0; i < 15; i++) { npcs.push(createRandomNPC()); }
+
+        function createRandomNPC() {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1.0 + Math.random() * 1.5;
+            return {
+                bodyImg: bodyImgs[Math.floor(Math.random() * bodyImgs.length)],
+                headImg: headImgs[Math.floor(Math.random() * headImgs.length)],
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                frameX: Math.floor(Math.random() * 8),
+                tickCount: Math.floor(Math.random() * 10),
+                turnTimer: Math.random() * 200 + 100
+            };
+        }
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            bgCtx.imageSmoothingEnabled = false;
+
+            npcs.forEach(npc => {
+                if (!npc.bodyImg.complete || !npc.headImg.complete) return;
+
+                npc.x += npc.vx;
+                npc.y += npc.vy;
+
+                npc.turnTimer--;
+                if (npc.turnTimer <= 0) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1.0 + Math.random() * 1.5;
+                    npc.vx = Math.cos(angle) * speed;
+                    npc.vy = Math.sin(angle) * speed;
+                    npc.turnTimer = Math.random() * 300 + 100;
+                }
+
+                const padding = 100;
+                if (npc.x > bgCanvas.width + padding) npc.x = -padding;
+                if (npc.x < -padding) npc.x = bgCanvas.width + padding;
+                if (npc.y > bgCanvas.height + padding) npc.y = -padding;
+                if (npc.y < -padding) npc.y = bgCanvas.height + padding;
+
+                npc.tickCount++;
+                if (npc.tickCount >= 5) {
+                    npc.tickCount = 0;
+                    npc.frameX = (npc.frameX + 1) % 8;
+                }
+
+                let dirIdx = 0;
+                const deg = Math.atan2(npc.vy, npc.vx) * (180 / Math.PI);
+                if (deg > 45 && deg <= 135) dirIdx = 0;
+                else if (deg > 135 || deg <= -135) dirIdx = 1;
+                else if (deg > -45 && deg <= 45) dirIdx = 2;
+                else if (deg > -135 && deg <= -45) dirIdx = 3;
+
+                bgCtx.drawImage(
+                    npc.bodyImg,
+                    npc.frameX * FRAME_WIDTH, (WALK_UNARMED_ROW + dirIdx) * FRAME_HEIGHT,
+                    FRAME_WIDTH, FRAME_HEIGHT,
+                    npc.x, npc.y,
+                    FRAME_WIDTH * ZOOM, FRAME_HEIGHT * ZOOM
+                );
+
+                const headBob = (npc.frameX % 4 === 2) ? (1 * ZOOM) : 0;
+                bgCtx.drawImage(
+                    npc.headImg,
+                    0, dirIdx * FRAME_HEIGHT,
+                    FRAME_WIDTH, FRAME_HEIGHT,
+                    npc.x, npc.y + headBob,
+                    FRAME_WIDTH * ZOOM, FRAME_HEIGHT * ZOOM
+                );
+            });
+
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        // ==========================================
+        // 2. CARD CANVAS ANIMATIONS
+        // ==========================================
+        function setupCardAnimation(canvasId, imgSrc, renderLogic) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            const img = new Image();
+            img.src = imgSrc;
+            let tick = 0;
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.imageSmoothingEnabled = false;
+                if (img.complete && img.naturalWidth > 0) {
+                    renderLogic(ctx, img, tick, canvas.width, canvas.height);
+                }
+                tick++;
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        setupCardAnimation('canvas-econ', 'items/jobs/junkyard/trash.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.05) * 4;
+            const size = 48;
+            const frameW = img.height;
+            ctx.drawImage(img, 0, 0, frameW, img.height, (w - size) / 2, (h - size) / 2 + floatY, size, size);
+        });
+
+        setupCardAnimation('canvas-combat', 'items/weapons/gun/Ghost_gun.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.08) * 3;
+            const rot = Math.sin(tick * 0.04) * 0.1;
+            ctx.save();
+            ctx.translate(w / 2 + 29, h / 2 + floatY);
+            ctx.rotate(rot);
+            const frameW = 96;
+            const frameH = 64;
+            const drawW = 100;
+            const drawH = 100 * (frameH / frameW);
+            ctx.drawImage(img, 0, 1 * frameH, frameW, frameH, -drawW / 2, -drawH / 2, drawW, drawH);
+            ctx.restore();
+        });
+
+        setupCardAnimation('canvas-squads', 'items/icons/squads.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.05) * 4;
+            const size = 48;
+            ctx.drawImage(img, (w - size) / 2, (h - size) / 2 + floatY, size, size);
+        });
+
+        setupCardAnimation('canvas-housing', 'items/icons/house.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.06) * 3;
+            const size = 48;
+            ctx.drawImage(img, (w - size) / 2, (h - size) / 2 + floatY, size, size);
+        });
+
+        const worldCanvas = document.getElementById('canvas-world');
+        const worldCtx = worldCanvas.getContext('2d');
+        const worldBody = new Image(); worldBody.src = 'items/players/body/B_D.png';
+        const worldHead = new Image(); worldHead.src = 'items/players/head/H_D.png';
+        let worldTick = 0;
+        function animateWorld() {
+            worldCtx.clearRect(0, 0, worldCanvas.width, worldCanvas.height);
+            worldCtx.imageSmoothingEnabled = false;
+            if (worldBody.complete && worldHead.complete) {
+                const frameX = Math.floor(worldTick / 5) % 8;
+                const dirIdx = 0;
+                const zoom = 1.2;
+                const drawW = FRAME_WIDTH * zoom;
+                const drawH = FRAME_HEIGHT * zoom;
+                const dx = (worldCanvas.width - drawW) / 2;
+                const dy = (worldCanvas.height - drawH) / 2;
+
+                worldCtx.drawImage(worldBody, frameX * FRAME_WIDTH, (WALK_UNARMED_ROW + dirIdx) * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT, dx, dy, drawW, drawH);
+                const headBob = (frameX % 4 === 2) ? (1 * zoom) : 0;
+                worldCtx.drawImage(worldHead, 0, dirIdx * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT, dx, dy + headBob, drawW, drawH);
+            }
+            worldTick++;
+            requestAnimationFrame(animateWorld);
+        }
+        animateWorld();
+
+        setupCardAnimation('canvas-battlepass', 'items/icons/argem.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.06) * 5;
+            const size = 32;
+            ctx.drawImage(img, (w - size) / 2, (h - size) / 2 + floatY, size, size);
+        });
+
+        setupCardAnimation('canvas-events', 'items/weapons/melee/katana.png', (ctx, img, tick, w, h) => {
+            const floatY = Math.sin(tick * 0.07) * 4;
+            const rot = Math.sin(tick * 0.03) * 0.15;
+            ctx.save();
+            ctx.translate(w / 2 + 20, h / 2 + floatY);
+            ctx.rotate(rot + Math.PI / 4);
+            const frameW = 96;
+            const frameH = 64;
+            const drawW = 100;
+            const drawH = 100 * (frameH / frameW);
+            ctx.drawImage(img, 0, 1 * frameH, frameW, frameH, -drawW / 2, -drawH / 2, drawW, drawH);
+            ctx.restore();
+        });
+
+        // ==========================================
+        // 3. ROADMAP MARKER ANIMATION
+        // ==========================================
+        const markerCanvas = document.getElementById('canvas-marker');
+        const markerCtx = markerCanvas.getContext('2d');
+        const markerHead = new Image(); markerHead.src = 'items/players/head/H_D.png';
+        let markerTick = 0;
+
+        function animateMarker() {
+            markerCtx.clearRect(0, 0, markerCanvas.width, markerCanvas.height);
+            markerCtx.imageSmoothingEnabled = false;
+
+            if (markerHead.complete) {
+                // Gentle floating bob
+                const floatY = Math.sin(markerTick * 0.05) * 4;
+
+                // Draw a glowing circle behind the head
+                markerCtx.fillStyle = "rgba(209, 56, 59, 0.2)";
+                markerCtx.beginPath();
+                markerCtx.arc(56, 56 + floatY, 32, 0, Math.PI * 2);
+                markerCtx.fill();
+
+                // Draw the H_D head sprite
+                const zoom = 2.8;
+                const drawW = FRAME_WIDTH * zoom;
+                const drawH = FRAME_HEIGHT * zoom;
+                const dx = (markerCanvas.width - drawW) / 2;
+                const dy = ((markerCanvas.height - drawH) / 2) + floatY + 10; // pushed down 10px to center it in circle
+
+                // Using dirIdx = 0 (facing down)
+                markerCtx.drawImage(markerHead, 0, 0, FRAME_WIDTH, FRAME_HEIGHT, dx, dy, drawW, drawH);
+            }
+
+            markerTick++;
+            requestAnimationFrame(animateMarker);
+        }
+        animateMarker();
+
+        // ==========================================
+        // 4. SCROLL SPY NAVIGATION
+        // ==========================================
+        const sections = document.querySelectorAll('section');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.4
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navItems.forEach(item => {
+                        item.querySelector('.nav-pill').classList.remove('active');
+                        if (item.getAttribute('href').substring(1) === entry.target.id) {
+                            item.querySelector('.nav-pill').classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // ==========================================
+        // 5. STICKY TOP BAR LOGIC
+        // ==========================================
+        const topBar = document.getElementById('top-bar');
+        const heroSection = document.getElementById('hero');
+
+        const heroObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // If hero is less than 20% visible, show the top bar
+                if (!entry.isIntersecting) {
+                    topBar.classList.add('visible');
+                } else {
+                    topBar.classList.remove('visible');
+                }
+            });
+        }, { root: null, threshold: 0.2 });
+
+        heroObserver.observe(heroSection);
+
+        // ==========================================
+        // 6. INTERACTIVE BACKGROUND (Mouse & Scroll)
+        // ==========================================
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 150; // Massively increased mouse push effect
+            const y = (e.clientY / window.innerHeight - 0.5) * 150;
+            document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+        });
+
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            let scrollPercent = 0;
+            if (maxScroll > 0) {
+                scrollPercent = scrollY / maxScroll;
+            }
+
+            document.documentElement.style.setProperty('--scroll-rot', `${scrollY * 0.05}deg`);
+            document.documentElement.style.setProperty('--scroll-offset', `${scrollY * 0.2}px`);
+            document.documentElement.style.setProperty('--scroll-hue', `${scrollPercent * 90}deg`);
+        });
+
+        // ==========================================
+        // 7. AUTH & STATS (MongoDB integration)
+        // ==========================================
+
+        // 1. Fetch live stats
+        async function fetchLiveStats() {
+            try {
+                const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
+                const host = isLocal ? 'http://localhost:8080' : '';
+                const res = await fetch(`${host}/api/stats`);
+                const data = await res.json();
+                document.getElementById('stat-registered').innerText = data.registered.toLocaleString();
+                document.getElementById('stat-online').innerText = data.online.toLocaleString();
+            } catch (e) {
+                console.log('Stats currently unavailable');
+            }
+        }
+        fetchLiveStats();
+        setInterval(fetchLiveStats, 15000);
+
+        // 2. Auth Modal UI
+        const authModal = document.getElementById('auth-modal');
+        const usernameGroup = document.getElementById('username-group');
+        const authTitle = document.getElementById('auth-title');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const submitBtn = document.getElementById('auth-submit-btn');
+        const switchText = document.getElementById('auth-switch-text');
+        const switchLink = document.getElementById('auth-switch-link');
+        const founderBanner = document.getElementById('founder-banner');
+        const authError = document.getElementById('auth-error');
+
+        let authMode = 'login';
+
+        function openAuthModal(mode) {
+            authMode = mode;
+            updateAuthUI();
+            authModal.classList.add('open');
+            authError.style.display = 'none';
+        }
+        function closeAuthModal() {
+            authModal.classList.remove('open');
+        }
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'register' : 'login';
+            updateAuthUI();
+        }
+        function showAuthError(msg) {
+            authError.style.display = 'block';
+            authError.innerText = msg;
+            submitBtn.innerText = authMode === 'login' ? 'LOG IN' : 'REGISTER';
+            submitBtn.style.opacity = "1";
+        }
+
+        function updateAuthUI() {
+            if (authMode === 'login') {
+                authTitle.innerText = 'Welcome Back';
+                authSubtitle.innerText = 'Log in to enter the sandbox.';
+                usernameGroup.style.display = 'none';
+                submitBtn.innerText = 'LOG IN';
+                switchText.innerText = "Don't have an account?";
+                switchLink.innerText = "Sign Up";
+                founderBanner.style.display = 'none';
+            } else {
+                authTitle.innerText = 'Join the Pre-Alpha';
+                authSubtitle.innerText = 'Create your account now.';
+                usernameGroup.style.display = 'block';
+                submitBtn.innerText = 'REGISTER';
+                switchText.innerText = "Already have an account?";
+                switchLink.innerText = "Log In";
+                founderBanner.style.display = 'block';
+            }
+        }
+
+        // 3. WebSocket Auth Logic
+        function submitAuth() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const username = document.getElementById('auth-username').value;
+
+            if (!email || !password || (authMode === 'register' && !username)) {
+                return showAuthError("Please fill all fields.");
+            }
+
+            submitBtn.innerText = "CONNECTING...";
+            submitBtn.style.opacity = "0.7";
+
+            const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
+            const wsUrl = isLocal ? 'ws://localhost:8080' : `wss://${location.host}`;
+
+            const ws = new WebSocket(wsUrl);
+            ws.binaryType = "arraybuffer";
+
+            ws.onopen = () => {
+                const payload = authMode === 'login'
+                    ? { type: 'login', email, password }
+                    : { type: 'register', email, password, username };
+                ws.send(MessagePack.encode(payload));
+            };
+
+            ws.onmessage = async (event) => {
+                try {
+                    const data = MessagePack.decode(new Uint8Array(event.data));
+                    if (data.type === 'auth_error') {
+                        showAuthError(data.message);
+                        ws.close();
+                    }
+                    else if (data.type === 'register_success') {
+                        // Switch to login
+                        authMode = 'login';
+                        updateAuthUI();
+                        showAuthError(data.message); // Show success in red for now, it's fine
+                        authError.style.color = '#4cd137'; // Make it green!
+                        ws.close();
+                    }
+                    else if (data.type === 'login_success') {
+                        // Save token to localStorage for demo.html to use
+                        localStorage.setItem('gameToken', data.token);
+
+                        // Save basic profile info to display on landing page
+                        if (data.player) {
+                            localStorage.setItem('gameUsername', data.player.username);
+                            localStorage.setItem('gameCoins', data.player.coins || 0);
+                            if (data.playerHeadSrc) {
+                                localStorage.setItem('gameHead', data.playerHeadSrc);
+                            } else if (data.player.equipped && data.player.equipped.head) {
+                                localStorage.setItem('gameHead', 'items/players/head/' + data.player.equipped.head + '.png');
+                            }
+                        }
+
+                        closeAuthModal();
+                        checkLoginState();
+                        ws.close();
+                    }
+                } catch (e) {
+                    showAuthError("Connection error.");
+                    ws.close();
+                }
+            };
+
+            ws.onerror = () => {
+                showAuthError("Server offline. Cannot connect.");
+                ws.close();
+            };
+        }
+
+        // 4. Session State Management
+        function checkLoginState() {
+            const token = localStorage.getItem('gameToken');
+            const unauthNav = document.getElementById('top-nav-unauth');
+            const authNav = document.getElementById('top-nav-auth');
+
+            if (token) {
+                unauthNav.style.display = 'none';
+                authNav.style.display = 'flex';
+                authNav.style.alignItems = 'center';
+                authNav.style.gap = '10px';
+
+                document.getElementById('nav-player-name').innerText = localStorage.getItem('gameUsername') || 'Player';
+                document.getElementById('nav-coins').innerText = (localStorage.getItem('gameCoins') || '0').toLocaleString();
+
+                let headSrc = localStorage.getItem('gameHead');
+                const headCanvas = document.getElementById('nav-player-head-canvas');
+
+                if (headSrc && headSrc !== 'none') {
+                    // Failsafe for old cache that just saved 'ck_1' instead of full path
+                    if (!headSrc.includes('/') && !headSrc.endsWith('.png')) {
+                        // Fallback logic
+                        const baseId = headSrc.split('_')[0];
+                        headSrc = `items/players/head/${baseId}.png`;
+                        localStorage.setItem('gameHead', headSrc);
+                    }
+
+                    headCanvas.style.display = 'block';
+
+                    const img = new Image();
+                    img.onload = () => {
+                        const ctx = headCanvas.getContext('2d');
+                        ctx.clearRect(0, 0, 48, 48);
+                        ctx.imageSmoothingEnabled = false; // <-- ESTO HACE QUE SE VEA SHARP/HD (Pixel Perfect)
+
+                        // Los sprites de cabeza tienen mucho espacio vacío.
+                        // Recortamos desde (8, 4) un área de 32x32 (acercamiento a la cara)
+                        // y lo estiramos para que llene nuestro canvas de 48x48
+                        ctx.drawImage(img, 8, 4, 32, 32, 0, 0, 48, 48);
+                    };
+                    img.onerror = () => {
+                        // Si falla, intentamos limpiar guiones bajos
+                        const fallbackName = headSrc.split('/').pop().split('_')[0];
+                        img.src = `items/players/head/${fallbackName}.png`;
+                    };
+                    img.src = headSrc;
+
+                    // Cleanup old spriteDiv if it exists from previous code version
+                    const oldDiv = document.getElementById('nav-sprite-head');
+                    if (oldDiv) oldDiv.remove();
+                } else {
+                    if (headCanvas) headCanvas.style.display = 'none';
+                }
+            } else {
+                unauthNav.style.display = 'flex';
+                authNav.style.display = 'none';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('gameToken');
+            localStorage.removeItem('gameUsername');
+            localStorage.removeItem('gameCoins');
+            localStorage.removeItem('gameHead');
+            checkLoginState();
+        }
+
+        // Init session check on load
+        checkLoginState();
+
+    
+        // --- SLEEK TRANSITION TO SANDBOX ---
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.getAttribute('href') === 'demo.html') {
+                    e.preventDefault();
+                    
+                    // Create black overlay
+                    const overlay = document.createElement('div');
+                    overlay.id = 'transition-overlay';
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100vw';
+                    overlay.style.height = '100vh';
+                    overlay.style.backgroundColor = '#000';
+                    overlay.style.zIndex = '9999999';
+                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)';
+                    overlay.style.pointerEvents = 'none';
+                    document.body.appendChild(overlay);
+
+                    // Trigger reflow and fade to black
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            overlay.style.opacity = '1';
+                        });
+                    });
+
+                    // Navigate after fade
+                    setTimeout(() => {
+                        window.location.href = 'demo.html';
+                    }, 650);
+                }
+            });
+        });
+
+    
+        window.addEventListener('pageshow', (event) => {
+            const o = document.getElementById('transition-overlay');
+            if (o) o.remove();
+
+            if (event.persisted) {
+                window.location.reload();
+            }
+
+        });
+
+    </script>
+</body>
+
+</html>
