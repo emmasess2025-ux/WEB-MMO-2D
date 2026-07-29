@@ -1808,6 +1808,25 @@ ws.onmessage = (event) => {
         }
         if (data.isSpeaking) {
             if (typeof resetVoiceMediaSource === 'function') resetVoiceMediaSource();
+            // iOS Fallback: prepare for new message
+            if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive) {
+                if (typeof voiceAccumulator !== 'undefined') voiceAccumulator = [];
+            }
+        } else {
+            // iOS Fallback: Play accumulated message when admin stops speaking!
+            if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive && typeof voiceAccumulator !== 'undefined' && voiceAccumulator.length > 0) {
+                try {
+                    const blob = new Blob([voiceHeader, ...voiceAccumulator], { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = new Audio(url);
+                    a.play().catch(e => console.warn("iOS Fallback Block:", e));
+                } catch(e) {}
+                voiceAccumulator = [];
+            }
+        }
+    }
+        if (data.isSpeaking) {
+            if (typeof resetVoiceMediaSource === 'function') resetVoiceMediaSource();
         }
     }
     else if (data.type === 'admin_voice_chunk') {
@@ -12987,21 +13006,10 @@ function initVoiceMediaSource() {
 function handleAdminVoiceChunk(uint8Array, adminX, adminY) {
     if (!voiceHeader) voiceHeader = uint8Array; // THE GOLDEN WEBM HEADER
     
-    // iOS FALLBACK
+    // iOS FALLBACK (WALKIE-TALKIE MODE)
     if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive) {
         voiceAccumulator.push(uint8Array);
-        if (!voiceFallbackTimer) {
-            voiceFallbackTimer = setTimeout(() => {
-                try {
-                    const blob = new Blob([voiceHeader, ...voiceAccumulator], { type: 'audio/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const a = new Audio(url);
-                    a.play().catch(e => console.warn("iOS Fallback Block:", e));
-                } catch(e) {}
-                voiceAccumulator = [];
-                voiceFallbackTimer = null;
-            }, 600); 
-        }
+        // El audio se reproducirá cuando el admin suelte el botón (isSpeaking = false)
         return;
     }
 
