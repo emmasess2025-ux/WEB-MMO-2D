@@ -819,50 +819,7 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .glass-container {
-                padding: 2rem;
-            }
 
-            .title {
-                font-size: 3rem;
-            }
-
-            .subtitle {
-                font-size: 1rem;
-            }
-
-            .features-title {
-                font-size: 2.5rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .play-btn,
-            .discord-btn {
-                width: 100%;
-                text-align: center;
-                justify-content: center;
-            }
-
-            .timeline {
-                padding-left: 2rem;
-            }
-
-            .timeline-line {
-                left: 4px;
-            }
-
-            .timeline-marker {
-                left: -4.0rem;
-                top: 80px;
-            }
-        }
-
-        /* Properly close the media query here! */
 
         /* --- TOP BAR --- */
         .top-bar {
@@ -900,9 +857,12 @@
             filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
         }
 
-        .top-logo:hover {
-            transform: scale(1.1) translateY(-2px);
+        .top-nav {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
+
 
         /* --- SCROLL INDICATOR --- */
         .scroll-indicator {
@@ -914,11 +874,11 @@
             flex-direction: column;
             align-items: center;
             gap: 0.5rem;
-            color: rgba(255, 255, 255, 0.5);
-            animation: bounceDown 2s infinite;
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            animation: bounce 2s infinite;
             transition: color 0.3s ease;
         }
 
@@ -932,26 +892,26 @@
             stroke: currentColor;
         }
 
-        @keyframes bounceDown {
+        @keyframes bounce {
 
             0%,
             20%,
             50%,
             80%,
             100% {
-                transform: translateY(0) translateX(-50%);
+                transform: translateX(-50%) translateY(0);
             }
 
             40% {
-                transform: translateY(-10px) translateX(-50%);
+                transform: translateX(-50%) translateY(-10px);
             }
 
             60% {
-                transform: translateY(-5px) translateX(-50%);
+                transform: translateX(-50%) translateY(-5px);
             }
         }
 
-        /* --- SIDE NAV PILLS --- */
+        /* --- SIDE NAV --- */
         .side-nav {
             position: fixed;
             right: 2rem;
@@ -961,22 +921,21 @@
             flex-direction: column;
             gap: 1.5rem;
             z-index: 100;
-            align-items: flex-end;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            cursor: pointer;
+            justify-content: flex-end;
+            gap: 1rem;
             text-decoration: none;
+            cursor: pointer;
         }
 
         .pill-label {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
             font-weight: 700;
-            letter-spacing: 1px;
             text-transform: uppercase;
             transition: color 0.3s ease;
         }
@@ -1012,16 +971,71 @@
             }
 
             .top-bar {
-                padding: 1rem;
+                top: 15px;
+                /* Floating spacing from top */
+                left: 0;
+                right: 0;
+                margin: 0 auto;
+                width: 90%;
+                max-width: 350px;
+                padding: 15px 20px;
+                background: rgba(15, 15, 20, 0.85) !important;
+                backdrop-filter: blur(15px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 30px !important;
+                /* Dynamic Island / Pill shape */
+                display: flex !important;
+                flex-direction: column !important;
+                /* Stack logo and buttons */
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             .top-nav {
-                display: none;
-                /* hide buttons on very small screens to save space */
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                align-items: center !important;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .top-nav .mini-btn {
+                flex: 1;
+                padding: 0.4rem 0.5rem !important;
+                font-size: 0.65rem !important;
+                white-space: nowrap !important;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 20px;
+                min-width: 0;
+                /* Prevent flex blowout */
+            }
+
+            .top-nav .mini-btn svg {
+                width: 12px !important;
+                height: 12px !important;
+                margin-right: 4px !important;
+                flex-shrink: 0;
+            }
+
+            .top-nav .mini-btn svg {
+                width: 14px !important;
+                height: 14px !important;
+            }
+
+            .player-profile-pill {
+                display: flex !important;
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 0.2rem 0.5rem !important;
+                font-size: 0.75rem !important;
             }
 
             .top-logo img {
-                height: 24px;
+                height: 22px !important;
+                margin-top: 0 !important;
             }
 
             .hero-logo {
@@ -1043,10 +1057,19 @@
             pointer-events: none;
             animation: fadeOutScreen 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
         }
+
         @keyframes fadeOutScreen {
-            0% { opacity: 1; }
-            20% { opacity: 1; }
-            100% { opacity: 0; }
+            0% {
+                opacity: 1;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -1075,8 +1098,27 @@
         </a>
 
         <div class="top-nav" id="top-nav-unauth">
-            <button class="ghost-btn mini-btn" onclick="openAuthModal('login')">SIGN IN</button>
-            <button class="play-btn mini-btn" onclick="openAuthModal('register')">SIGN UP</button>
+            <button class="ghost-btn mini-btn" onclick="openAuthModal('login')"
+                style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+                SIGN IN
+            </button>
+            <button class="play-btn mini-btn" onclick="openAuthModal('register')"
+                style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                SIGN UP
+            </button>
         </div>
 
         <div class="top-nav" id="top-nav-auth" style="display: none;">
@@ -1779,7 +1821,11 @@
             const unauthNav = document.getElementById('top-nav-unauth');
             const authNav = document.getElementById('top-nav-auth');
 
-            if (token) {
+            const username = localStorage.getItem('gameUsername');
+            const isValidToken = token && token !== 'undefined' && token !== 'null';
+            const isValidUser = username && username !== 'undefined' && username !== 'null' && !username.startsWith('Guest');
+
+            if (isValidToken && isValidUser) {
                 unauthNav.style.display = 'none';
                 authNav.style.display = 'flex';
                 authNav.style.alignItems = 'center';
@@ -1843,13 +1889,13 @@
         // Init session check on load
         checkLoginState();
 
-    
+
         // --- SLEEK TRANSITION TO SANDBOX ---
         document.querySelectorAll('.play-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 if (this.getAttribute('href') === 'demo.html') {
                     e.preventDefault();
-                    
+
                     // Create black overlay
                     const overlay = document.createElement('div');
                     overlay.id = 'transition-overlay';
@@ -1880,7 +1926,7 @@
             });
         });
 
-    
+
         window.addEventListener('pageshow', (event) => {
             const o = document.getElementById('transition-overlay');
             if (o) o.remove();
