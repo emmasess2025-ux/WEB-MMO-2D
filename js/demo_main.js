@@ -12976,7 +12976,9 @@ let globalIosAudioUnlocked = false;
 function unlockGlobalIosAudio() {
     if (globalIosAudioUnlocked) return;
     try {
-        globalIosAudio.play().catch(e => {}); // Silent play to unlock
+        // 🤫 Usamos un micro audio en blanco de 1 byte para engañar a Safari y desbloquear el reproductor
+        globalIosAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        globalIosAudio.play().catch(e => {}); 
         globalIosAudioUnlocked = true;
     } catch(e) {}
 }
@@ -13066,6 +13068,12 @@ document.addEventListener('visibilitychange', () => {
         if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
             ws.close(1000, "Background");
         }
+        // 🔇 MUTE BACKGROUND AUDIO EN iOS (Para que no suene con la app cerrada)
+        if (typeof bgmPlayer !== 'undefined' && bgmPlayer) bgmPlayer.pause();
+        if (typeof globalIosAudio !== 'undefined' && globalIosAudio) globalIosAudio.pause();
+    } else {
+        // 🔊 RENOVAR AUDIO AL VOLVER
+        if (typeof bgmPlayer !== 'undefined' && bgmPlayer && isBgmPlaying) bgmPlayer.play().catch(e=>{});
     }
 });
 
