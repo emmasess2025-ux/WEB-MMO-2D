@@ -1814,19 +1814,22 @@ ws.onmessage = (event) => {
             }
         } else {
             // iOS Fallback: Play accumulated message when admin stops speaking!
-            if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive && typeof voiceAccumulator !== 'undefined' && voiceAccumulator.length > 0) {
-                try {
-                    const blob = new Blob([voiceHeader, ...voiceAccumulator], { type: 'audio/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const a = new Audio(url);
-                    a.play().catch(e => console.warn("iOS Fallback Block:", e));
-                } catch(e) {}
-                voiceAccumulator = [];
+            // Añadimos un pequeño retraso de 300ms para asegurar que el ÚLTIMO fragmento llegue antes de reproducir.
+            if (typeof iosVoiceFallbackActive !== 'undefined' && iosVoiceFallbackActive && typeof voiceAccumulator !== 'undefined') {
+                setTimeout(() => {
+                    if (voiceAccumulator.length > 0) {
+                        try {
+                            const blob = new Blob([voiceHeader, ...voiceAccumulator], { type: 'audio/webm' });
+                            const url = URL.createObjectURL(blob);
+                            if (typeof globalIosAudio !== 'undefined') {
+                                globalIosAudio.src = url;
+                                globalIosAudio.play().catch(e => console.warn("iOS Fallback Block:", e));
+                            }
+                        } catch(e) {}
+                        voiceAccumulator = [];
+                    }
+                }, 400);
             }
-        }
-    }
-        if (data.isSpeaking) {
-            if (typeof resetVoiceMediaSource === 'function') resetVoiceMediaSource();
         }
     }
     else if (data.type === 'admin_voice_chunk') {
@@ -12965,6 +12968,22 @@ let iosVoiceFallbackActive = false;
 let voiceHeader = null;
 let voiceAccumulator = [];
 let voiceFallbackTimer = null;
+
+// --- iOS PERSISTENT AUDIO ELEMENT ---
+let globalIosAudio = new Audio();
+let globalIosAudioUnlocked = false;
+
+function unlockGlobalIosAudio() {
+    if (globalIosAudioUnlocked) return;
+    try {
+        globalIosAudio.play().catch(e => {}); // Silent play to unlock
+        globalIosAudioUnlocked = true;
+    } catch(e) {}
+}
+window.addEventListener('pointerdown', unlockGlobalIosAudio, { once: false });
+window.addEventListener('keydown', unlockGlobalIosAudio, { once: false });
+// ------------------------------------
+
 
 function initVoiceMediaSource() {
     if (voiceMediaSource || iosVoiceFallbackActive) return;
