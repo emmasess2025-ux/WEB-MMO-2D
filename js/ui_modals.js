@@ -136,7 +136,7 @@ function selectMetalItemForPreview(itemId, totalOwned) {
 
     document.getElementById('btn-sell-metal-action').onclick = () => {
         const qty = parseInt(sqi.value) || 1;
-        if (ws.readyState === WebSocket.OPEN && qty > 0) {
+        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN && qty > 0) {
             ws.send(MessagePack.encode({ type: 'sell_individual_metal', itemId: itemId, quantity: qty }));
         }
     };
@@ -183,7 +183,7 @@ function selectAllMetalsForPreview(metalCounts, totalEarned) {
         btn.style.background = "#7f8c8d";
         btn.disabled = true;
 
-        if (ws.readyState === WebSocket.OPEN) {
+        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(MessagePack.encode({ type: 'sell_all_metals' }));
         }
     };
@@ -343,7 +343,7 @@ function selectTrashItemForPreview(itemId, totalOwned) {
     // Botón Vender Individual
     document.getElementById('btn-sell-action').onclick = () => {
         const qty = parseInt(sqi.value) || 1;
-        if (ws.readyState === WebSocket.OPEN && qty > 0) {
+        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN && qty > 0) {
             ws.send(MessagePack.encode({ type: 'sell_individual_trash', itemId: itemId, quantity: qty }));
         }
     };
@@ -398,7 +398,7 @@ function selectAllTrashForPreview(trashCounts, totalEarned) {
         btn.style.background = "#7f8c8d";
         btn.disabled = true;
 
-        if (ws.readyState === WebSocket.OPEN) {
+        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(MessagePack.encode({ type: 'sell_all_trash' }));
         }
     };
@@ -410,77 +410,7 @@ document.getElementById('btn-close-junkyard').onclick = () => {
     isJunkyardOpen = false;
 };
 
-// --- NUEVO: FUNCIÓN DE PREVISUALIZACIÓN Y VENTA INDIVIDUAL ---
-const sellQtyInput = document.getElementById('sell-quantity-input');
 
-// --- PANTALLA DERECHA: VENTA INDIVIDUAL ---
-function selectTrashItemForPreview(itemId, totalOwned) {
-    // 1. Efecto visual de selección en la lista
-    const oldRow = document.querySelector('.trash-row.selected');
-    if (oldRow) oldRow.classList.remove('selected');
-    document.getElementById(`row-${itemId}`).classList.add('selected');
-
-    // 2. Activar pantalla derecha
-    currentSelectedTrashId = itemId;
-    document.getElementById('visualizer-placeholder').style.display = 'none';
-    const vis = document.getElementById('trash-visualizer');
-    vis.style.display = 'flex';
-
-    // 3. Obtener los datos del ítem
-    const t = CLIENT_TRASH_CATALOG.find(x => x.id === itemId);
-
-    // 4. Inyectar TODO el HTML dinámico (Esto reemplaza a los viejos innerText)
-    vis.innerHTML = `
-        <canvas id="junk-preview-canvas" width="64" height="64" style="background: rgba(0,0,0,0.5); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); image-rendering: pixelated; margin-bottom: 5px;"></canvas>
-        <div style="font-weight: bold; color: #f1c40f; margin-bottom: 5px; font-size: 16px;">${t.name}</div>
-        <div style="font-size: 11px; color: #bdc3c7; margin-bottom: 5px;">Valor: <span style="color: #2ecc71;">${t.value} 🪙 c/u</span></div>
-        
-        <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:rgba(0,0,0,0.3); padding:5px; border-radius:6px;">
-            <label style="font-size: 12px; color: #7f8c8d;">Vender:</label>
-            <input type="number" id="sell-quantity-input" min="1" max="${totalOwned}" value="1" style="width:50px; text-align:center; background:rgba(0,0,0,0.8); color:white; border:1px solid #555; border-radius:4px; outline:none;">
-            <span style="font-size: 12px; color: #7f8c8d;"> / ${totalOwned}</span>
-        </div>
-
-        <div style="margin-bottom: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; width:100%; text-align:center;">
-            <span style="font-size: 11px; color:#bdc3c7">Ganancia:</span>
-            <div style="font-size: 24px; font-weight: bold; color: #2ecc71;" id="calc-junk-payout">+${t.value} 🪙</div>
-        </div>
-        <button class="btn-green" style="width: 100%; margin-top:auto;" id="btn-sell-action">Sell selection</button>
-    `;
-
-    // 5. Dibujar el icono grande en el nuevo Canvas inyectado
-    setTimeout(() => {
-        const cctx = document.getElementById('junk-preview-canvas')?.getContext('2d');
-        if (cctx && trashSpritesheet.complete) {
-            cctx.imageSmoothingEnabled = false;
-            cctx.drawImage(trashSpritesheet, t.sx, t.sy, 16, 16, 0, 0, 64, 64);
-        }
-    }, 10);
-
-    // 6. Lógica matemática del input (Al escribir la cantidad, actualiza el precio)
-    const sqi = document.getElementById('sell-quantity-input');
-    sqi.oninput = () => {
-        let val = parseInt(sqi.value) || 0;
-        if (val > totalOwned) { val = totalOwned; sqi.value = val; } // Evita que vendan más de lo que tienen
-        if (val < 1) val = 1;
-        document.getElementById('calc-junk-payout').innerText = `+${val * t.value} 🪙`;
-    };
-
-    // 7. Conectar el botón de venta
-    document.getElementById('btn-sell-action').onclick = () => {
-        const qty = parseInt(sqi.value) || 1;
-        if (ws.readyState === WebSocket.OPEN && qty > 0) {
-            ws.send(MessagePack.encode({ type: 'sell_individual_trash', itemId: itemId, quantity: qty }));
-        }
-    };
-}
-
-// Función matemática para actualizar el texto del total a ganar
-function updateJunkPayoutCalculation(individualValue) {
-    const qty = parseInt(sellQtyInput.value) || 0;
-    const total = qty * individualValue;
-    document.getElementById('calc-junk-payout').innerText = `+${total} 🪙`;
-}
 
 // --- CONECTAR LOS BOTONES DEL YONKE (VERSIÓN NUEVA) ---
 

@@ -33,6 +33,23 @@
     <script src="https://cdn.jsdelivr.net/npm/@msgpack/msgpack/dist.es5+umd/msgpack.min.js"></script>
 
     <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a35;
+            border-radius: 5px;
+            border: 2px solid var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
         :root {
             --primary: #d1383b;
             --secondary: #245f46;
@@ -1938,6 +1955,7 @@
         });
 
     </script>
+    <script src="js/webrtc_squad.js?v=29"></script>
 </body>
 
 </html>

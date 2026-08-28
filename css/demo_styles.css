@@ -1048,146 +1048,778 @@
             /* ¡LA MAGIA! Evita que se vea borroso */
             object-fit: contain;
             filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.6));
-            /* Reemplaza el text-shadow de los emojis */
+        }
+
+        /* ========================================= */
+        /* 👾 ANIMATIONS & SPECIAL HUD ELEMENTS      */
+        /* ========================================= */
+        @keyframes iconPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        .icon-pop-anim {
+            animation: iconPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* ========================================= */
+        /* SLEEK SPA-LIKE TRANSITION FADE-IN         */
+        /* ========================================= */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999999;
+            pointer-events: none;
+            animation: fadeOutScreen 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+
+        @keyframes fadeOutScreen {
+            0% { opacity: 1; }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ========================================= */
+        /* 🛡️ PROFILE CLICK BLOCKER BUTTON HUD       */
+        /* ========================================= */
+        .hud-profile-block-btn {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .hud-profile-block-btn:hover {
+            transform: scale(1.08);
+            filter: brightness(1.15);
+        }
+        .hud-profile-block-btn:active {
+            transform: scale(0.92);
+        }
+        .hud-profile-block-btn.active {
+            border-color: rgba(231, 76, 60, 0.7) !important;
+            background: rgba(231, 76, 60, 0.22) !important;
+            box-shadow: 0 0 12px rgba(231, 76, 60, 0.35) !important;
+        }
+        .hud-profile-block-btn.inactive {
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            background: rgba(25, 25, 25, 0.65) !important;
+            box-shadow: none !important;
+            opacity: 0.75;
+        }
+
+        /* ========================================= */
+        /* 🛡️ UNIFIED SQUAD SYSTEM MODALS (DESKTOP)   */
+        /* ========================================= */
+        .squad-standard-frame {
+            width: 80vw;
+            max-width: 750px;
+            height: 75vh;
+            max-height: 550px;
+            min-height: 480px;
+            background: rgba(22, 22, 28, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 1px rgba(255, 255, 255, 0.2);
+            position: relative;
+            color: white;
+            font-family: 'Outfit', sans-serif, system-ui;
+            animation: squadModalPop 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes squadModalPop {
+            from {
+                opacity: 0.7;
+                transform: scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .squad-modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            padding: 0;
+        }
+
+        .squad-modal-close-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: rgba(231, 76, 60, 0.8);
+            transform: scale(1.08);
+        }
+
+        .squad-modal-close-btn:active {
+            transform: scale(0.95);
+        }
+
+        .squad-modal-back-btn {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            height: 34px;
+            padding: 0 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ccc;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .squad-modal-back-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateX(-2px);
+        }
+
+        .squad-modal-header {
+            height: 64px;
+            padding: 0 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.35);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .squad-modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* Feature Cards in Main Hub */
+        .squad-hub-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 24px;
+            flex: 1;
+        }
+
+        .squad-hub-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .squad-hub-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .squad-hub-card:active {
+            transform: scale(0.98);
+        }
+
+        .squad-hub-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .squad-hub-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .squad-hub-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .squad-hub-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #999;
+            line-height: 1.35;
+        }
+
+        /* Studio 2-Column Styles */
+        .squad-studio-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .squad-studio-preview {
+            flex: 0 0 240px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .squad-studio-form {
+            flex: 1;
+            padding: 30px 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        .squad-form-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #aaa;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .squad-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.45);
+            color: white;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .squad-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .squad-primary-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            transition: all 0.2s;
+        }
+
+        .squad-primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .squad-primary-btn:active {
+            transform: translateY(1px);
         }
 
         /* ========================================================= */
-        /* 📱 RESPONSIVIDAD PARA MODALES DE DOS COLUMNAS (CELULAR)   */
+        /* 📱 SQUAD SYSTEM MOBILE RESPONSIVENESS & POSITIONING       */
         /* ========================================================= */
-        @media (max-width: 700px) {
 
-            #junkyard-modal,
-            #jeweler-modal {
-                width: 95vw !important;
-                height: 85vh !important;
-                max-height: none !important;
-            }
-
-            .junkyard-body {
-                flex-direction: column !important;
-                /* Apila las columnas verticalmente */
-            }
-
-            .junkyard-left {
-                width: 100% !important;
-                height: 45% !important;
-                /* La lista toma la mitad de arriba */
-                border-right: none !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-
-            .junkyard-right {
-                width: 100% !important;
-                height: 55% !important;
-                /* La vista previa toma la mitad de abajo */
-                padding: 10px !important;
-            }
-
-            .shop-flex-container {
-                flex-direction: column !important;
-                /* Apila el monito y la info */
-                overflow-y: auto;
-            }
-
-            #shop-player-preview-container {
-                height: 180px !important;
-                flex: none !important;
-            }
+        /* 1. Backdrop Overlay Safety: Lock strictly to viewport */
+        #squad-main-modal,
+        #squad-create-modal,
+        #squad-edit-modal,
+        #squad-list-modal,
+        #squad-search-modal,
+        #my-squad-modal,
+        #squad-member-modal,
+        #squad-chat-modal,
+        #leaderboard-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            width: 100% !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 10px) !important;
+            justify-content: center !important;
+            align-items: center !important;
         }
 
-        /* ========================================================= */
-        /* 🚀 RENDIMIENTO MÓVIL: APAGAR EFECTO CRISTAL Y SOMBRAS     */
-        /* ========================================================= */
-        @media (max-width: 768px),
-        (hover: none) and (pointer: coarse) {
+        /* 🎖️ Specific Stacking Hierarchy (Ensures child dialogs/inspectors appear on top) */
+        #squad-main-modal    { z-index: 3000 !important; }
+        #squad-list-modal    { z-index: 3050 !important; }
+        #squad-search-modal  { z-index: 3050 !important; }
+        #squad-create-modal  { z-index: 3100 !important; }
+        #leaderboard-modal   { z-index: 3150 !important; }
+        #my-squad-modal      { z-index: 3200 !important; }
+        #squad-edit-modal    { z-index: 3300 !important; }
+        #squad-chat-modal    { z-index: 3400 !important; }
+        #squad-member-modal  { z-index: 3600 !important; }
 
-            /* Atrapamos todos los modales pesados de un golpe */
-            * {
-                /* Destruir el glassmorphism y glow en móviles */
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-            }
+        /* Profile, More-Options and Options Modals (always on top when viewing a player) */
+        #profile-modal       { z-index: 3700 !important; }
+        #more-options-modal  { z-index: 3750 !important; }
+        #options-modal       { z-index: 3800 !important; }
 
-            #junkyard-modal,
-            #jeweler-modal,
-            #shop-modal>div,
-            #squad-chat-modal>div,
-            #squad-main-modal>div,
-            #squad-list-modal>div,
-            #squad-search-modal>div,
-            #leaderboard-modal>div,
-            #inventory-modal>div,
-            #equip-modal>div,
-            #profile-modal>div,
-            #more-options-modal>div,
-            #options-modal>div,
-            #pm-modal>div,
-            #inbox-modal>div,
-            #squad-member-modal>div,
-            #app-tray,
-            #chat-container {
-                background: rgba(25, 25, 25, 0.98) !important;
-                /* Color sólido elegante */
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.9) !important;
-                /* Sombra barata y optimizada */
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            }
-
-            /* Apagamos el gradiente animado de neón del mapa */
-            #fx-gloom,
-            #fx-vignette {
+        /* 2. Responsive Sizing & Auto-Fitting for Mobile/Tablet Screens */
+        @media (max-width: 850px),
+               (max-height: 700px),
+               (hover: none) and (pointer: coarse) {
+            /* 🛡️ Hide Profile Blocker Button on Phones/Mobile */
+            #btn-toggle-profile-block,
+            .hud-profile-block-btn {
                 display: none !important;
             }
 
-            /* Evita tirones al recalcular layouts en botones vivos */
-            .app-icon .app-bg {
-                box-shadow: none !important;
-                transition: transform 0.1s !important;
-                /* Matar transición de filtro */
+            #squad-main-modal .squad-standard-frame,
+            #squad-create-modal .squad-standard-frame,
+            #squad-edit-modal .squad-standard-frame,
+            #squad-list-modal .squad-standard-frame,
+            #squad-search-modal .squad-standard-frame,
+            #my-squad-modal .squad-standard-frame,
+            #leaderboard-modal .squad-standard-frame,
+            #squad-chat-modal > div,
+            #squad-member-modal > div,
+            .squad-standard-frame {
+                width: 94vw !important;
+                max-width: 390px !important;
+                height: auto !important;
+                max-height: 82dvh !important;
+                max-height: 82vh !important;
+                min-height: 0 !important;
+                border-radius: 16px !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: auto !important;
             }
-        }
 
-        /* ====================================================
-           📱 UNIVERSAL MOBILE MODAL FIX
-           Targets every fullscreen overlay + inner panel
-           ==================================================== */
-
-        /* 1. Every fullscreen overlay — use dvh so it never goes under Safari's address bar */
-        [style*="height: 100vh"],
-        [style*="height:100vh"] {
-            height: 100dvh !important;
-        }
-
-        /* 2. Every modal inner panel — clamp width & height, allow scrolling */
-        /* Matches elements that have a dark background (rgba 30,30,30 pattern) and are inside overlays */
-        [style*="background: rgba(30, 30, 30"],
-        [style*="background: rgba(20, 20, 20"],
-        [style*="background: rgba(15, 15, 15"] {
-            max-width: min(95vw, 700px) !important;
-            max-height: 88dvh !important;
-            overflow-y: auto !important;
-            /* Pull up from iPhone home indicator */
-            margin-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        /* 3. Small phones (≤390px wide, e.g. iPhone SE, older Androids) */
-        @media (max-width: 390px) {
-            [style*="background: rgba(30, 30, 30"],
-            [style*="background: rgba(20, 20, 20"],
-            [style*="background: rgba(15, 15, 15"] {
-                max-width: 98vw !important;
-                max-height: 90dvh !important;
-                padding: 12px !important;
-                font-size: 14px !important;
+            /* Standardized Compact Header */
+            .squad-modal-header {
+                height: 44px !important;
+                padding: 0 46px !important;
+                flex-shrink: 0 !important;
             }
-            /* Shrink modal headings on tiny screens */
-            [style*="background: rgba(30, 30, 30"] h2,
-            [style*="background: rgba(30, 30, 30"] h3 {
+            .squad-modal-title {
+                font-size: 13px !important;
+                letter-spacing: 0.2px !important;
+            }
+            .squad-modal-close-btn {
+                top: 6px !important;
+                right: 7px !important;
+                width: 32px !important;
+                height: 32px !important;
+                border-radius: 8px !important;
+            }
+            .squad-modal-back-btn {
+                top: 6px !important;
+                left: 7px !important;
+                height: 32px !important;
+                padding: 0 8px !important;
+                font-size: 11px !important;
+                border-radius: 8px !important;
+            }
+
+            /* Squad Main Hub */
+            #squad-main-modal .squad-standard-frame {
+                max-height: 82dvh !important;
+            }
+            .squad-hub-grid {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                padding: 8px 12px 14px 12px !important;
+                gap: 8px !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+            }
+            .squad-hub-card {
+                padding: 10px 12px !important;
+                gap: 10px !important;
+                border-radius: 12px !important;
+            }
+            .squad-hub-icon {
+                width: 36px !important;
+                height: 36px !important;
                 font-size: 18px !important;
+                border-radius: 10px !important;
+                flex-shrink: 0 !important;
+            }
+            .squad-hub-info h4 {
+                font-size: 13px !important;
+                margin-bottom: 2px !important;
+            }
+            .squad-hub-info p {
+                font-size: 11px !important;
+                line-height: 1.25 !important;
+            }
+
+            /* My Squad (Clan View) */
+            #my-squad-modal .squad-standard-frame {
+                flex-direction: column !important;
+                max-height: 82dvh !important;
+                overflow: hidden !important;
+                position: relative !important;
+            }
+            #my-squad-info-panel {
+                flex: 0 0 auto !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 12px 14px 10px 14px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                background: rgba(14, 14, 18, 0.95) !important;
+                position: relative !important;
+                z-index: 10 !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+            #my-squad-logo-container {
+                width: 52px !important;
+                height: 52px !important;
+                font-size: 26px !important;
+                margin-bottom: 6px !important;
+                border-radius: 14px !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+            .my-squad-meta-group {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+            #my-squad-title {
+                font-size: 15px !important;
+                margin-bottom: 2px !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+            #my-squad-member-count {
+                font-size: 12px !important;
+                margin-bottom: 6px !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+            #my-squad-actions {
+                display: flex !important;
+                width: 100% !important;
+                gap: 8px !important;
+                margin-top: 4px !important;
+                transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+            }
+
+            /* ✨ COMPACT HEADER COLLAPSED STATE ON SCROLL ✨ */
+            #my-squad-info-panel.squad-header-compact {
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                padding: 6px 44px 6px 12px !important;
+                gap: 10px !important;
+                background: rgba(10, 12, 18, 0.98) !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+                border-bottom: 1px solid rgba(52, 152, 219, 0.35) !important;
+            }
+            #my-squad-info-panel.squad-header-compact #edit-squad-btn {
+                position: static !important;
+                font-size: 15px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                order: 3 !important;
+            }
+            #my-squad-info-panel.squad-header-compact #my-squad-logo-container {
+                width: 32px !important;
+                height: 32px !important;
+                min-width: 32px !important;
+                font-size: 16px !important;
+                margin-bottom: 0 !important;
+                border-radius: 8px !important;
+                flex-shrink: 0 !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+            }
+            #my-squad-info-panel.squad-header-compact .my-squad-meta-group {
+                flex-direction: row !important;
+                align-items: baseline !important;
+                gap: 6px !important;
+                text-align: left !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+            #my-squad-info-panel.squad-header-compact #my-squad-title {
+                font-size: 13px !important;
+                margin: 0 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 120px !important;
+            }
+            #my-squad-info-panel.squad-header-compact #my-squad-member-count {
+                font-size: 10px !important;
+                margin: 0 !important;
+                color: #888 !important;
+                white-space: nowrap !important;
+            }
+            #my-squad-info-panel.squad-header-compact .my-squad-spacer {
+                display: none !important;
+            }
+            #my-squad-info-panel.squad-header-compact #my-squad-actions {
+                width: auto !important;
+                margin-top: 0 !important;
+                gap: 4px !important;
+                flex-shrink: 0 !important;
+            }
+            #my-squad-info-panel.squad-header-compact #my-squad-actions button {
+                padding: 4px 6px !important;
+                font-size: 9px !important;
+                border-radius: 6px !important;
+            }
+
+            /* Members section & Smooth Scroll */
+            #my-squad-members-panel {
+                flex: 1 1 auto !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 10px 12px 14px 12px !important;
+                overflow: hidden !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #my-squad-members-title {
+                font-size: 13px !important;
+                margin-bottom: 8px !important;
+            }
+            #squad-members-list {
+                flex: 1 1 auto !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8px !important;
+                padding: 4px !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                min-height: 0 !important;
+            }
+
+            /* Squad Studio (Create & Edit) */
+            #squad-create-modal .squad-standard-frame,
+            #squad-edit-modal .squad-standard-frame {
+                max-height: 82dvh !important;
+            }
+            .squad-studio-container {
+                flex-direction: column !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+            }
+            .squad-studio-preview {
+                flex: 0 0 auto !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 10px 14px !important;
+                gap: 6px !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                text-align: left !important;
+            }
+            #create-squad-logo-preview,
+            #edit-squad-logo-preview {
+                width: 46px !important;
+                height: 46px !important;
+                font-size: 22px !important;
+                border-radius: 12px !important;
+                flex-shrink: 0 !important;
+            }
+            .squad-studio-form {
+                padding: 12px 16px 16px 16px !important;
+                gap: 8px !important;
+                flex: 1 1 auto !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            .squad-form-label {
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
+            }
+            .squad-input {
+                padding: 8px 10px !important;
+                font-size: 13px !important;
+                border-radius: 8px !important;
+            }
+            .squad-primary-btn {
+                padding: 10px !important;
+                font-size: 13px !important;
+                margin-top: 4px !important;
+            }
+
+            /* Squad Member Detail Popup (Inspector) */
+            #squad-member-modal > div {
+                width: 92vw !important;
+                max-width: 360px !important;
+                height: auto !important;
+                max-height: 82dvh !important;
+                flex-direction: column !important;
+                padding: 16px !important;
+                gap: 12px !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                box-sizing: border-box !important;
+                border-radius: 16px !important;
+                margin: auto !important;
+            }
+            #squad-member-modal > div > div {
+                border-right: none !important;
+                padding-right: 0 !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding-bottom: 10px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+            }
+            #squad-member-modal > div > div:last-of-type {
+                border-bottom: none !important;
+                padding-bottom: 0 !important;
+            }
+
+            /* Squad Chat Modal */
+            #squad-chat-modal > div {
+                width: 92vw !important;
+                max-width: 360px !important;
+                height: 78dvh !important;
+                height: 78vh !important;
+                max-height: 480px !important;
+                border-radius: 16px !important;
+                margin: auto !important;
+            }
+
+            /* Squad List & Search Modals */
+            #squad-list-modal .squad-standard-frame,
+            #squad-search-modal .squad-standard-frame {
+                max-height: 82dvh !important;
+            }
+            #squads-list-container,
+            #squad-search-results-container,
+            #leaderboard-content {
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 12px 16px !important;
             }
         }
 
-        /* 4. Safe area for iPhone notch & home bar — applied to fixed HUD elements */
+        /* 3. Landscape Phones (Screen Heights <= 500px) */
+        @media (max-height: 500px) {
+            #squad-main-modal .squad-standard-frame,
+            #squad-create-modal .squad-standard-frame,
+            #squad-edit-modal .squad-standard-frame,
+            #squad-list-modal .squad-standard-frame,
+            #squad-search-modal .squad-standard-frame,
+            #my-squad-modal .squad-standard-frame,
+            #leaderboard-modal .squad-standard-frame,
+            #squad-chat-modal > div,
+            #squad-member-modal > div,
+            .squad-standard-frame {
+                width: 94vw !important;
+                max-width: 520px !important;
+                max-height: 90dvh !important;
+                max-height: 90vh !important;
+            }
+            .squad-modal-header {
+                height: 36px !important;
+                padding: 0 40px !important;
+            }
+            .squad-modal-close-btn,
+            .squad-modal-back-btn {
+                top: 3px !important;
+                height: 26px !important;
+            }
+            .squad-modal-close-btn {
+                width: 26px !important;
+                right: 6px !important;
+            }
+            .squad-modal-back-btn {
+                left: 6px !important;
+                padding: 0 8px !important;
+                font-size: 11px !important;
+            }
+            .squad-hub-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                padding: 6px 10px !important;
+                gap: 6px !important;
+            }
+        }
+
+        /* Safe area for iPhone notch & home bar */
         #hud-hotbar,
         #hud-bottom {
             padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -1203,36 +1835,177 @@
             margin-right: env(safe-area-inset-right, 0px);
         }
 
-@keyframes iconPop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
-}
+        /* --- GOD PANEL ONLINE PLAYERS SIDEBAR STYLES --- */
+        .god-player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            position: relative;
+        }
 
-.icon-pop-anim {
-    animation: iconPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+        .god-player-card:hover {
+            background: rgba(56, 239, 125, 0.12);
+            border-color: rgba(56, 239, 125, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .god-player-card.active-target {
+            background: rgba(56, 239, 125, 0.22) !important;
+            border-color: #38ef7d !important;
+            box-shadow: 0 0 12px rgba(56, 239, 125, 0.35);
+        }
+
+        .god-mini-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 5px;
+            color: white;
+            font-size: 11px;
+            padding: 3px 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .god-mini-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+        }
+
+        @keyframes godInputPulse {
+            0% { border-color: #38ef7d; box-shadow: 0 0 16px rgba(56, 239, 125, 0.85); background: rgba(56, 239, 125, 0.15); }
+            50% { border-color: #38ef7d; box-shadow: 0 0 10px rgba(56, 239, 125, 0.5); }
+            100% { border-color: rgba(255, 255, 255, 0.25); box-shadow: none; background: rgba(0, 0, 0, 0.65); }
+        }
+
+        .god-target-flash {
+            animation: godInputPulse 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #god-modal {
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+            min-width: 320px;
+            min-height: 200px;
+        }
+
+        #god-modal.god-is-resizing,
+        #god-modal.god-is-dragging {
+            transition: none !important;
+        }
+
+        #god-modal-content {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 6px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #god-modal-tools-col {
+            flex: 1 1 50%;
+            min-width: 150px;
+            max-width: none !important;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 2px;
+            box-sizing: border-box;
+        }
+
+        #god-sidebar-players {
+            flex: 1 1 50%;
+            min-width: 150px;
+            max-width: none !important;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #god-players-list {
+            flex: 1 1 auto;
+            min-height: 50px;
+            max-height: none !important;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding-right: 2px;
+        }
+
+        /* Scrollbars for God Modal */
+        #god-players-list::-webkit-scrollbar,
+        #god-modal-tools-col::-webkit-scrollbar {
+            width: 5px;
+        }
+        #god-players-list::-webkit-scrollbar-track,
+        #god-modal-tools-col::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        #god-players-list::-webkit-scrollbar-thumb,
+        #god-modal-tools-col::-webkit-scrollbar-thumb {
+            background: rgba(56, 239, 125, 0.35);
+            border-radius: 4px;
+        }
+        #god-players-list::-webkit-scrollbar-thumb:hover,
+        #god-modal-tools-col::-webkit-scrollbar-thumb:hover {
+            background: rgba(56, 239, 125, 0.7);
+        }
+
+        /* Corner Resize Handle */
+        .god-resize-handle {
+            position: absolute;
+            right: 1px;
+            bottom: 1px;
+            width: 16px;
+            height: 16px;
+            cursor: nwse-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 35;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.15s;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .god-resize-handle:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .god-resize-handle:active {
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        @media (max-width: 650px) {
+            #god-modal:not([data-custom-size="true"]) {
+                width: min(420px, 98vw) !important;
+                left: 1vw !important;
+                top: 70px !important;
+            }
+        }
 
 
 
-/* ========================================= */
-/* SLEEK SPA-LIKE TRANSITION FADE-IN         */
-/* ========================================= */
-body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000;
-    z-index: 9999999;
-    pointer-events: none;
-    animation: fadeOutScreen 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-}
-
-@keyframes fadeOutScreen {
-    0% { opacity: 1; }
-    20% { opacity: 1; }
-    100% { opacity: 0; }
-}
