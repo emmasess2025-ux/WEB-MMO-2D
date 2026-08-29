@@ -15,22 +15,114 @@ const rtcConfig = {
 };
 
 // ==========================================
-// 1. UI: Botones y Lista
+// 1. UI: Botones y Lista (y Mini Widget)
 // ==========================================
 const joinVoiceBtn = document.getElementById('join-voice-btn');
 const muteVoiceBtn = document.getElementById('mute-voice-btn');
 const participantsList = document.getElementById('voice-chat-participants');
 
+// Init Mini Widget UI
+let voiceMiniWidget = document.getElementById('voice-mini-widget');
+if (!voiceMiniWidget) {
+    voiceMiniWidget = document.createElement('div');
+    voiceMiniWidget.id = 'voice-mini-widget';
+    voiceMiniWidget.style.cssText = 'position:absolute; left:20px; top:80px; background:rgba(20,20,20,0.8); border:2px solid #333; border-radius:30px; padding:12px 6px; display:none; flex-direction:column; align-items:center; z-index:1000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-family:sans-serif; transition: all 0.2s ease;';
+    
+    
+
+    // Controls container
+    const vwControls = document.createElement('div');
+    vwControls.style.cssText = 'display:flex; flex-direction:column; gap:8px; margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:10px; align-items:center; width:30px;';
+    
+    // Heads container
+    const vwHeads = document.createElement('div');
+    vwHeads.id = 'voice-mini-heads';
+    vwHeads.style.cssText = 'display:flex; flex-direction:column; gap:5px; align-items:center;';
+    
+    const vwMute = document.createElement('button');
+    vwMute.id = 'voice-mini-mute';
+    vwMute.innerHTML = '<img src="items/icons/mic.png" style="width:14px; pointer-events:none;">';
+    vwMute.style.cssText = 'background:#2ecc71; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;';
+    
+    const vwHangup = document.createElement('button');
+    vwHangup.innerHTML = '<img src="items/icons/phone.png" style="width:16px; pointer-events:none;">';
+    vwHangup.style.cssText = 'background:#e74c3c; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:14px; padding:0;';
+    
+    vwControls.appendChild(vwMute);
+    vwControls.appendChild(vwHangup);
+    voiceMiniWidget.appendChild(vwControls);
+    voiceMiniWidget.appendChild(vwHeads);
+    document.body.appendChild(voiceMiniWidget);
+
+    // Events for Mini Widget
+    vwMute.addEventListener('click', () => { if(muteVoiceBtn) muteVoiceBtn.click(); });
+    vwHangup.addEventListener('click', () => { if(joinVoiceBtn) joinVoiceBtn.click(); });
+}
+
 function updateParticipantsUI() {
-    if (!participantsList) return;
-    participantsList.innerHTML = '';
+    if (participantsList) participantsList.innerHTML = '';
+    
+    const vwHeads = document.getElementById('voice-mini-heads');
+    
+    const vwMute = document.getElementById('voice-mini-mute');
+    if (vwHeads) vwHeads.innerHTML = '';
     
     if (voiceParticipants.size === 0 && !localAudioStream) {
-        participantsList.innerHTML = '<p style="color: #777; font-size: 12px; text-align: center; margin-top: 50px;">Nadie esto conectado.</p>';
+        if (participantsList) participantsList.innerHTML = '<p style="color: #777; font-size: 12px; text-align: center; margin-top: 50px;">Nadie esto conectado.</p>';
+        if (voiceMiniWidget) voiceMiniWidget.style.display = 'none';
         return;
     }
 
-    // Helper para crear la fila del participante
+    if (voiceMiniWidget) voiceMiniWidget.style.display = 'flex';
+    
+
+    // Helper para renderizar la cabeza en canvas
+    function buildAvatarBox(headId, isMuted, isMe, size = 25) {
+        const box = document.createElement('div');
+        box.style.width = size + "px";
+        box.style.height = size + "px";
+        box.style.background = "#222";
+        box.style.borderRadius = "5px";
+        box.style.display = "flex";
+        box.style.alignItems = "center";
+        box.style.justifyContent = "center";
+        box.style.overflow = "hidden";
+        box.style.border = isMe ? "1px solid #2ecc71" : "1px solid #3498db";
+        box.style.position = "relative";
+        if (isMuted) box.style.opacity = "0.5";
+
+        let cHeadId = headId || 'H_D';
+        const safeSprites = window.loadedItemSprites || {};
+        const dHead = safeSprites[cHeadId] || (typeof headImg !== 'undefined' ? headImg : null);
+        
+        if (dHead && dHead.complete && dHead.naturalWidth > 0) {
+            const tCanvas = document.createElement('canvas');
+            tCanvas.width = size;
+            tCanvas.height = size;
+            const tCtx = tCanvas.getContext('2d');
+            tCtx.imageSmoothingEnabled = false;
+            const frameW = typeof FRAME_WIDTH !== 'undefined' ? FRAME_WIDTH : 32;
+            const headFrameH = dHead.height / 4;
+            const zoom = size / 30; 
+            const drawW = frameW * zoom;
+            const drawH = headFrameH * zoom;
+            tCtx.drawImage(dHead, 0, 0, frameW, headFrameH, (size - drawW) / 2, (size - drawH) / 2 + (5*zoom), drawW, drawH);
+            box.appendChild(tCanvas);
+        } else {
+            box.innerHTML = '<span style="color:#fff; font-size:10px;">?</span>';
+        }
+
+        if (isMuted) {
+            const muteIcon = document.createElement('img');
+            muteIcon.src = "items/icons/mic_mute.png";
+            muteIcon.style.cssText = "position:absolute; width:12px; bottom:2px; right:2px; pointer-events:none;";
+            box.appendChild(muteIcon);
+        }
+
+        return box;
+    }
+
+    // Helper para la lista grande modal
     function createRow(name, headId, isMuted, isMe) {
         const row = document.createElement('div');
         row.style.display = "flex";
@@ -41,45 +133,7 @@ function updateParticipantsUI() {
         row.style.borderRadius = "8px";
         if (isMuted) row.style.opacity = "0.5";
 
-        const avatarContainer = document.createElement('div');
-        avatarContainer.style.width = "25px";
-        avatarContainer.style.height = "25px";
-        avatarContainer.style.background = "#222";
-        avatarContainer.style.borderRadius = "5px";
-        avatarContainer.style.display = "flex";
-        avatarContainer.style.alignItems = "center";
-        avatarContainer.style.justifyContent = "center";
-        avatarContainer.style.overflow = "hidden";
-        avatarContainer.style.border = isMe ? "1px solid #2ecc71" : "1px solid #3498db";
-
-        // Usar la logica de la cabeza real del juego
-        let cHeadId = headId || 'H_D';
-        const safeSprites = window.loadedItemSprites || {};
-        const dHead = safeSprites[cHeadId] || (typeof headImg !== 'undefined' ? headImg : null);
-        
-        if (dHead && dHead.complete && dHead.naturalWidth > 0) {
-            const tCanvas = document.createElement('canvas');
-            tCanvas.width = 25;
-            tCanvas.height = 25;
-            const tCtx = tCanvas.getContext('2d');
-            tCtx.imageSmoothingEnabled = false;
-            
-            const frameW = typeof FRAME_WIDTH !== 'undefined' ? FRAME_WIDTH : 32;
-            const headFrameH = dHead.height / 4;
-            const zoom = 25 / 30; 
-            const drawW = frameW * zoom;
-            const drawH = headFrameH * zoom;
-
-            tCtx.drawImage(
-                dHead,
-                0, 0, frameW, headFrameH, 
-                (25 - drawW) / 2, (25 - drawH) / 2 + 5, drawW, drawH
-            );
-            avatarContainer.appendChild(tCanvas);
-        } else {
-            // Fallback si no hay sprite cargado en memoria
-            avatarContainer.innerHTML = '<span style="color:#fff; font-size:10px;">?</span>';
-        }
+        row.appendChild(buildAvatarBox(headId, isMuted, isMe, 25));
 
         const nameSpan = document.createElement('span');
         nameSpan.style.color = "#fff";
@@ -95,7 +149,6 @@ function updateParticipantsUI() {
         dot.style.borderRadius = "50%";
         dot.style.boxShadow = "0 0 5px " + (isMuted ? "#e74c3c" : "#2ecc71");
 
-        row.appendChild(avatarContainer);
         row.appendChild(nameSpan);
         row.appendChild(dot);
         return row;
@@ -103,11 +156,19 @@ function updateParticipantsUI() {
 
     if (localAudioStream) {
         let myHead = (typeof player !== 'undefined' && player.equipped && player.equipped.head) ? player.equipped.head : 'H_D';
-        participantsList.appendChild(createRow('Tu ' + (isVoiceMuted ? '(Muteado)' : ''), myHead, isVoiceMuted, true));
+        if (participantsList) participantsList.appendChild(createRow('Tu ' + (isVoiceMuted ? '(Muteado)' : ''), myHead, isVoiceMuted, true));
+        if (vwHeads) vwHeads.appendChild(buildAvatarBox(myHead, isVoiceMuted, true, 30));
+        
+        if (vwMute) {
+            vwMute.style.background = isVoiceMuted ? "rgba(231, 76, 60, 0.5)" : "#2ecc71";
+            vwMute.style.border = isVoiceMuted ? "1px solid #e74c3c" : "none";
+            vwMute.innerHTML = isVoiceMuted ? '<img src="items/icons/mic_mute.png" style="width:14px; pointer-events:none;">' : '<img src="items/icons/mic.png" style="width:14px; pointer-events:none; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8))">';
+        }
     }
 
     voiceParticipants.forEach((data, uId) => {
-        participantsList.appendChild(createRow(data.username, data.head, false, false));
+        if (participantsList) participantsList.appendChild(createRow(data.username, data.head, data.isMuted, false));
+        if (vwHeads) vwHeads.appendChild(buildAvatarBox(data.head, data.isMuted, false, 30));
     });
 }
 
@@ -130,7 +191,7 @@ if (joinVoiceBtn) {
 
                 // Avisar al servidor
                 if (typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-                    ws.send(MessagePack.encode({ type: 'join_voice_lobby' }));
+                    ws.send(MessagePack.encode({ type: 'join_voice_lobby', isMuted: isVoiceMuted }));
                 }
                 
                 updateParticipantsUI();
@@ -171,12 +232,18 @@ if (muteVoiceBtn) {
             localAudioStream.getAudioTracks()[0].enabled = !isVoiceMuted;
             
             if (isVoiceMuted) {
-                muteVoiceBtn.innerHTML = '<img src="items/icons/mic.png" style="width:16px; opacity:0.5;">';
+                muteVoiceBtn.innerHTML = '<img src="items/icons/mic_mute.png" style="width:16px; pointer-events:none;">';
                 muteVoiceBtn.style.background = "rgba(231, 76, 60, 0.5)"; muteVoiceBtn.style.border = "1px solid #e74c3c";
             } else {
-                muteVoiceBtn.innerHTML = '<img src="items/icons/mic.png" style="width:16px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8))">';
+                muteVoiceBtn.innerHTML = '<img src="items/icons/mic.png" style="width:16px; pointer-events:none; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8))">';
                 muteVoiceBtn.style.background = "#2ecc71"; muteVoiceBtn.style.border = "none";
             }
+            
+            // Broadcast mute status to squad
+            if (typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+                ws.send(MessagePack.encode({ type: 'voice_mute_status', isMuted: isVoiceMuted }));
+            }
+            
             updateParticipantsUI();
         }
     });
@@ -209,7 +276,11 @@ async function createPeerConnection(targetId, username, isInitiator, head = 'H_D
             const audio = new Audio();
             audio.srcObject = event.streams[0];
             audio.autoplay = true;
+            audio.playsInline = true; // Crucial for iOS/PWA
             document.body.appendChild(audio);
+            
+            // Forzar reproduccion para evitar bloqueos de autoplay en iOS
+            audio.play().catch(err => console.warn("Autoplay blocked by browser:", err));
             updateParticipantsUI();
         };
 
@@ -283,7 +354,7 @@ window.handleVoiceLobbyUpdate = (data) => {
         // Alguien se conect�, yo inicio la llamada hacia �l
         if (localAudioStream && data.userId !== (typeof myId !== 'undefined' ? myId : null)) {
             createPeerConnection(data.userId, data.username, true, data.head);
-            voiceParticipants.set(data.userId, { username: data.username, head: data.head });
+            voiceParticipants.set(data.userId, { username: data.username, head: data.head, isMuted: data.isMuted });
             updateParticipantsUI();
         }
     } else if (data.type === 'leave_voice_lobby') {
@@ -293,5 +364,11 @@ window.handleVoiceLobbyUpdate = (data) => {
         }
         voiceParticipants.delete(data.userId);
         updateParticipantsUI();
+    } else if (data.type === 'voice_mute_status') {
+        console.log("MUTE STATUS APPLIED TO UI:", data.userId, data.isMuted);
+        if (voiceParticipants.has(data.userId)) {
+            voiceParticipants.get(data.userId).isMuted = data.isMuted;
+            updateParticipantsUI();
+        }
     }
 };

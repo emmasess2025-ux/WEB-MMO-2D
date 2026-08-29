@@ -1063,10 +1063,32 @@ const sqChatOnlineCount = document.getElementById('sq-chat-online-count');
 const toggleVoicePanelBtn = document.getElementById('toggle-voice-panel-btn');
 const squadVoicePanel = document.getElementById('squad-voice-panel');
 
+const closeVoicePanelBtn = document.getElementById('close-voice-panel-btn');
+if (closeVoicePanelBtn && squadVoicePanel) {
+    closeVoicePanelBtn.addEventListener('click', () => {
+        squadVoicePanel.style.opacity = '0';
+        squadVoicePanel.style.transform = 'translateX(-40px)';
+        
+        if (toggleVoicePanelBtn) {
+            toggleVoicePanelBtn.style.transform = 'scale(1)';
+            const micImg = toggleVoicePanelBtn.querySelector('img');
+            if (micImg) micImg.style.filter = 'drop-shadow(0 0 5px rgba(52, 152, 219, 0.8))';
+        }
+        
+        setTimeout(() => {
+            if (squadVoicePanel.style.opacity === '0') {
+                squadVoicePanel.style.visibility = 'hidden';
+            }
+        }, 400);
+    });
+}
+
+
 if (toggleVoicePanelBtn && squadVoicePanel) {
     toggleVoicePanelBtn.addEventListener('click', () => {
         // En lugar de display none/flex, usamos opacity y transform para animarlo
         if (squadVoicePanel.style.visibility === 'hidden' || squadVoicePanel.style.opacity === '0') {
+            
             squadVoicePanel.style.visibility = 'visible';
             squadVoicePanel.style.opacity = '1';
             squadVoicePanel.style.transform = 'translateX(0)';

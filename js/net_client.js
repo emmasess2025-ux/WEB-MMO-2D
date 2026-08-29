@@ -58,6 +58,10 @@ ws.onclose = () => {
 
 ws.onmessage = (event) => {
     const data = MessagePack.decode(new Uint8Array(event.data));
+    
+    if (data.type === 'join_voice_lobby' || data.type === 'webrtc_signal') {
+        console.log("?? [URGENT] RECEIVED AT TOP LEVEL OF ONMESSAGE:", data.type);
+    }
     // --- NUEVO: SISTEMA UNIFICADO DE REPOSICIÓN (KNOCKBACK Y ANTI-HACK) ---
     if (data.type === 'force_position') {
         if (data.reason === 'knockback') {
@@ -791,7 +795,7 @@ ws.onmessage = (event) => {
             console.log("NET_CLIENT WEBRTC SIGNAL:", data);
             if (window.handleWebRTCSignal) window.handleWebRTCSignal(data);
         }
-        else if (data.type === 'join_voice_lobby' || data.type === 'leave_voice_lobby') {
+        else if (data.type === 'join_voice_lobby' || data.type === 'leave_voice_lobby' || data.type === 'voice_mute_status') {
             console.log("NET_CLIENT VOICE LOBBY EVENT:", data);
             if (window.handleVoiceLobbyUpdate) window.handleVoiceLobbyUpdate(data);
         }

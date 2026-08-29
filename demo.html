@@ -1672,11 +1672,42 @@
             <!-- ========================================== -->
             <!-- CAJA 2: EL NUEVO MINI-MODAL DE VOZ         -->
             <!-- ========================================== -->
-            <div id="squad-voice-panel"
-                style="visibility: hidden; opacity: 0; transform: translateX(-40px); position: absolute; left: 100%; top: 0; margin-left: 15px; width: 220px; height: 75vh; max-height: 500px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px); border: 1px solid #3498db; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.6); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;">
+            
+    <style>
+        /* PC STYLE (Default) */
+        #squad-voice-panel {
+            left: 100%;
+            margin-left: 15px;
+        }
+        
+        /* MOBILE STYLE (Over 900px is safe for any mobile/tablet view) */
+        @media (max-width: 900px) {
+            #squad-voice-panel {
+                left: 0 !important;
+                right: 0 !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                margin: auto !important;
+                width: 90vw !important;
+                max-width: 350px !important;
+                height: fit-content !important;
+                max-height: 70vh !important;
+                z-index: 9999 !important;
+            }
+            #voice-mini-widget {
+                display: none !important;
+            }
+        }
+    </style>
+    <div id="squad-voice-panel"
+                style="visibility: hidden; opacity: 0; transform: translateX(-40px); position: absolute;  top: 0;  width: 220px; height: 75vh; max-height: 500px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px); border: 1px solid #3498db; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.6); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;">
                 
-                <div style="padding: 15px; border-bottom: 1px solid rgba(52, 152, 219, 0.3); text-align: center;">
-                    <h3 style="margin: 0; color: #3498db; font-family: sans-serif; font-size: 14px; text-transform: uppercase;">?? Lobby de Voz</h3>
+                <div style="padding: 15px; border-bottom: 1px solid rgba(52, 152, 219, 0.3); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="width: 20px;"></div> <!-- Spacer -->
+                    <h3 style="margin: 0; color: #3498db; font-family: sans-serif; font-size: 14px; text-transform: uppercase;">??? Lobby de Voz</h3>
+                    <button id="close-voice-panel-btn" style="background: none; border: none; cursor: pointer; padding: 0;">
+                        <img src="items/icons/x.png" style="width: 20px; height: 20px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));" alt="Cerrar">
+                    </button>
                 </div>
 
                 <div id="voice-chat-participants" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
@@ -3222,7 +3253,7 @@
     <script src="js/audio_manager.js?v=29"></script>
     <script src="js/game_core.js?v=29"></script>
     <script src="js/ui_settings.js?v=29"></script>
-    <script src="js/ui_phone.js?v=29"></script>
+    <script src="js/ui_phone.js?v=45"></script>
     <script src="js/ui_battlepass.js?v=29"></script>
     <script src="js/ui_tasks.js?v=29"></script>
     <script src="js/ui_chat.js?v=29"></script>
