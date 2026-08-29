@@ -182,6 +182,15 @@ if (joinVoiceBtn) {
             try {
                 
                 // Explicitly request echo cancellation and ideal constraints for iOS
+                
+                // BUGFIX iOS: Web Audio API hijacks the mic session. Suspend it first.
+                let didSuspend = false;
+                if (typeof audioCtx !== 'undefined' && audioCtx.state === 'running') {
+                    console.log("[WEBRTC] Suspending AudioContext for iOS mic fix...");
+                    await audioCtx.suspend();
+                    didSuspend = true;
+                }
+
                 localAudioStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { 
                         echoCancellation: true, 
@@ -194,6 +203,16 @@ if (joinVoiceBtn) {
                 
                 // Explicitly ensure the track is enabled
                 if (localAudioStream.getAudioTracks().length > 0) {
+                    localAudioStream.getAudioTracks()[0].enabled = true;
+                }
+                
+                // BUGFIX iOS: Resume AudioContext after mic is captured
+                if (didSuspend && typeof audioCtx !== 'undefined') {
+                    console.log("[WEBRTC] Resuming AudioContext...");
+                    await audioCtx.resume();
+                }
+                
+                if (false) { // dummy block to balance
                     localAudioStream.getAudioTracks()[0].enabled = true;
                 }
 
@@ -289,7 +308,10 @@ async function createPeerConnection(targetId, username, isInitiator, head = 'H_D
 
         pc.ontrack = (event) => {
             console.log("[WEBRTC] ontrack received from", targetId, "Track enabled:", event.track.enabled, "Muted:", event.track.muted);
-            event.track.onunmute = () => console.log("[WEBRTC] Track unmuted from", targetId);
+            event.track.onunmute = () => {
+                console.log("[WEBRTC] Track unmuted from", targetId);
+                audio.play().catch(e => console.log("Play failed:", e));
+            };
             event.track.onmute = () => console.log("[WEBRTC] Track muted from", targetId);
             const audio = new Audio();
             audio.srcObject = (event.streams && event.streams[0]) ? event.streams[0] : new MediaStream([event.track]);
