@@ -272,12 +272,24 @@ async function createPeerConnection(targetId, username, isInitiator, head = 'H_D
         }
 
         pc.ontrack = (event) => {
-            console.log("[WEBRTC] ontrack received from", targetId);
+            console.log("[WEBRTC] ontrack received from", targetId, "Track enabled:", event.track.enabled, "Muted:", event.track.muted);
+            event.track.onunmute = () => console.log("[WEBRTC] Track unmuted from", targetId);
+            event.track.onmute = () => console.log("[WEBRTC] Track muted from", targetId);
             const audio = new Audio();
-            audio.srcObject = event.streams[0];
+            audio.srcObject = (event.streams && event.streams[0]) ? event.streams[0] : new MediaStream([event.track]);
             audio.autoplay = true;
             audio.playsInline = true; // Crucial for iOS/PWA
+            
+            // DEBUG: Make audio visible to see if it's playing
+            audio.controls = true;
+            audio.style.position = 'fixed';
+            audio.style.bottom = '10px';
+            audio.style.left = '10px';
+            audio.style.zIndex = '99999';
+            audio.style.background = 'white';
+            audio.style.border = '2px solid red';
             document.body.appendChild(audio);
+
             
             // Forzar reproduccion para evitar bloqueos de autoplay en iOS
             audio.play().catch(err => console.warn("Autoplay blocked by browser:", err));
