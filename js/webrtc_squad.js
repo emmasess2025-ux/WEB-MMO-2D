@@ -180,7 +180,23 @@ if (joinVoiceBtn) {
         if (!localAudioStream) {
             // CONECTAR
             try {
-                localAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                
+                // Explicitly request echo cancellation and ideal constraints for iOS
+                localAudioStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true, 
+                        autoGainControl: true,
+                        sampleRate: 48000
+                    }, 
+                    video: false 
+                });
+                
+                // Explicitly ensure the track is enabled
+                if (localAudioStream.getAudioTracks().length > 0) {
+                    localAudioStream.getAudioTracks()[0].enabled = true;
+                }
+
                 
                 joinVoiceBtn.innerText = "Desconectarse";
                 joinVoiceBtn.style.background = "#e74c3c";
