@@ -318,15 +318,8 @@ async function createPeerConnection(targetId, username, isInitiator, head = 'H_D
             audio.autoplay = true;
             audio.playsInline = true; // Crucial for iOS/PWA
             
-            // DEBUG: Make audio visible to see if it's playing
-            audio.controls = true;
-            audio.style.position = 'fixed';
-            audio.style.bottom = '10px';
-            audio.style.left = '10px';
-            audio.style.zIndex = '99999';
-            audio.style.background = 'white';
-            audio.style.border = '2px solid red';
-            document.body.appendChild(audio);
+                        document.body.appendChild(audio);
+
 
             
             // Forzar reproduccion para evitar bloqueos de autoplay en iOS
