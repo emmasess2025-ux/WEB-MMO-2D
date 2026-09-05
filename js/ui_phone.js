@@ -1092,6 +1092,14 @@ if (toggleVoicePanelBtn && squadVoicePanel) {
             squadVoicePanel.style.visibility = 'visible';
             squadVoicePanel.style.opacity = '1';
             squadVoicePanel.style.transform = 'translateX(0)';
+              
+              // Request latest lobby state
+              if (typeof window.ws !== 'undefined' && window.ws.readyState === WebSocket.OPEN && typeof window.MessagePack !== 'undefined') {
+                  console.log("CLIENT SENDING request_voice_lobby_state");
+                  window.ws.send(window.MessagePack.encode({ type: 'request_voice_lobby_state' }));
+              } else {
+                  console.log("CLIENT FAILED TO SEND request_voice_lobby_state. ws:", typeof window.ws, "MessagePack:", typeof window.MessagePack);
+              }
             
             toggleVoicePanelBtn.style.transform = 'scale(1.2)';
             toggleVoicePanelBtn.querySelector('img').style.filter = 'drop-shadow(0 0 10px #3498db)';

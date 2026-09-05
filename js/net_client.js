@@ -795,7 +795,7 @@ ws.onmessage = (event) => {
             console.log("NET_CLIENT WEBRTC SIGNAL:", data);
             if (window.handleWebRTCSignal) window.handleWebRTCSignal(data);
         }
-        else if (data.type === 'join_voice_lobby' || data.type === 'leave_voice_lobby' || data.type === 'voice_mute_status') {
+        else if (data.type === 'join_voice_lobby' || data.type === 'leave_voice_lobby' || data.type === 'voice_mute_status' || data.type === 'voice_lobby_state_response') {
             console.log("NET_CLIENT VOICE LOBBY EVENT:", data);
             if (window.handleVoiceLobbyUpdate) window.handleVoiceLobbyUpdate(data);
         }

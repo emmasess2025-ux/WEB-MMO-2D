@@ -69,12 +69,13 @@ function updateParticipantsUI() {
     
     if (voiceParticipants.size === 0 && !localAudioStream) {
         if (participantsList) participantsList.innerHTML = '<p style="color: #777; font-size: 12px; text-align: center; margin-top: 50px;">Nadie esto conectado.</p>';
-        if (voiceMiniWidget) voiceMiniWidget.style.display = 'none';
-        return;
     }
-
-    if (voiceMiniWidget) voiceMiniWidget.style.display = 'flex';
     
+    if (localAudioStream) {
+        if (voiceMiniWidget) voiceMiniWidget.style.display = 'flex';
+    } else {
+        if (voiceMiniWidget) voiceMiniWidget.style.display = 'none';
+    }
 
     // Helper para renderizar la cabeza en canvas
     function buildAvatarBox(headId, isMuted, isMe, size = 25) {
@@ -194,9 +195,8 @@ if (joinVoiceBtn) {
                 localAudioStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { 
                         echoCancellation: true, 
-                        noiseSuppression: true, 
-                        autoGainControl: true,
-                        sampleRate: 48000
+                        noiseSuppression: false, 
+                        autoGainControl: false
                     }, 
                     video: false 
                 });
@@ -248,7 +248,7 @@ if (joinVoiceBtn) {
                 peerConnections[id].close();
                 delete peerConnections[id];
             }
-            voiceParticipants.clear();
+            // NO limpiamos voiceParticipants porque queremos seguir viendo qui�n est� en el lobby
 
             // Avisar al servidor
             if (typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -364,7 +364,12 @@ window.handleWebRTCSignal = async (data) => {
     // Si recibimos un offer, creamos conexi�n y respondemos
     if (signalData.type === 'offer') {
         const pc = await createPeerConnection(senderId, senderName, false, data.senderHead || 'H_D');
-        voiceParticipants.set(senderId, { username: senderName, head: data.senderHead || 'H_D' });
+        let existing = voiceParticipants.get(senderId);
+        voiceParticipants.set(senderId, { 
+            username: senderName, 
+            head: data.senderHead || 'H_D',
+            isMuted: existing ? existing.isMuted : false
+        });
         updateParticipantsUI();
         
         await pc.setRemoteDescription(new RTCSessionDescription(signalData.offer));
@@ -406,6 +411,24 @@ window.handleVoiceLobbyUpdate = (data) => {
             delete peerConnections[data.userId];
         }
         voiceParticipants.delete(data.userId);
+        updateParticipantsUI();
+    } else if (data.type === 'voice_lobby_state_response') {
+        // Sync full state
+        data.members.forEach(member => {
+            if (!voiceParticipants.has(member.userId)) {
+                voiceParticipants.set(member.userId, { username: member.username, head: member.head, isMuted: member.isMuted });
+            } else {
+                voiceParticipants.get(member.userId).isMuted = member.isMuted;
+            }
+        });
+        
+        // Remove players who left
+        const currentIds = new Set(data.members.map(m => m.userId));
+        for (let uid of voiceParticipants.keys()) {
+            if (!currentIds.has(uid) && uid !== (typeof myId !== 'undefined' ? myId : null)) {
+                voiceParticipants.delete(uid);
+            }
+        }
         updateParticipantsUI();
     } else if (data.type === 'voice_mute_status') {
         console.log("MUTE STATUS APPLIED TO UI:", data.userId, data.isMuted);
