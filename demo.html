@@ -2135,13 +2135,15 @@
     </div>
 
     <div id="skeleton-editor"
-        style="display: none; position: absolute; top: 50px; left: 50px; width: 850px; height: 600px; background: #1e1e1e; border: 1px solid #444; border-radius: 8px; color: white; box-shadow: 0 15px 50px rgba(0,0,0,0.8); z-index: 3500; flex-direction: column; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif;">
+        style="display: none; position: absolute; top: 50px; left: 50px; width: 350px; height: 600px; background: #1e1e1e; border: 1px solid #444; border-radius: 8px; color: white; box-shadow: 0 15px 50px rgba(0,0,0,0.8); z-index: 3500; flex-direction: column; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif;">
 
         <div id="skel-drag-handle"
             style="background: #2d2d2d; padding: 10px 15px; cursor: grab; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #111;">
             <span style="font-size: 14px; font-weight: bold; color: #ccc;">ðŸ”§ Gani Master Pro</span>
 
             <div style="display: flex; gap: 5px;">
+                <button id="btn-toggle-gizmos" style="background: none; border: none; color: #f1c40f; font-size: 16px; cursor: pointer; padding: 0 5px;" title="Mostrar/Ocultar Guias Visuales (Hitbox, Pivote)">⚔� </button>
+                <button id="btn-expand-sheet" style="background: none; border: none; color: #888; font-size: 16px; cursor: pointer; padding: 0 5px;" title="Ver Hoja de Sprites">▶</button>
                 <button id="min-skel-modal"
                     style="background: none; border: none; color: #888; font-size: 16px; cursor: pointer; padding: 0;">
                     âž–
@@ -2157,24 +2159,22 @@
         <div id="skel-modal-content" style="display: flex; flex: 1; height: calc(100% - 40px);">
 
             <div
-                style="width: 350px; background: #252526; border-right: 1px solid #111; display: flex; flex-direction: column;">
+                style="width: 350px; min-width: 350px; background: #252526; display: flex; flex-direction: column;">
 
                 <div style="display: flex; background: #2d2d2d; border-bottom: 1px solid #111;">
                     <button id="tab-skel-body"
                         style="flex: 1; padding: 10px; background: #0e639c; color: white; border: none; cursor: pointer; font-size: 12px; font-weight: bold;">
                         Cuerpo</button>
-                    <button id="tab-skel-weapon"
-                        style="flex: 1; padding: 10px; background: transparent; color: #aaa; border: none; cursor: pointer; font-size: 12px; font-weight: bold;">
-                        Pivote</button>
+                    
                     <button id="tab-skel-melee"
                         style="flex: 1; padding: 10px; background: transparent; color: #aaa; border: none; cursor: pointer; font-size: 12px; font-weight: bold;">
-                        Melee</button>
+                        Config Arma</button>
+<button id="tab-skel-mount" style="flex: 1; padding: 10px; background: transparent; color: #aaa; border: none; cursor: pointer; font-size: 12px; font-weight: bold;">Monturas</button>
                 </div>
 
                 <div
                     style="padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                    <p id="skel-instructions" style="font-size: 11px; color: #aaa; margin: 0; text-align: center;">
-                        Arrastra el <b>Punto Azul</b> para definir la mano global.</p>
+                    
 
                     <div id="skel-anim-controls" style="display: flex; gap: 5px; width: 100%;">
                         <select id="edit-skel-state" onchange="updateSkelPreview()"
@@ -2195,7 +2195,14 @@
                             style="width: 40px; padding: 6px; background: #3c3c3c; color: white; border: 1px solid #555; text-align: center; font-size: 11px;">
                     </div>
 
-                    <div id="skel-melee-controls"
+                    
+                    <div id="skel-body-controls" style="display: flex; flex-direction: column; gap: 8px; width: 100%; font-size: 11px; color: #ccc; margin-top: 10px; background: rgba(52, 152, 219, 0.1); padding: 5px; border-left: 3px solid #3498db;">
+                        <b>🧑 CUERPO (ANCLAJE BASE)</b>
+                        <div style="display: flex; justify-content: space-between;"><label>Mano Base X: <span id="val-basex">0</span>px</label><input type="range" id="sl-basex" min="-30" max="30" value="12" style="width: 100px;"></div>
+                        <div style="display: flex; justify-content: space-between;"><label>Mano Base Y: <span id="val-basey">0</span>px</label><input type="range" id="sl-basey" min="-30" max="30" value="12" style="width: 100px;"></div>
+                    </div>
+                    
+<div id="skel-melee-controls"
                         style="display: none; flex-direction: column; gap: 8px; width: 100%; font-size: 11px; color: #ccc;">
                         <div id="dir-indicator"
                             style="text-align: center; color: #e67e22; font-weight: bold; margin-bottom: 2px; background: rgba(230,126,34,0.2); padding: 4px; border-radius: 4px; border: 1px solid #e67e22;">
@@ -2221,7 +2228,9 @@
                         </div>
 
                         <div style="background: rgba(52, 152, 219, 0.1); padding: 5px; border-left: 3px solid #3498db;">
-                            <b>âš”ï¸ ARMA (ANIMACIÃ“N)</b>
+                            <b>?? ARMA (ANIMACI�N & PIVOTE)</b>
+                            <div style="display: flex; justify-content: space-between;"><label>Pivot X: <span id="val-pivotx">0</span>px</label><input type="range" id="sl-pivotx" min="-50" max="50" value="0" style="width: 100px;"></div>
+                            <div style="display: flex; justify-content: space-between;"><label>Pivot Y: <span id="val-pivoty">0</span>px</label><input type="range" id="sl-pivoty" min="-50" max="50" value="0" style="width: 100px;"></div>
                             <div style="display: flex; justify-content: space-between;"><label>Layer (0/1): <span
                                         id="val-wz">1</span></label><input type="range" id="sl-wz" min="0" max="1"
                                     value="1" style="width: 100px;"></div>
@@ -2301,28 +2310,33 @@
                             Probar AnimaciÃ³n</button>
                     </div>
 
-                    <div style="background: #1e1e1e; padding: 0; border: 1px solid #000; cursor: crosshair; display: flex; justify-content: center; align-items: center; height: 256px;"
-                        id="skel-canvas-container">
-                        <canvas id="edit-preview-canvas" width="256" height="256"
-                            style="image-rendering: pixelated;"></canvas>
-                    </div>
+                    
 
-                    <button id="save-skel-btn"
+                    <div id="skel-mount-controls" style="display: none; flex-direction: column; gap: 10px; font-size: 11px;">
+    <div id="dir-indicator-mount" style="text-align: center; color: #2ecc71; font-weight: bold; margin-bottom: 2px; background: rgba(46,204,113,0.2); padding: 4px; border-radius: 4px; border: 1px solid #2ecc71;">Modificando: ABAJO (0)</div>
+    <div style="background: rgba(46, 204, 113, 0.1); padding: 5px; border-left: 3px solid #2ecc71;">
+        <b>� � MONTURA (OFFSETS)</b>
+        <div style="display: flex; justify-content: space-between;"><label>Jugador Y: <span id="val-pY">-12</span>px</label><input type="range" id="sl-pY" min="-50" max="50" value="-12" style="width: 100px;"></div>
+        <div style="display: flex; justify-content: space-between;"><label>Montura Y: <span id="val-mY">16</span>px</label><input type="range" id="sl-mY" min="-50" max="50" value="16" style="width: 100px;"></div>
+        <div style="display: flex; justify-content: space-between;"><label>Jugador X: <span id="val-pX">0</span>px</label><input type="range" id="sl-pX" min="-50" max="50" value="0" style="width: 100px;"></div>
+    </div>
+</div>
+<button id="save-skel-btn"
                         style="width: 100%; padding: 10px; background: #0e639c; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: auto;">ðŸ’¾
                         Guardar Esqueleto</button>
                 </div>
             </div>
 
-            <div style="flex: 1; background: #1e1e1e; display: flex; flex-direction: column;">
+            <div id="skel-right-panel" style="display: none; flex: 1; background: #1e1e1e; flex-direction: column;">
                 <div
                     style="padding: 10px 15px; background: #252526; border-bottom: 1px solid #111; font-size: 12px; color: #ccc; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span>ðŸ–¼ï¸ <b>Sprite Picker:</b></span>
-                        <button id="btn-toggle-sheet"
-                            style="display: none; margin-left: 10px; padding: 4px 8px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px;">âš”ï¸
-                            Ver Hoja de Arma</button>
-                    </div>
-                    <span id="grid-coord-label" style="color: #e67e22; font-family: monospace;">[ X: 13, Y: 0 ]</span>
+                    
+                    
+<div style="display: flex; gap: 10px;">
+    <button id="btn-sheet-body" style="background: #9b59b6; color: white; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; border-radius: 4px;">Mano (Cuerpo)</button>
+    <button id="btn-sheet-weapon" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; border-radius: 4px; opacity: 0.5;">Accesorio (Arma)</button>
+</div>
+<span id="grid-coord-label" style="color: #e67e22; font-family: monospace;">[ X: 13, Y: 0 ]</span>
                 </div>
                 <div style="flex: 1; overflow: auto; padding: 20px; position: relative;" id="spritesheet-container">
                     <canvas id="spritesheet-canvas" style="cursor: crosshair; image-rendering: pixelated;"></canvas>
@@ -3258,15 +3272,15 @@
     <script src="js/ui_tasks.js?v=29"></script>
     <script src="js/ui_chat.js?v=29"></script>
     <script src="js/ui_admin.js?v=29"></script>
-    <script src="js/ui_editor.js?v=29"></script>
+    <script src="js/ui_editor.js?v=1788643841441"></script>
     <script src="js/ui_map_editor.js?v=29"></script>
     <script src="js/ui_shop.js?v=29"></script>
-    <script src="js/ui_inventory.js?v=29"></script>
+    <script src="js/ui_inventory.js?v=1788581217853"></script>
     <script src="js/ui_island.js?v=29"></script>
     <script src="js/ui_joystick.js?v=29"></script>
     <script src="js/input_pc.js?v=29"></script>
-    <script src="js/net_client.js?v=30"></script>
-    <script src="js/engine_loop.js?v=29"></script>
+    <script src="js/net_client.js?v=1788642557715"></script>
+    <script src="js/engine_loop.js?v=1788643841441"></script>
 
     <script src="js/webrtc_squad.js?v=39"></script>
 </body>

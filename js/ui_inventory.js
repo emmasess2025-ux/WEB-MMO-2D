@@ -159,6 +159,7 @@ function getWeaponIcon(itemId) {
     const stats = getWeaponData(itemId);
     const catItem = getCatalogData(itemId);
     const isWeapon = !!stats;
+    const isMount = (!isWeapon && catItem && catItem.category === 'mount');
     const img = getItemSprite(itemId, isWeapon);
 
     const tCanvas = document.createElement('canvas');
@@ -176,6 +177,11 @@ function getWeaponIcon(itemId) {
 
         tCtx.clearRect(0, 0, 64, 64);
         tCtx.imageSmoothingEnabled = false;
+        
+        if (isMount) {
+            tCtx.drawImage(sprite, 0, 0, 96, 96, 0, 0, 64, 64);
+            return true;
+        }
 
         if (isWeapon) {
             const frameW = 48;
@@ -446,12 +452,12 @@ function openItemInspector(itemId, quantity) {
     const isWeapon = getWeaponData(itemId);
     const catalogItem = getCatalogData(itemId);
 
-    if (isWeapon) {
-        const w = isWeapon;
+    if (isWeapon || (catalogItem && catalogItem.category === 'mount')) {
+        const w = isWeapon || catalogItem;
         title.innerText = w.name || itemId;
         title.style.color = '#e74c3c';
 
-        let typeIcon = w.type === 'ranged' ? 'Ranged' : 'Melee';
+        let typeIcon = w.type === 'ranged' ? 'Ranged' : (w.category === 'mount' ? 'Montura' : 'Melee');
 
         // Inyectamos las píldoras (Badges) con flexbox para que se acomoden solas
         statsBox.innerHTML = `
@@ -539,6 +545,14 @@ function openItemInspector(itemId, quantity) {
         if (item.category === 'food') loreText = "Parece comestible. Recupera salud.";
 
         const itemValue = item.value || item.price || 0;
+        
+        // MOUNT & COSMETICS EQUIP LOGIC
+        if (['mount', 'head', 'body', 'hat'].includes(item.category)) {
+            const isEquipped = (player.equipped && player.equipped[item.category] === itemId);
+            btnEquip.style.display = 'block';
+            btnEquip.innerText = isEquipped ? "Equipado" : "?? Equipar";
+            btnEquip.disabled = isEquipped;
+        }
 
         statsBox.innerHTML = `
             <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
@@ -565,10 +579,15 @@ function openItemInspector(itemId, quantity) {
 
             const sx = item.drawConfig?.sx ?? item.sx ?? 0;
             const sy = item.drawConfig?.sy ?? item.sy ?? 0;
+            
+            let frameSize = 16;
+            if (item.category === 'mount') {
+                frameSize = 96; // Monturas usan 96x96
+            }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprite, sx, sy, 16, 16, 0, 0, 64, 64);
+            ctx.drawImage(sprite, sx, sy, frameSize, frameSize, 0, 0, 64, 64);
         };
 
         if (img) {
@@ -602,6 +621,11 @@ const btnEquipItem = document.getElementById('btn-equip-item');
 if (btnEquipItem) {
     btnEquipItem.onclick = () => {
         if (ws && ws.readyState === WebSocket.OPEN && currentInspectingItemId) {
+            
+            // Re-evaluar si es arma o cosm�tico
+            const isWeapon = getWeaponData(currentInspectingItemId);
+            const catalogItem = getCatalogData(currentInspectingItemId);
+            
             // 1. Asignar el arma a tu Hotbar activo
             if (player.hotbar) {
                 player.hotbar[equippingSlotIndex] = currentInspectingItemId;

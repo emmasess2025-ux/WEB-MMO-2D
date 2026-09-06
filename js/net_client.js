@@ -1861,6 +1861,15 @@ ws.onmessage = (event) => {
     // --- RECIBIR ACTUALIZACIÓN DEL GANI EDITOR ---
     else if (data.type === 'sync_skeleton') {
         SKELETON_DATA.anchors = data.anchors;
+    } else if (data.type === 'sync_item_stats') {
+        if (window.MASTER_CATALOG && window.MASTER_CATALOG[data.itemId]) {
+            if (!window.MASTER_CATALOG[data.itemId].dirStats) window.MASTER_CATALOG[data.itemId].dirStats = {};
+            window.MASTER_CATALOG[data.itemId].dirStats[data.direction] = data.stats;
+        }
+        if (window.weaponsDB && window.weaponsDB[data.itemId]) {
+            if (!window.weaponsDB[data.itemId].dirStats) window.weaponsDB[data.itemId].dirStats = {};
+            window.weaponsDB[data.itemId].dirStats[data.direction] = data.stats;
+        }
     } else if (data.type === 'sync_melee_stats') {
         if (weaponsDB[data.weaponId]) {
             // Aseguramos que el objeto exista

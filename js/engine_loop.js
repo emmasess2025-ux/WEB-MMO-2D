@@ -1,11 +1,83 @@
 function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     // ==========================================================
-    // ðŸ›‘ NUEVO SISTEMA DE ROPA (GUARDARROPA DINÃMICO) ðŸ›‘
+    // ?? SISTEMA DE MONTURAS DESDE HOTBAR ??
+    // ==========================================================
+    let equippedMount = null;
+    let actualWeapon = p.equippedWeapon;
+    const originalEquippedWeapon = p.equippedWeapon;
+    
+    // Verificamos si el arma equipada es en realidad una montura
+    let itemInfo = null;
+    if (actualWeapon && actualWeapon !== "none") {
+        itemInfo = window.getCatalogData ? window.getCatalogData(actualWeapon) : null;
+        if (itemInfo && itemInfo.category === 'mount') {
+            equippedMount = actualWeapon;
+            p.equippedWeapon = "none"; // Fingimos que no tiene arma para que no anime los brazos
+        }
+    }
+    
+    const dynMountImg = (equippedMount && window.loadedItemSprites) ? window.loadedItemSprites[equippedMount] : null;
+    let pYOffset = -12; // Cuanto se levanta el jugador (default -12)
+    let mYOffset = 16;  // Cuanto baja la montura (default +16)
+    let pXOffset = 0;   // Cuanto se mueve en X el jugador
+    
+    if (itemInfo && itemInfo.category === 'mount') {
+        const dir = p.frameY % 4; // 0=Abajo, 1=Izq, 2=Der, 3=Arriba
+        const config = itemInfo.dirStats && itemInfo.dirStats[dir] ? itemInfo.dirStats[dir] : null;
+        
+        // Usar estrictamente las estadísticas direccionales
+        if (config) {
+            if (config.pY !== undefined) pYOffset = Number(config.pY);
+            if (config.mY !== undefined) mYOffset = Number(config.mY);
+            if (config.pX !== undefined) pXOffset = Number(config.pX);
+        }
+    }
+
+    const currentlyMovingForMount = p.isVisuallyMoving !== undefined ? p.isVisuallyMoving : p.isMoving;
+    let drawMount = null;
+    let isMountAbove = (p.frameY === 0); // Si mira hacia abajo, la dibujaremos SOBRE el jugador
+
+    if (dynMountImg && dynMountImg.complete && dynMountImg.naturalWidth > 0) {
+        const MOUNT_FRAME_SIZE = 96;
+        let mountFrameX = 0;
+        
+        if (currentlyMovingForMount) {
+            const syncFrame = Math.floor(Date.now() / 150) % 4; 
+            const animMap = [1, 2, 1, 0];
+            mountFrameX = animMap[syncFrame] || 0;
+        } else {
+            mountFrameX = 0; // Idle
+        }
+        
+        const mountDrawW = MOUNT_FRAME_SIZE * zoom;
+        const mountDrawH = MOUNT_FRAME_SIZE * zoom;
+        
+        const mountDrawX = drawX - (mountDrawW / 2);
+        const mountDrawY = drawY - (mountDrawH / 2) + (mYOffset * zoom); 
+        
+        drawMount = () => {
+            ctx.drawImage(
+                dynMountImg,
+                mountFrameX * MOUNT_FRAME_SIZE, p.frameY * MOUNT_FRAME_SIZE, MOUNT_FRAME_SIZE, MOUNT_FRAME_SIZE,
+                mountDrawX, mountDrawY, mountDrawW, mountDrawH
+            );
+        };
+        
+        p.isSitting = true; 
+        drawY += (pYOffset * zoom);
+        drawX += (pXOffset * zoom);
+    }
+
+    if (drawMount && !isMountAbove) {
+        drawMount();
+    }
+
+    // ==========================================================
+    // ???? NUEVO SISTEMA DE ROPA (GUARDARROPA DIN�MICO) ????
     // ==========================================================
     const equippedBody = (p.equipped && p.equipped.body) ? p.equipped.body : 'body_default';
     const equippedHead = (p.equipped && p.equipped.head) ? p.equipped.head : 'head_default';
 
-    // Sacamos la imagen del catÃ¡logo. Si no existe o no ha cargado, usamos la global por defecto
     const dynBodyImg = (window.loadedItemSprites && window.loadedItemSprites[equippedBody]) ? window.loadedItemSprites[equippedBody] : bodyImg;
     const dynHeadImg = (window.loadedItemSprites && window.loadedItemSprites[equippedHead]) ? window.loadedItemSprites[equippedHead] : headImg;
     // ==========================================================
@@ -15,9 +87,6 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     let maxFrames = 4;
     let displayFrameX = p.frameX;
 
-    // --- LÃ“GICA DE ESTADOS Y ARMAS ---
-
-    // ðŸª‘ CHEQUEO DE SILLA Y ESTADO DE MOVIMIENTO
     let isSitting = p.isSitting || false;
 
     // ðŸš€ FIX ANIMACIONES: Usamos isVisuallyMoving para los otros (suavizado) y isMoving para el local (instantÃ¡neo)
@@ -51,9 +120,28 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
 
     const headAnc = rawAnchors.head || [0, 0];
     const handAnc = rawAnchors.handR || [12, 12];
+    
+    // --- NUEVO: WOBBLE GLOBAL (CABEZA, MANOS, ARMAS) ---
+    const WOBBLE_PATTERN = [0, 1, 0, -1, 0, 1, 0, -1];
+    let wobbleY = 0;
+    
+    // RESTAURACI�N DEL COMPORTAMIENTO ORIGINAL: Sincronizado estrictamente con los p�xeles del cuerpo
+    if (p.isSitting) {
+        // Montura
+        const simulatedFrame = Math.floor(Date.now() / 250) % 8;
+        wobbleY = WOBBLE_PATTERN[simulatedFrame] || 0;
+    } else if (displayFrameX === 0 && !p.isMoving && !p.isVisuallyMoving && p.equippedWeapon !== "none") {
+        // Si tiene arma y est� quieto, maxFrames de l�gica se congela a 1. p.frameX nunca avanza de 0.
+        // As� que usamos tambi�n el reloj interno global para que el personaje respire m�gicamente.
+        const simulatedFrame = Math.floor(Date.now() / 250) % 8;
+        wobbleY = WOBBLE_PATTERN[simulatedFrame] || 0;
+    } else {
+        // Para caminar o estar Idle sin armas, empatamos 1:1 con el frame dibujado del torso.
+        wobbleY = WOBBLE_PATTERN[displayFrameX % 8] || 0;
+    }
 
     const handX = drawX + (handAnc[0] * zoom);
-    const handY = drawY + (handAnc[1] * zoom);
+    const handY = drawY + ((handAnc[1] + wobbleY) * zoom);
 
     // --- EXTRAER ESTADÃSTICAS Y CAPAS (Z-INDEX) ---
     let stats = {}; let d = {};
@@ -133,11 +221,16 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
             ctx.translate(offsetX + ((d.aX || 0) * zoom), offsetY + ((d.aY || 0) * zoom));
             if (d.aRot) ctx.rotate(d.aRot * Math.PI / 180);
 
-            const wW = 48; // FIJO
-            const wH = 64; // FIJO
-            let srcY = dirIdx * wH;
-            // Columna 1 (X = 48) para el Accesorio
-            ctx.drawImage(wSprite, 48, srcY, wW, wH, -(wW * zoom) / 2, -(wH * zoom) / 2, wW * zoom, wH * zoom);
+            if (d.wTileX !== undefined && d.wTileX !== null) {
+                // Editor logic: draws 16x16 icon accessory from the sprite
+                ctx.drawImage(wSprite, d.wTileX * 16, (d.wTileY || 0) * 16, 16, 16, -(16 * zoom) / 2, -(16 * zoom) / 2, 16 * zoom, 16 * zoom);
+            } else {
+                // Legacy logic: Columna 1 (X = 48) de 48x64
+                const wW = 48;
+                const wH = 64;
+                let srcY = dirIdx * wH;
+                ctx.drawImage(wSprite, 48, srcY, wW, wH, -(wW * zoom) / 2, -(wH * zoom) / 2, wW * zoom, wH * zoom);
+            }
             ctx.restore();
         }
     };
@@ -158,6 +251,9 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
             let srcY = dirIdx * wH;
             // Columna 0 (X = 0) para el Arma Principal
             ctx.drawImage(wSprite, 0, srcY, wW, wH, -pivotX - ((wW * zoom) / 2), -pivotY - ((wH * zoom) / 2), wW * zoom, wH * zoom);
+            if (window.showGaniGizmos && document.getElementById('skeleton-editor') && document.getElementById('skeleton-editor').style.display !== 'none' && p.id === player.id) {
+                ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.stroke();
+            }
             ctx.restore();
         }
     };
@@ -172,6 +268,9 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
             ctx.rotate((d.hRot || 0) * Math.PI / 180);
 
             ctx.drawImage(dynBodyImg, (d.tX || 13) * 16, (d.tY || 0) * 16, 16, 16, -(16 * zoom) / 2, -(16 * zoom) / 2, 16 * zoom, 16 * zoom);
+            if (window.showGaniGizmos && document.getElementById('skeleton-editor') && document.getElementById('skeleton-editor').style.display !== 'none' && p.id === player.id) {
+                ctx.fillStyle = '#3498db'; ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.stroke();
+            }
             ctx.restore();
         }
     };
@@ -192,23 +291,13 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         );
     }
 
-    // ðŸ›‘ EL FIX DE ROPA DINÃMICA: Dibujamos la cabeza con la textura del jugador actual
-    if (dynHeadImg && dynHeadImg.complete) {
-        const headSafeFrame = displayFrameX % 4;
-        ctx.drawImage(
-            dynHeadImg,
-            headSafeFrame * FRAME_WIDTH, dirIdx * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT,
-            offsetX + (headAnc[0] * zoom), offsetY + (headAnc[1] * zoom), FRAME_WIDTH * zoom, FRAME_HEIGHT * zoom
-        );
-    }
+    
 
     // ==========================================================
     // ðŸ§  EL WOBBLE (BAMBOLEO) MATEMÃTICO: Cabeza y Sombrero
     // ==========================================================
     // Secuencia: Centro(0), Abajo(1), Centro(0), Arriba(-1)
-    const WOBBLE_PATTERN = [0, 1, 0, -1, 0, 1, 0, -1];
-    const currentWalkFrame = displayFrameX % 8; // Sincronizado con las piernas
-    const wobbleY = WOBBLE_PATTERN[currentWalkFrame] || 0;
+    
 
     // Calculamos la coordenada FINAL una sola vez para ambos
     const finalHeadX = offsetX + (headAnc[0] * zoom);
@@ -239,8 +328,40 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     // ===========================================================
 
     if (aZ === 1 && !isSitting) drawAccessory();
+    
+    // Si miramos hacia abajo, la montura se dibuja al final para tapar las piernas del jugador
+    if (drawMount && isMountAbove) {
+        drawMount();
+    }
     if (wZ === 1 && !isSitting) drawWeapon();
     if (hZ === 1 && !isSitting) drawHand();
+
+    // ⚔�  GIZMOS DE HITBOX / MUZZLE
+    if (window.showGaniGizmos && document.getElementById('skeleton-editor') && document.getElementById('skeleton-editor').style.display !== 'none' && p.id === player.id && p.equippedWeapon && weaponsDB[p.equippedWeapon]) {
+        const wStats = weaponsDB[p.equippedWeapon];
+        const isRanged = wStats.type === 'ranged';
+        
+        ctx.save();
+        ctx.translate(drawX + ((d.hitX || 0) * zoom), drawY + ((d.hitY || 0) * zoom));
+        
+        if (isRanged) {
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fillStyle = "yellow"; ctx.fill();
+            ctx.strokeStyle = "orange"; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = "white"; ctx.font = "10px sans-serif";
+            ctx.fillText("Bala", 6, 4);
+        } else {
+            const hitRotRad = (d.hitRot || 0) * Math.PI / 180;
+            const trueHitAngle = baseAimAngle + (hitRotRad * dirM);
+            const halfWidRad = ((d.hitWid || 60) / 2) * Math.PI / 180;
+            ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.arc(0, 0, (d.hitLen || 40) * zoom, trueHitAngle - halfWidRad, trueHitAngle + halfWidRad);
+            ctx.fillStyle = "rgba(231, 76, 60, 0.4)"; ctx.fill(); 
+            ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 1; ctx.stroke();
+        }
+        ctx.restore();
+    }
 
     // ðŸ›¡ï¸ RESPAWN SHIELD: Blue pulsing circle while invulnerable
     if (p.shieldUntil && Date.now() < p.shieldUntil) {
@@ -266,6 +387,10 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
         ctx.fill();
         ctx.restore();
     }
+
+    // --- RESTORE ORIGINAL STATE ---
+    p.equippedWeapon = originalEquippedWeapon;
+    if (equippedMount) p.isSitting = false;
 } // <--- Fin de la funciÃ³n drawModularCharacter
 
 function executeTileLogic(logicTile, tileKey) {
@@ -747,6 +872,15 @@ function _real_update(currentTime) {
 
         // ðŸ›‘ EL FIX: SISTEMA DE HIT-STOP SUAVE (SIN JITTER) ðŸ›‘
         let speedMult = 1;
+        let mountSpeedBonus = 0;
+        
+        if (player.equippedWeapon !== "none") {
+            const mItem = window.getCatalogData ? window.getCatalogData(player.equippedWeapon) : null;
+            if (mItem && mItem.category === 'mount') {
+                mountSpeedBonus = Number(mItem.speedBonus) || 2; // +2 de velocidad base por montura
+            }
+        }
+        
         if (player.equippedWeapon !== "none" && WEAPONS[player.equippedWeapon]) {
             const wStats = WEAPONS[player.equippedWeapon];
             const d = wStats.dirStats ? (wStats.dirStats[player.frameY] || wStats.dirStats[0] || {}) : {};
@@ -775,16 +909,16 @@ function _real_update(currentTime) {
                     const length = Math.sqrt(moveX * moveX + moveY * moveY);
                     moveX /= length; moveY /= length;
                     // ðŸš€ EL FIX FÃSICO: Usamos dtScale (1.0) en vez del viejo cÃ¡lculo
-                    player.vx = moveX * (player.speed * speedMult) * dtScale;
-                    player.vy = moveY * (player.speed * speedMult) * dtScale;
+                    player.vx = moveX * ((player.speed + mountSpeedBonus) * speedMult) * dtScale;
+                    player.vy = moveY * ((player.speed + mountSpeedBonus) * speedMult) * dtScale;
                     player.isMoving = true;
                 } else {
                     player.vx = 0; player.vy = 0; player.isMoving = false;
                 }
             } else {
                 // ðŸ“± MOVIMIENTO INSTANTÃNEO 1:1 (Sin aceleraciÃ³n ni retraso)
-                player.vx = (player.joyX || 0) * (player.speed * speedMult) * dtScale;
-                player.vy = (player.joyY || 0) * (player.speed * speedMult) * dtScale;
+                player.vx = (player.joyX || 0) * ((player.speed + mountSpeedBonus) * speedMult) * dtScale;
+                player.vy = (player.joyY || 0) * ((player.speed + mountSpeedBonus) * speedMult) * dtScale;
                 player.isMoving = (Math.abs(player.joyX || 0) > 0.02 || Math.abs(player.joyY || 0) > 0.02);
             }
         } else {
