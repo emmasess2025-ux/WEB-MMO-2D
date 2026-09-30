@@ -1,0 +1,157 @@
+AARGON UGC SCRIPTING — Referencia del Creador (v1)
+================================================
+Actualizado: v7 (studio solo-propios, owner gameId estricto).
+Actualizado: slate multiverso (hotbar/pos por planeta, guests invisibles).
+Este archivo es la fuente de verdad del API. Actualizarlo con cada funcion/evento nuevo.
+
+DONDE VIVE EL CODIGO
+--------------------
+- Scripts de mundo (legacy, 1 por planeta): Planet.script -> eventos onTick, onPlayerJoin.
+- Scripts de tile (registro, N por planeta): Planet.scripts = { scriptId: code }.
+  Se direccionan como `planetId::scriptId`. Solo [A-Za-z0-9_] (max 64).
+- Tiles apuntan por referencia corta: Tile.scriptId = "door1" (capa 15 ideal).
+- Scripts de arma: Item.script -> evento onShoot (weaponId como clave).
+- El codigo SOLO vive en Mongo (Planet/Item). El cliente jamas lo recibe.
+
+FLUJO CREADOR
+-------------
+DOS NIVELES (no duplicar):
+- Nivel motor (dropdown del inspector: Puerta TP, Tienda, NPC, Arena...):
+  sistemas nativos mantenidos por el juego. Rapidos, estables, sin codigo.
+  Usalos siempre que exista la funcion.
+- Nivel UGC (dropdown: "Script UGC (Studio)" + scriptId): escape hatch para
+  lo que el motor NO tiene. Si eliges script, el tile NO debe llevar otro
+  triggerType (ambos correrian: nativo en cliente + script en server).
+1. Studio: pestana "+ Tile script" -> nombre (door1) -> escribir -> Save (Ctrl+S).
+   Guarda en Planet.scripts[door1] y recompila en vivo (studio_save_script).
+   Doble-clic en pestana = eliminar (los tiles que lo usen quedan sin logica, no se borran).
+2. Juego (modo edicion, admin/owner): inspeccionar tile capa 15 -> Logica =
+   "Script UGC (Studio)" -> scriptId (autocompletado con los del planeta) ->
+   destX/destY si aplica -> Guardar (update_tile_metadata).
+3. Jugador pisa (step, una vez por entrada, requiere Clic desmarcado) o
+   clickea/tap a <4 tiles (click, requiere Clic marcado) -> tile_interact
+   -> server valida (logueado, mismo planeta, cercania 128px en click,
+   cooldown 800ms por jugador+script+kind) -> onTileInteract(e).
+
+EVENTOS
+-------
+onTick(e)                    Mundo. Cada 1s por planeta con script. e={eventName}
+onPlayerJoin(e)              Mundo. Al loguear y al cambiar de planeta.
+                             e={eventName, playerId, username} (+planetId segun flujo)
+onTileInteract(e)            Tile (planetId::scriptId). e={eventName, scriptId,
+                             kind:'click'|'step', playerId, username, x, y, planetId}
+onShoot(e)                   Arma. e={eventName, attackerId, x, y, angle}
+                             (la bala normal sigue su curso; onShoot es extra)
+onHit(e)                     Arma. Al impactar bala: e={attackerId, targetId...}
+onKill(e)                    Arma. Al matar: e={attackerId, targetId, x, y}
+
+FUNCIONES API (disponibles como globales dentro del script)
+------------------------------------------------------------
+log(...args)                       Consola server + terminal del Studio.
+cancelDefault()                    Marca el evento (uso futuro; hoy pocos hooks la respetan).
+dealDamage(targetId, amount)       Dano validado por el engine. NO pasa si: objetivo
+                             muerto/invulnerable, alguno en safezone, mismo
+                             squad (no spar). Probar fuera de safezone.
+heal(targetId, amount)             Cura hasta 100 HP (no revive).
+teleport(targetId, x, y)           PIXELES. Para tiles usa teleportTiles.
+teleportTiles(targetId, tx, ty)    TILES -> pixeles (tx*16+8). Igual que el TP
+                             integrado.
+getPlayersInRadius(x, y, r)        -> ARRAY [{id, x, y, health, username}].
+                             OJO: arr[0].username (no arr.username).
+giveItem(targetId, itemId, cant)   Otorga server-side (respeta planeta; max 99,
+                             apila). Manda inventory_update + aviso. El item
+                             debe existir en el catalogo.
+getTile(x, y, l?)            Lee el tile del planeta del script ->
+                             {x, y, l, tileId, triggerType, destX, destY,
+                              itemId, requiresClick, npcMessage, scriptId,
+                              hasCollision} o null. Ideal para plantillas:
+                             1 script "door", N tiles cada uno con su
+                             destX/destY del inspector. NOTA: destX/destY solo
+                             existen si se guardaron con inspector tras el fix
+                             (re-guardar tiles viejos).
+playEffect(x, y, type, color)      Broadcast visual AL PLANETA DEL SCRIPT. Tipos:
+                             'spark' y 'dust'. dust = pulverizado 1px con
+                             gravedad, reposo en piso y fade 5s (pool 300,
+                             js/fx_dust.js). Opcionales: count (max 150),
+                             life frames (30-600), mode 'burst' (explosion,
+                             default) o 'rain' (llueve y cae al piso),
+                             height (px sobre y, rain), width (franja, rain).
+                             SOLO primitivos (el isolate no transfiere
+                             objetos):
+                             playEffect(x,y,'dust','#fff',80,300,'rain',96,48)
+                             La muerte (isDead)
+                             dispara DustBurst automaticamente (1:1 del sprite;
+                             fallback a paleta si el canvas esta tainted).
+playSound(url, x, y)           Reproduce mp3/wav/ogg via WebAudio. url = https://...
+                             (ej. asset subido a R2), ruta audio/*.mp3, o nombre
+                             legacy (sounds/<id>.mp3). x,y reservados para
+                             atenuacion futura.
+                             REGISTRO POR PLANETA (Sounds table):
+                             Studio -> Assets -> Upload Sound (mp3/wav/ogg,
+                             max 1MB, mp3 sugerido) -> POST /api/upload_sound
+                             (mime+ext+tamano validados; R2 sfx/ + upsert
+                             {planetId, soundId}) -> playSound('door_creak')
+                             resuelve id->url en server (solo su planeta).
+                             init trae planetSounds[] y el cliente los
+                             precarga (cero lag). Lista/borrado en el modal.
+                             Seguridad: id [A-Za-z0-9_], URL validada.
+                             R2 LAYOUT: ugc/<planetId>/<categoria>/<file> para
+                             imagenes/tiles; audio en ugc/<planetId>/sfx/
+                             + <itemId>/ si es de un item (use/reload/equip)
+                             o shared/ si es pool libre. main queda local
+                             (relativos) hasta migrar a main/<misma-ruta>.
+                             Archivos viejos en ugc/, sfx/ planos siguen
+                             vivos (no se mueven).
+playItemSound(itemId, type)   Reusa el audio del catalogo: type 'use'|'reload'|
+                             'equip' -> Item.audio[type]. Ideal para que tiles
+                             suenen como armas existentes sin URLs.
+message(targetId, text, color)     Texto flotante estilo hit-count (max 200 chars).
+dialog(targetId, text)             Caja retro con typewriter (max 500 chars). Congela al
+                                   jugador; clic=fast-forward, clic=cerrar.
+broadcast(msg)                     string -> system_message al planeta; objeto -> broadcast crudo.
+
+LIMITES Y REGLAS
+----------------
+- Timeout 10ms por ejecucion, isolate unico de 128MB (TODO: aislar por planeta).
+- Step = 1 vez por entrada (cliente) + cooldown server 800ms. Click = por clic.
+- Guests no disparan scripts (no portales, no interact, invisibles).
+- Equipar/disparar valida planeta (aislamiento estricto; head/body/hat globales, mount NO).
+- 'none' (manos vacias) disponible en todos los planetas.
+- Posicion y hotbar se recuerdan POR planeta (cap 25/50, LRU).
+
+PROTOCOLO (referencia rapida)
+------------------------------
+Studio  -> studio_save_script {planetId, scriptId, script} / studio_delete_script
+          studio_load_planet trae {script, scripts:{}} / studio_scripts_list [ids]
+Juego   -> tile_interact {x, y, l, kind} / update_tile_metadata {..., scriptId}
+          init trae {tileScripts:[ids], masterCatalog/weaponsDB filtrados}
+        <- open_dialog {text} / system_message {text, color} / tile_update(+scriptId)
+
+PENDIENTES CONOCIDOS
+--------------------
+- playEffect/playSound/getPlayersInRadius sin filtro de planeta.
+- update_tile_metadata sin chequeo de ownership (solo admin hoy).
+- Sin versionado/rollback de scripts.
+
+STUDIO
+------
+- Auth automatica por sesion del juego (gameToken -> gameId como ownerId
+  de planetas nuevos; legible tipo A1000). Fallback a token manual legacy.
+- Test-play: demo.html?planet=X entra directo tras login (boton en Studio).
+  Planetas en desarrollo (privados): solo owner/admin por gameId.
+  Construir (place/bulk) valida lo mismo. ownerId de Planet = gameId
+  (ej. A1000) — migrar planetas viejos manualmente.
+  Tilesets/tiles/items heredan ownership del planeta via planetId (su
+  ownerId propio es solo credito de creador, no autoriza).
+  Edicion de items (stats/pivot/script): admin todo; resto solo items de
+  planetas propios (main = solo admin).
+- Studio solo-propios: role creator ve y edita UNICAMENTE sus planetas
+  (lista + load + save + delete validados; admin ve todo).
+- Crear planeta: abierto a todo player logueado (UGC = todos crean).
+  Topes: player 3, creator 20, admin sin tope. Rol creator = creador
+  verificado con mas cupo.
+
+PENDIENTES CONOCIDOS (resto)
+----------------------------
+- onLeave/onChat/onDeath/onInteract-zona aun no existen. Estado persistente
+  State.get/set aun no existe (las var globales se pierden entre ticks).
