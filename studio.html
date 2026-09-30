@@ -1,0 +1,679 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aargon Studio IDE</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --menu-bg: #333333;
+            --hover-bg: #505050;
+            --border-color: #444;
+            --accent: #007acc;
+            --text: #cccccc;
+            --text-light: #ffffff;
+            --modal-bg: rgba(0, 0, 0, 0.85);
+            --modal-panel: #252526;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* TOP MENU BAR */
+        #menubar {
+            height: 30px;
+            background-color: var(--menu-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+        
+        .menu-logo {
+            color: var(--accent);
+            font-weight: bold;
+            margin-right: 15px;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 5px 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: var(--hover-bg);
+            color: var(--text-light);
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 25px;
+            left: 0;
+            background-color: var(--modal-panel);
+            border: 1px solid var(--border-color);
+            min-width: 200px;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .menu-item:hover .menu-dropdown {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 15px;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--accent);
+            color: var(--text-light);
+        }
+
+        .status-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* MAIN IDE */
+        #ide-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* PLANET TOOLBAR (UNDER MENU) */
+        #planet-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: #252526;
+            border-bottom: 1px solid var(--border-color);
+            gap: 15px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .icon-btn:hover { color: white; background: var(--hover-bg); }
+
+        #monaco-editor {
+            flex: 1;
+            width: 100%;
+        }
+
+        /* SCRIPTS TABBAR */
+        #scripts-tabbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px 0 10px;
+            background-color: #252526;
+            overflow-x: auto;
+        }
+        .script-tab {
+            background: #2d2d30;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            color: var(--text);
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            white-space: nowrap;
+        }
+        .script-tab:hover { color: white; }
+        .script-tab.active {
+            background: #1e1e1e;
+            color: white;
+            border-color: var(--accent);
+        }
+        .script-tab.new-tab {
+            border: 1px dashed #666;
+            border-radius: 6px;
+            color: #858585;
+        }
+
+        /* TERMINAL */
+        #terminal {
+            height: 250px;
+            background-color: #1e1e1e;
+            border-top: 1px solid var(--border-color);
+            padding: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            user-select: text;
+        }
+
+        .log-time { color: #858585; margin-right: 10px; }
+        .log-msg { color: #d4d4d4; }
+        .log-error { color: #f14c4c; }
+        .log-success { color: #89d185; }
+
+        /* FULLSCREEN MODALS */
+        .fullscreen-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: var(--modal-bg);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .project-manager {
+            background-color: var(--modal-panel);
+            width: 80%;
+            height: 80%;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .pm-header {
+            padding: 20px;
+            background: #2d2d30;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pm-header h2 { margin: 0; color: white; font-weight: 400; }
+
+        .pm-body {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: #333;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            background: #3a3a3a;
+        }
+
+        .project-card.new-project {
+            border: 2px dashed #666;
+            background: transparent;
+        }
+        .project-card.new-project:hover {
+            border-color: var(--accent);
+            background: rgba(0, 122, 204, 0.1);
+        }
+
+        .project-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #858585;
+        }
+
+        .project-name {
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .project-meta {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* CREATION & SETTINGS MODALS */
+        .mini-modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--modal-panel);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 8px;
+            z-index: 1001;
+            width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .mini-modal.confirm-modal {
+            border: 1px solid var(--accent);
+        }
+
+        .mini-modal label {
+            font-size: 12px;
+            color: #aaa;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mini-modal input, .mini-modal select {
+            background: #3c3c3c;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        
+        .mini-modal input:focus, .mini-modal select:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .mini-modal .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-primary:hover { background: #0098ff; }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-secondary:hover { background: #333; }
+        
+        #close-pm {
+            background: transparent;
+            color: #ccc;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #close-pm:hover { color: white; }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+</head>
+<body>
+
+    <!-- TOP MENU BAR -->
+    <div id="menubar">
+        <div class="menu-logo">AARGON STUDIO</div>
+        
+        <div class="menu-item">
+            File
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="showProjectManager()">Open Project... <span>Ctrl+O</span></div>
+                <div class="dropdown-item" onclick="promptCreatePlanet()">New Project... <span>Ctrl+N</span></div>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <div class="dropdown-item" onclick="saveScript()">Save Script <span>Ctrl+S</span></div>
+                <div class="dropdown-item" onclick="openProjectSettings()">Project Settings... <span>⚙️</span></div>
+            </div>
+        </div>
+
+        
+          <div class="menu-item">
+              Edit
+              <div class="menu-dropdown">
+                  <div class="dropdown-item" onclick="editor.trigger('', 'undo')">Undo <span>Ctrl+Z</span></div>
+                  <div class="dropdown-item" onclick="editor.trigger('', 'redo')">Redo <span>Ctrl+Y</span></div>
+              </div>
+          </div>
+
+          <div class="menu-item">
+            Assets
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="openAssetsModal()">Upload Asset (Cloudflare)... <span>?U</span></div>
+                <div class="dropdown-item" onclick="openSoundModal()">Upload Sound (mp3/wav/ogg)... <span>♪</span></div>
+            </div>
+        </div>
+
+        </div>
+
+        <div class="status-right">
+            <span id="connection-status" style="color: #f14c4c;">Disconnected</span>
+        </div>
+    </div>
+
+    <!-- MAIN IDE -->
+    <div id="ide-container">
+        <div id="planet-toolbar">
+            <span style="color: #858585; font-size: 13px; font-weight:bold;">PROJECT:</span>
+            <span id="tb-planet-title" style="color: white; font-size: 14px; margin-right: 15px;">---</span>
+            <span id="tb-planet-status" style="background:#444; padding:2px 6px; border-radius:4px; font-size:11px; color:#ccc;">Private</span>
+            <div style="flex:1"></div>
+            <button class="btn-secondary" onclick="testPlay(window.currentPlanetId)" title="Abrir el juego en este planeta (owner entra aunque esté en desarrollo)">▶ Test Play</button>
+            <button class="btn-primary" onclick="saveScript()">Save Script</button>
+        </div>
+
+        <div id="scripts-tabbar"></div>
+
+        <div id="monaco-editor"></div>
+        
+        <div id="terminal">
+            <div><span class="log-time">System</span><span class="log-msg">Aargon Studio v2.0 initialized.</span></div>
+        </div>
+    </div>
+
+    <!-- PROJECT MANAGER MODAL (FULLSCREEN) -->
+    <div id="project-manager-modal" class="fullscreen-modal">
+        <div class="project-manager">
+            <div class="pm-header">
+                <h2>Project Manager</h2>
+                <button id="close-pm" onclick="hideProjectManager()">&times;</button>
+            </div>
+            <div class="pm-body">
+                <div class="projects-grid" id="pm-grid">
+                    <!-- Dynamic Projects go here -->
+                    <div class="project-card new-project" onclick="promptCreatePlanet()">
+                        <div class="project-icon">+</div>
+                        <div class="project-name">New Project</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE PLANET MINI MODAL -->
+    <div id="create-planet-modal" class="mini-modal">
+        <h3 style="margin:0 0 5px 0;">Create New Project</h3>
+        <p style="margin:0 0 15px 0; font-size: 13px; color: #858585;">Initialize a new empty planet in the multiverse.</p>
+        
+        <div>
+            <label>Project Name</label>
+            <input type="text" id="new-planet-name" placeholder="E.g. Survival Zombies">
+        </div>
+        
+        <div>
+            <label>Max Players (Max 100)</label>
+            <input type="number" id="new-planet-max" value="50" min="1" max="100">
+        </div>
+        
+        <div class="buttons">
+            <button class="btn-secondary" onclick="hideCreatePlanet()">Cancel</button>
+            <button class="btn-primary" onclick="submitCreatePlanet()">Create</button>
+        </div>
+    </div>
+
+    <!-- PROJECT SETTINGS MODAL -->
+    <div id="project-settings-modal" class="mini-modal">
+        <h3 style="margin:0 0 5px 0;">Project Settings</h3>
+        <p style="margin:0 0 15px 0; font-size: 13px; color: #858585;" id="settings-planet-id"></p>
+        
+        <div>
+            <label>Project Name</label>
+            <input type="text" id="settings-name">
+        </div>
+        
+        <div>
+            <label>Max Players (Max 100)</label>
+            <input type="number" id="settings-max" min="1" max="100">
+        </div>
+        
+        <div>
+            <label>Publish Status</label>
+            <select id="settings-status">
+                <option value="false">In Development (Private)</option>
+                <option value="true">Published (Public Portal)</option>
+            </select>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn-secondary" onclick="hideProjectSettings()">Cancel</button>
+            <button class="btn-primary" onclick="submitProjectSettings()">Apply</button>
+        </div>
+    </div>
+
+    <!-- CONFIRM PUBLISH MODAL -->
+    <div id="confirm-publish-modal" class="mini-modal confirm-modal">
+        <h3 style="margin:0 0 5px 0;">Publish to Portal?</h3>
+        <p style="margin:0 0 15px 0; font-size: 14px; color: #ccc;">
+            You are about to make this game public. It will appear in the Discovery Portal and any player will be able to join.
+            <br><br>
+            Are you sure you want to publish?
+        </p>
+        
+        <div class="buttons">
+            <button class="btn-secondary" onclick="cancelPublish()">Cancel</button>
+            <button class="btn-primary" style="background:#3fb950;" onclick="confirmPublish()">Yes, Publish</button>
+        </div>
+    </div>
+
+    <!-- SOUND MANAGER MODAL -->
+    <div id="sound-modal" class="mini-modal" style="display: none; border: 1px solid #2ecc71; z-index: 5000;">
+        <h3 style="margin:0 0 5px 0; color: #2ecc71;">UGC Sound Cloud</h3>
+        <p style="margin:0 0 15px 0; font-size: 13px; color: #858585;">Sube SFX livianos (mp3/wav/ogg, max 1MB). Se sugiere mp3 corto.</p>
+
+        <label>Sound Name (ej. door_creak)</label>
+        <input type="text" id="sound-name" placeholder="Name..." style="margin-bottom: 15px;">
+
+        <label>Item ID (opcional: agrupa en sfx/&lt;item&gt;/ para use/reload/equip)</label>
+        <input type="text" id="sound-item" placeholder="Vacío = pool libre (shared)" style="margin-bottom: 15px;">
+
+        <label>Audio File (.mp3 / .wav / .ogg, max 1MB)</label>
+        <input type="file" id="sound-file" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" style="margin-bottom: 15px; color: #fff; font-family: monospace;">
+
+        <div style="margin-bottom: 15px;">
+            <audio id="sound-preview" controls style="width: 100%; display: none;"></audio>
+        </div>
+
+        <div id="sound-result" style="display:none; margin-bottom: 15px; background: rgba(0,0,0,0.4); border: 1px solid #2ecc71; padding: 10px; border-radius: 4px; font-size: 12px; word-break: break-all;">
+            <div style="color:#2ecc71; margin-bottom:5px;">Upload OK. Úsalo así:</div>
+            <code id="sound-snippet" style="color:#fff;"></code>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label>Sonidos del planeta (clic Usar para snippet por id)</label>
+            <div id="sound-list" style="margin-top:8px; max-height: 160px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-secondary" onclick="document.getElementById('sound-modal').style.display='none'">Cancel</button>
+            <button class="btn-primary" id="btn-upload-sound" style="background: #2ecc71; color: #000;">Upload Sound</button>
+        </div>
+    </div>
+
+    <script src="js/studio_client.js"></script>
+
+    <!-- ASSETS MANAGER MODAL -->
+    <div id="assets-modal" class="mini-modal" style="display: none; border: 1px solid #a18cd1; z-index: 5000;">
+        <h3 style="margin:0 0 5px 0; color: #a18cd1;">UGC Assets Cloud</h3>
+        <p style="margin:0 0 15px 0; font-size: 13px; color: #858585;">Upload images to Cloudflare R2 and build items.</p>
+        
+        <label>Asset Name (e.g. fire_sword)</label>
+        <input type="text" id="asset-name" placeholder="Name..." style="margin-bottom: 15px;">
+
+        <label>Category</label>
+        <select id="asset-type" style="margin-bottom: 15px;">
+            <option value="">Loading templates...</option>
+        </select>
+
+        <label>Image File (.png)</label>
+        <input type="file" id="asset-file" accept=".png" style="margin-bottom: 15px; color: #fff; font-family: monospace;">
+
+        <div style="display: flex; justify-content: center; margin-bottom: 15px; background: rgba(0,0,0,0.3); border: 1px dashed #555; padding: 10px; min-height: 80px; border-radius: 4px;">
+            <canvas id="asset-canvas" style="max-width: 100%; max-height: 150px; display: none;"></canvas>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-secondary" onclick="document.getElementById('assets-modal').style.display='none'">Cancel</button>
+            <button class="btn-primary" id="btn-upload-asset" style="background: #a18cd1; color: #000;">Upload to R2</button>
+        </div>
+    </div>
+
+            
+
+
+<script>
+    function openAssetsModal() {
+        document.getElementById('assets-modal').style.display = 'block';
+    }
+
+    setTimeout(async () => {
+        try {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const apiUrl = isLocal ? 'http://localhost:8080/api/templates' : 'https://my-chat-server-ihxw.onrender.com/api/templates';
+            const res = await fetch(apiUrl);
+            const templates = await res.json();
+            const select = document.getElementById("asset-type");
+            select.innerHTML = "";
+            templates.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.id;
+                opt.textContent = t.name;
+                select.appendChild(opt);
+            });
+        } catch(e) {
+            console.error("Failed to load templates", e);
+            document.getElementById("asset-type").innerHTML = '<option value="gun">Gun Weapon (Fallback)</option>';
+        }
+
+        const fileInput = document.getElementById("asset-file");
+        const canvas = document.getElementById("asset-canvas");
+        const ctx = canvas ? canvas.getContext("2d") : null;
+        const btnUpload = document.getElementById("btn-upload-asset");
+
+        let currentFile = null;
+
+        if (fileInput) {
+            fileInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0);
+                        canvas.style.display = "block";
+                        currentFile = file;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (btnUpload) {
+            btnUpload.addEventListener("click", async () => {
+                if (!currentFile) return alert("Please select a .png file first.");
+                const name = document.getElementById("asset-name").value;
+                if (!name) return alert("Please give your asset a name.");
+                
+                const type = document.getElementById("asset-type").value;
+                
+                const formData = new FormData();
+                formData.append("image", currentFile);
+                formData.append("assetName", name);
+                formData.append("templateId", type);
+                formData.append("assetType", type); // fallback
+                
+                // Intentar sacar datos del parent window (el juego) si existe
+                const parentW = window.opener || window.parent;
+                
+                    const pId = window.currentPlanetId || 'main';
+                    // We can read token from localStorage which acts as ownerId or auth
+                    const oId = localStorage.getItem('token') || 'system';
+
+                
+                formData.append("planetId", pId);
+                formData.append("ownerId", oId);
+                formData.append("width", canvas.width);
+                formData.append("height", canvas.height);
+
+                btnUpload.innerText = "Uploading...";
+                btnUpload.disabled = true;
+
+                try {
+                    
+                    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const apiUrl = isLocal ? 'http://localhost:8080/api/upload_asset' : 'https://my-chat-server-ihxw.onrender.com/api/upload_asset';
+                    const res = await fetch(apiUrl, {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        alert("Upload successful! URL: " + data.url);
+                        document.getElementById('assets-modal').style.display = 'none';
+                        currentFile = null;
+                        canvas.style.display = 'none';
+                    } else {
+                        alert("Upload failed: " + data.error);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Upload crashed.");
+                } finally {
+                    btnUpload.innerText = "Upload to R2";
+                    btnUpload.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
