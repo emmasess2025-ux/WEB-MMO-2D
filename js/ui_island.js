@@ -78,7 +78,7 @@ const tutorialSteps = [
     {
         title: "Welcome to the Game",
         desc: "Welcome! Survive, build, and fight in a persistent world. Here is how you can get started.",
-        icon: "items/icons/Info.png"
+        icon: "items/icons/info.png"
     },
     {
         title: "Movement & Combat",
@@ -88,7 +88,7 @@ const tutorialSteps = [
     {
         title: "Economy & Loot",
         desc: "Find loot in the world! Visit the Jeweler or the Junkyard NPCs to sell your items and earn coins.",
-        icon: "items/icons/bag.png"
+        icon: "items/icons/Bag.png"
     },
     {
         title: "Build & Socialize",
