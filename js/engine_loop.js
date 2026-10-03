@@ -1742,11 +1742,16 @@ function _real_update(currentTime) {
         });
 
         if (dirtyChunks.size > 0) {
-            dirtyChunks.forEach(chunkKey => {
+            const REBAKE_BUDGET = 6; // máximo de chunks a rehornar por frame (anti-stutter)
+            let rebaked = 0;
+            for (const chunkKey of dirtyChunks) {
+                if (!activeChunkKeys.has(chunkKey)) { dirtyChunks.delete(chunkKey); continue; }
+                if (rebaked >= REBAKE_BUDGET) continue;
                 const [cx, cy] = chunkKey.split(',').map(Number);
                 rebakeChunk(cx, cy);
-            });
-            dirtyChunks.clear();
+                dirtyChunks.delete(chunkKey);
+                rebaked++;
+            }
         }
 
         ctx.imageSmoothingEnabled = false;

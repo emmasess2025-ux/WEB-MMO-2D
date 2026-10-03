@@ -101,6 +101,23 @@ function sendTileInteract(gx, gy, gl, kind) {
 }
 window.sendTileInteract = sendTileInteract;
 
+function _applyWorldTiles(tiles) {
+    if (!tiles || !tiles.length) return;
+    for (let i = 0; i < tiles.length; i++) {
+        const t = tiles[i];
+        const l = t.l || 0;
+        worldMap.set(getMapKey(t.x, t.y, l), {
+            tileId: t.tileId, l: l, hasCollision: t.hasCollision || false, isSit: t.isSit || false, isSwim: t.isSwim || false,
+            triggerType: t.triggerType, destX: t.destX, destY: t.destY, itemId: t.itemId,
+            rotation: t.rotation || 0, requiresClick: t.requiresClick || false,
+            npcMessage: t.npcMessage || "", scriptId: t.scriptId || "",
+            itemRow: t.itemRow || 0, shelfX: t.shelfX || 0, shelfY: t.shelfY || 0,
+        });
+        if (typeof markChunkDirty === 'function') markChunkDirty(t.x, t.y);
+    }
+    floorDirty = true;
+}
+
 ws.onmessage = (event) => {
     const data = MessagePack.decode(new Uint8Array(event.data));
     
@@ -1263,24 +1280,10 @@ ws.onmessage = (event) => {
         // 🔄 NEW: Store tiles as objects with layer and collision data!
         if (data.worldMap) {
             worldMap.clear();
-            data.worldMap.forEach(t => {
-                const l = t.l || 0;
-                worldMap.set(getMapKey(t.x, t.y, l), {
-                    tileId: t.tileId, l: l, hasCollision: t.hasCollision || false, isSit: t.isSit || false, isSwim: t.isSwim || false,
-                    triggerType: t.triggerType, destX: t.destX, destY: t.destY,
-                    itemId: t.itemId,
-                    rotation: t.rotation || 0,
-                    requiresClick: t.requiresClick || false,
-                    npcMessage: t.npcMessage || "",
-                    scriptId: t.scriptId || "",
-                    itemRow: t.itemRow || 0,
-                    shelfX: t.shelfX || 0,
-                    shelfY: t.shelfY || 0,
-                });
-            });
-            // 📸 EL FIX: ¡El mapa ya llegó, toma una foto nueva!
-            floorDirty = true;
+            _applyWorldTiles(data.worldMap);
         }
+    } else if (data.type === 'map_chunk') {
+        _applyWorldTiles(data.tiles || []);
     } else if (data.type === 'spawn_hole') {
         digHoles.push({
             x: data.x,

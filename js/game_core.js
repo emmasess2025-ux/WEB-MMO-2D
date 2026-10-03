@@ -75,7 +75,8 @@ function animateLoadingBar() {
         isVisualDone = true;
         const txt = document.getElementById('loading-text');
         if (txt) txt.innerText = "¡Mundo Listo!";
-        setTimeout(() => {
+
+        const enterGame = () => {
             const screen = document.getElementById('loading-screen');
             if (screen) screen.style.opacity = '0';
             setTimeout(() => {
@@ -88,7 +89,21 @@ function animateLoadingBar() {
                     authOverlay.style.pointerEvents = 'none';
                 }
             }, 800);
-        }, 800);
+        };
+
+        const playBtn = document.getElementById('play-now-btn');
+        const playWrap = document.getElementById('play-now-wrap');
+        if (playBtn && playWrap) {
+            playWrap.style.maxHeight = '140px';
+            playWrap.style.opacity = '1';
+            playBtn.style.transform = 'translateY(0) scale(1)';
+            playBtn.onclick = () => enterGame();
+        } else if (playBtn) {
+            playBtn.style.display = 'block';
+            playBtn.onclick = () => enterGame();
+        } else {
+            setTimeout(enterGame, 800);
+        }
     } else {
         requestAnimationFrame(animateLoadingBar);
     }
@@ -129,7 +144,7 @@ function rebakeChunk(cx, cy) {
 
     for (let r = startY; r < startY + CHUNK_SIZE; r++) {
         for (let c = startX; c < startX + CHUNK_SIZE; c++) {
-            for (let l = 8; l <= 11; l++) {
+            for (let l = 8; l <= 14; l++) {
                 if (worldMap.has(`${c},${r},${l}`)) {
                     hasOverhead = true;
                     break;
@@ -164,6 +179,14 @@ function rebakeChunk(cx, cy) {
         if (oCanvas) {
             oCtx = oCanvas.getContext('2d');
             oCtx.clearRect(0, 0, oCanvas.width, oCanvas.height);
+        } else if (hasOverhead) {
+            // El chunk se horneó antes sin overhead y ahora sí tiene: crear el canvas
+            oCanvas = document.createElement('canvas');
+            oCanvas.width = chunkPixelSize;
+            oCanvas.height = chunkPixelSize;
+            oCtx = oCanvas.getContext('2d', { alpha: true });
+            oCtx.imageSmoothingEnabled = false;
+            overheadChunks.set(chunkKey, oCanvas);
         }
     }
 
@@ -174,7 +197,7 @@ function rebakeChunk(cx, cy) {
                 const tileData = worldMap.get(`${c},${r},${l}`);
                 if (!tileData) continue;
 
-                let targetCtx = (l >= 8 && l <= 11) ? oCtx : fCtx;
+                let targetCtx = (l >= 8) ? oCtx : fCtx;
                 if (!targetCtx) continue;
 
                 const tsData = getTilesetData(tileData.tileId);
