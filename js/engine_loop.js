@@ -1466,10 +1466,10 @@ function _real_update(currentTime) {
         let hitSomeone = false;
         // ⚡ Hitbox ligeramente más grande (14px en vez de 12) para que el
         // hit registration sea consistente entre ambas pantallas
-        const HITBOX_RADIUS = 14;
+        const HITBOX_RADIUS_SQ = 14 * 14;
 
         // A. ¿La bala chocó contra MÍ? 
-        if (p.owner !== myId && !player.isDead && Math.hypot(p.x - player.worldX, p.y - player.worldY) < HITBOX_RADIUS) {
+        if (p.owner !== myId && !player.isDead && ((p.x - player.worldX) ** 2 + (p.y - player.worldY) ** 2) < HITBOX_RADIUS_SQ) {
             hitSomeone = true;
         }
 
@@ -1478,7 +1478,7 @@ function _real_update(currentTime) {
             for (let id in otherPlayers) {
                 let enemy = otherPlayers[id];
 
-                if (enemy.worldX !== undefined && !enemy.isDead && p.owner !== id && Math.hypot(p.x - enemy.worldX, p.y - enemy.worldY) < HITBOX_RADIUS) {
+                if (enemy.worldX !== undefined && !enemy.isDead && p.owner !== id && ((p.x - enemy.worldX) ** 2 + (p.y - enemy.worldY) ** 2) < HITBOX_RADIUS_SQ) {
                     hitSomeone = true;
                     // 🛑 SERVER-AUTHORITATIVE COMBAT:
                     // La bala local es solo visual. Se destruirá al chocar, 
@@ -1802,6 +1802,12 @@ function _real_update(currentTime) {
         const l15cameraOffY = screenCenterY - (renderWorldY * zoomLevel);
 
         ctx.imageSmoothingEnabled = false;
+        ctx.save();
+        ctx.font = `900 ${6 * zoomLevel}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 2 * zoomLevel;
+        ctx.strokeStyle = 'black';
 
         for (let gy = l15startRow; gy <= l15endRow; gy++) {
             for (let gx = l15startCol; gx <= l15endCol; gx++) {
@@ -1831,7 +1837,6 @@ function _real_update(currentTime) {
                         const scaledItemW = sW * renderScale * zoomLevel;
                         const scaledItemH = sH * renderScale * zoomLevel;
 
-                        ctx.save();
                         ctx.drawImage(
                             wSprite,
                             0, itemRow * sH, sW, sH,
@@ -1839,24 +1844,15 @@ function _real_update(currentTime) {
                             l15drawY + scaledTile - scaledItemH - (4 * zoomLevel) + tweakY,
                             scaledItemW, scaledItemH
                         );
-                        ctx.restore();
 
                         // Precio debajo del tile
                         if (itemStats.price !== undefined) {
-                            ctx.save();
                             const priceText = `$${itemStats.price}`;
-                            const fontSize = 6 * zoomLevel;
-                            ctx.font = `900 ${fontSize}px sans-serif`;
-                            ctx.textAlign = 'center';
                             const textX = l15drawX + (scaledTile / 2);
                             const textY = l15drawY + scaledTile + (5 * zoomLevel);
-                            ctx.lineWidth = 2 * zoomLevel;
-                            ctx.strokeStyle = 'black';
-                            ctx.lineJoin = 'round';
                             ctx.strokeText(priceText, textX, textY);
                             ctx.fillStyle = '#f1c40f';
                             ctx.fillText(priceText, textX, textY);
-                            ctx.restore();
                         }
                     }
                 }
@@ -1865,6 +1861,7 @@ function _real_update(currentTime) {
                 // (NPCs, portales, puertas, etc.) siguiendo el mismo patrón
             }
         }
+        ctx.restore();
     }
     // =========================================================
 
@@ -1925,9 +1922,9 @@ function _real_update(currentTime) {
         if (!p || p.worldX === undefined || !p.username || p.invisibleEnabled) continue;
 
         // 🛑 THE PERFECT MOVEMENT FIX v3 (DELTA-TIME LERP) 🛑
-        let dx = p.targetX - p.worldX;
-        let dy = p.targetY - p.worldY;
-        let dist = Math.hypot(dx, dy);
+        const dx = p.targetX - p.worldX;
+        const dy = p.targetY - p.worldY;
+        const distSq = dx * dx + dy * dy;
 
         // 1. 🚀 FIX JITTER OTROS JUGADORES: Lerp atado a dtScale.
         // Con factor fijo 0.3, en frames irregulares el jugador avanza
@@ -1940,7 +1937,7 @@ function _real_update(currentTime) {
 
         // 2. Truco visual: Forzar que las piernas se muevan mientras haya deslizamiento
         if (!p.isMoving) {
-            if (dist < 3) {
+            if (distSq < 9) {
                 // Ya llegó a la meta, lo clavamos y paramos las piernas
                 p.worldX = p.targetX;
                 p.worldY = p.targetY;

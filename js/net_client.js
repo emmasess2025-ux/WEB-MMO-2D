@@ -1623,12 +1623,8 @@ ws.onmessage = (event) => {
             else if (deg > -45 && deg <= 45) enemy.frameY = 2;
             else if (deg > -135 && deg <= -45) enemy.frameY = 3;
 
-            if (wStats) {
-                const dir = enemy.frameY || 0;
-                const d = wStats.dirStats ? (wStats.dirStats[dir] || {}) : {};
-                spawnX = enemy.worldX + (d.hitX !== undefined ? d.hitX : (dir === 2 ? 16 : dir === 1 ? -16 : 0));
-                spawnY = enemy.worldY + (d.hitY !== undefined ? d.hitY : (dir === 0 ? 16 : dir === 3 ? -16 : 0));
-            }
+            // Origen autoritativo: usamos la posición exacta que envió el atacante
+            // (spawnX/spawnY ya vienen de data.x/data.y), no la posición interpolada.
         }
 
         // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
@@ -1662,12 +1658,7 @@ ws.onmessage = (event) => {
                 else if (deg > -135 && deg <= -45) enemy.frameY = 3;
             }
 
-            if (wStats) {
-                const dir = enemy.frameY || 0;
-                const d = wStats.dirStats ? (wStats.dirStats[dir] || {}) : {};
-                spawnX = enemy.worldX + (d.hitX !== undefined ? d.hitX : (dir === 2 ? 16 : dir === 1 ? -16 : 0));
-                spawnY = enemy.worldY + (d.hitY !== undefined ? d.hitY : (dir === 0 ? 16 : dir === 3 ? -16 : 0));
-            }
+            // Origen autoritativo: usamos data.x/data.y (spawnX/spawnY) sin recalcular.
         }
 
         // ⚡ LAG COMPENSATION: avanzar cada pellet los ms de lag
