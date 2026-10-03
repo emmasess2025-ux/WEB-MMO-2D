@@ -1280,10 +1280,15 @@ ws.onmessage = (event) => {
         // 🔄 NEW: Store tiles as objects with layer and collision data!
         if (data.worldMap) {
             worldMap.clear();
+            // Si el init trae el mapa vacío, el servidor lo enviará por lotes (map_chunk)
+            window.mapStreamExpected = Array.isArray(data.worldMap) && data.worldMap.length === 0;
+            window.mapStreamDone = false;
             _applyWorldTiles(data.worldMap);
         }
     } else if (data.type === 'map_chunk') {
+        window.mapStreamExpected = true;
         _applyWorldTiles(data.tiles || []);
+        if (data.done) window.mapStreamDone = true;
     } else if (data.type === 'spawn_hole') {
         digHoles.push({
             x: data.x,

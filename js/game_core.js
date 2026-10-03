@@ -58,6 +58,7 @@ let assetsLoaded = 0;
 
 let visualProgress = 0;
 let isVisualDone = false;
+let mapWaitSince = 0;
 
 function animateLoadingBar() {
     if (isVisualDone) return;
@@ -71,9 +72,18 @@ function animateLoadingBar() {
 
     if (fill) fill.style.width = visualProgress + '%';
 
+    const mapReady = (!window.mapStreamExpected) || window.mapStreamDone;
     if (visualProgress >= 100 && targetPct === 100) {
-        isVisualDone = true;
         const txt = document.getElementById('loading-text');
+        if (!mapReady) {
+            if (!mapWaitSince) mapWaitSince = Date.now();
+            if (txt) txt.innerText = "Cargando mapa...";
+            if (Date.now() - mapWaitSince < 20000) {
+                requestAnimationFrame(animateLoadingBar);
+                return;
+            }
+        }
+        isVisualDone = true;
         if (txt) txt.innerText = "¡Mundo Listo!";
 
         const enterGame = () => {
