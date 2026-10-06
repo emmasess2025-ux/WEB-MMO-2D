@@ -1663,7 +1663,7 @@ ws.onmessage = (event) => {
             // (spawnX/spawnY ya vienen de data.x/data.y), no la posición interpolada.
         }
 
-        // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
+        // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar TRIGGER BITCH
         const bulletLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 150)) : 0;
         spawnProjectile(spawnX, spawnY, data.angle, data.id, data.weaponId, bulletLag);
         if (typeof triggerMuzzleFlash === 'function') {
