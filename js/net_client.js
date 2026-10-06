@@ -1647,12 +1647,17 @@ ws.onmessage = (event) => {
             otherPlayers[data.id].lastShotTime = Date.now();
             const enemy = otherPlayers[data.id];
 
-            // FIX VISUAL: Forzar al enemigo a mirar hacia donde disparó instantáneamente
-            let deg = data.angle * (180 / Math.PI);
-            if (deg > 45 && deg <= 135) enemy.frameY = 0;
-            else if (deg > 135 || deg <= -135) enemy.frameY = 1;
-            else if (deg > -45 && deg <= 45) enemy.frameY = 2;
-            else if (deg > -135 && deg <= -45) enemy.frameY = 3;
+            // Dirección del cuerpo del tirador (la MISMA que usó para calcular el cañón).
+            // Usamos el frameY autoritativo; el ángulo solo como respaldo si no llega.
+            if (data.frameY !== undefined && data.frameY !== null) {
+                enemy.frameY = data.frameY;
+            } else {
+                let deg = data.angle * (180 / Math.PI);
+                if (deg > 45 && deg <= 135) enemy.frameY = 0;
+                else if (deg > 135 || deg <= -135) enemy.frameY = 1;
+                else if (deg > -45 && deg <= 45) enemy.frameY = 2;
+                else if (deg > -135 && deg <= -45) enemy.frameY = 3;
+            }
 
             // Origen autoritativo: usamos la posición exacta que envió el atacante
             // (spawnX/spawnY ya vienen de data.x/data.y), no la posición interpolada.
@@ -1680,7 +1685,9 @@ ws.onmessage = (event) => {
             otherPlayers[data.id].lastShotTime = Date.now(); // Levanta el arma del enemigo
             const enemy = otherPlayers[data.id];
 
-            if (data.angles && data.angles.length > 0) {
+            if (data.frameY !== undefined && data.frameY !== null) {
+                enemy.frameY = data.frameY;
+            } else if (data.angles && data.angles.length > 0) {
                 const midAngle = data.angles[Math.floor(data.angles.length / 2)];
                 let deg = midAngle * (180 / Math.PI);
                 if (deg > 45 && deg <= 135) enemy.frameY = 0;

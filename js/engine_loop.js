@@ -1331,6 +1331,7 @@ function _real_update(currentTime) {
                                 x: spawnX,
                                 y: spawnY,
                                 angles: anglesArray,
+                                frameY: player.frameY,
                                 weaponId: player.equippedWeapon
                             }));
                         } else {
@@ -1340,6 +1341,7 @@ function _real_update(currentTime) {
                                 x: spawnX,
                                 y: spawnY,
                                 angle: finalAngle, // Mandamos el ángulo único en vez del Array
+                                frameY: player.frameY,
                                 weaponId: player.equippedWeapon
                             }));
                         }
