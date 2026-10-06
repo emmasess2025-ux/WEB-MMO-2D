@@ -701,7 +701,7 @@ function spawnProjectile(startX, startY, angle, ownerId, weaponId, lagMs = 0) {
 
             // Pasos de extrapolación: avanzamos la bala N ms de tiempo de red
             // usando el mismo dtScale=1 base para consistencia
-            const lagSteps = Math.min(lagMs / 16.67, 18); // max ~300ms = ~18 frames
+            const lagSteps = Math.max(0, Math.min(lagMs / 16.67, 18)); // nunca negativo (relojes desfasados)
 
             projectiles[i].active = true;
             projectiles[i].x = startX + vx * lagSteps;

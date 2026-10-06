@@ -1664,7 +1664,7 @@ ws.onmessage = (event) => {
         }
 
         // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
-        const bulletLag = data.t ? Math.min(Date.now() - data.t, 150) : 0;
+        const bulletLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 150)) : 0;
         spawnProjectile(spawnX, spawnY, data.angle, data.id, data.weaponId, bulletLag);
         if (typeof triggerMuzzleFlash === 'function') {
             triggerMuzzleFlash(spawnX, spawnY, data.angle, wStats && wStats.color ? wStats.color : "#f1c40f");
@@ -1700,7 +1700,7 @@ ws.onmessage = (event) => {
         }
 
         // ⚡ LAG COMPENSATION: avanzar cada pellet los ms de lag
-        const shotgunLag = data.t ? Math.min(Date.now() - data.t, 150) : 0;
+        const shotgunLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 150)) : 0;
         const avgAngle = (data.angles && data.angles.length > 0) ? data.angles[Math.floor(data.angles.length / 2)] : 0;
 
         data.angles.forEach(ang => {
