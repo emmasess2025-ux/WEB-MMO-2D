@@ -77,14 +77,14 @@ function animateLoadingBar() {
         const txt = document.getElementById('loading-text');
         if (!mapReady) {
             if (!mapWaitSince) mapWaitSince = Date.now();
-            if (txt) txt.innerText = "Cargando mapa...";
+            if (txt) txt.innerText = (typeof t === 'function' ? t('loading.map') : 'Cargando mapa...');
             if (Date.now() - mapWaitSince < 20000) {
                 requestAnimationFrame(animateLoadingBar);
                 return;
             }
         }
         isVisualDone = true;
-        if (txt) txt.innerText = "¡Mundo Listo!";
+        if (txt) txt.innerText = (typeof t === 'function' ? t('loading.ready') : '¡Mundo Listo!');
 
         const enterGame = () => {
             const screen = document.getElementById('loading-screen');
@@ -550,6 +550,18 @@ if (appAuth) {
 
 // (Feedback & Tutorial handled in js/ui_island.js)
 // === NUEVO: ARGEMS PREMIUM STORE LOGIC ===
+// 🧩 Detección de app nativa (Capacitor): las compras con Stripe solo se permiten en la WEB.
+// En Android/iOS, vender bienes digitales con Stripe viola la política de Google Play/Apple.
+window.IS_NATIVE_APP = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+if (!window.IS_NATIVE_APP && window.Capacitor && typeof window.Capacitor.getPlatform === 'function') {
+    const _plat = window.Capacitor.getPlatform();
+    window.IS_NATIVE_APP = (_plat === 'android' || _plat === 'ios');
+}
+// Fallback: User-Agent de WebView nativo ("; wv)" en Android, "Capacitor" en ambos)
+if (!window.IS_NATIVE_APP && (/Capacitor/i.test(navigator.userAgent) || /; wv\)/.test(navigator.userAgent))) {
+    window.IS_NATIVE_APP = true;
+}
+
 const appArgemsBtn = document.getElementById('app-argems');
 const argemsModal = document.getElementById('argems-modal');
 const closeArgemsModalBtn = document.getElementById('close-argems-modal');
@@ -557,20 +569,26 @@ const argemsBalanceDisplay = document.getElementById('argems-balance-display');
 const argemsStoreGrid = document.getElementById('argems-store-grid');
 
 if (appArgemsBtn) {
-    appArgemsBtn.addEventListener('click', () => {
-        if (!player || !player.accountId) return alert("⚠️ You must log in to buy Argems.");
-        hideTrayForModal();
-        argemsModal.style.display = 'flex';
+    if (window.IS_NATIVE_APP) {
+        // App nativa: ocultamos la tienda de Argems (Stripe). Usar Play Billing en el futuro.
+        appArgemsBtn.style.display = 'none';
+        console.log('[POLICY] Tienda de Argems oculta en app nativa. Compras disponibles solo en la web.');
+    } else {
+        appArgemsBtn.addEventListener('click', () => {
+            if (!player || !player.accountId) return alert("⚠️ You must log in to buy Argems.");
+            hideTrayForModal();
+            argemsModal.style.display = 'flex';
 
-        // Update header balance
-        argemsBalanceDisplay.innerHTML = `${player.gems || 0} <img src="items/icons/argem.png" alt="Argem" style="height: 1.2em; vertical-align: text-bottom; filter: drop-shadow(0 0 5px rgba(241,196,15,0.5)); image-rendering: pixelated; image-rendering: crisp-edges;">`;
-        argemsStoreGrid.innerHTML = '<div style="color: white; text-align: center; width: 100%; grid-column: 1 / -1;">Loading packages...</div>';
+            // Update header balance
+            argemsBalanceDisplay.innerHTML = `${player.gems || 0} <img src="items/icons/argem.png" alt="Argem" style="height: 1.2em; vertical-align: text-bottom; filter: drop-shadow(0 0 5px rgba(241,196,15,0.5)); image-rendering: pixelated; image-rendering: crisp-edges;">`;
+            argemsStoreGrid.innerHTML = '<div style="color: white; text-align: center; width: 100%; grid-column: 1 / -1;">Loading packages...</div>';
 
-        // Fetch packages from server
-        if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(MessagePack.encode({ type: 'get_argem_packages' }));
-        }
-    });
+            // Fetch packages from server
+            if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(MessagePack.encode({ type: 'get_argem_packages' }));
+            }
+        });
+    }
 }
 if (closeArgemsModalBtn) {
     closeArgemsModalBtn.addEventListener('click', () => {
@@ -1055,6 +1073,32 @@ window.addEventListener('resize', resize);
 resize();
 
 
+// --- 🛡️ PROFILE CLICK BLOCKER (toggle) ---
+window.profileBlockEnabled = true; // ON por defecto (coincide con la clase 'active' del botón)
+(function initProfileBlocker() {
+    const btn = document.getElementById('btn-toggle-profile-block');
+    if (!btn) return;
+    const dot = document.getElementById('profile-block-dot');
+    function syncProfileBlockerUI() {
+        const on = window.profileBlockEnabled;
+        btn.classList.toggle('active', on);
+        btn.classList.toggle('inactive', !on);
+        if (dot) { dot.style.background = on ? '#ff4757' : '#7f8c8d'; dot.style.boxShadow = on ? '0 0 6px #ff4757' : 'none'; }
+        btn.title = on
+            ? 'Profile Blocker: ON (los clics no abren perfiles mientras llevas un item)'
+            : 'Profile Blocker: OFF (los clics abren perfiles)';
+    }
+    window.syncProfileBlockerUI = syncProfileBlockerUI;
+    syncProfileBlockerUI();
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.profileBlockEnabled = !window.profileBlockEnabled;
+        syncProfileBlockerUI();
+        if (typeof playUISound === 'function') playUISound('click');
+    });
+})();
+
 // --- ENLAZAR EVENTOS TÁCTILES ---
 canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length > 1) return;
@@ -1091,17 +1135,42 @@ canvas.addEventListener('touchstart', (e) => {
         }
     }
 
-    // Detectar si tocamos un jugador
+    // Detectar si tocamos un jugador (respetando el Profile Blocker si llevas un item)
+    const holdingItem = player && player.equippedWeapon && player.equippedWeapon !== 'none';
+    if (!(window.profileBlockEnabled && holdingItem)) {
+        const HIT_RADIUS = 20;
+        if (Math.abs(clickX - player.worldX) < HIT_RADIUS && Math.abs(clickY - player.worldY) < HIT_RADIUS) {
+            openProfile('self', player.username); return;
+        }
+        for (let id in otherPlayers) {
+            if (Math.abs(clickX - otherPlayers[id].worldX) < HIT_RADIUS && Math.abs(clickY - otherPlayers[id].worldY) < HIT_RADIUS) {
+                openProfile(id, otherPlayers[id].username, otherPlayers[id]); return;
+            }
+        }
+    }
+}, { passive: false });
+
+// --- 🖱️ CLICK DE PERFIL EN PC (ratón), respetando el Profile Blocker ---
+canvas.addEventListener('click', (e) => {
+    if (typeof editMode !== 'undefined' && editMode) return;
+    const holdingItem = player && player.equippedWeapon && player.equippedWeapon !== 'none';
+    if (window.profileBlockEnabled && holdingItem) return;
+
+    const clickX = (e.clientX - (window.innerWidth / 2)) / zoomLevel + player.worldX;
+    const clickY = (e.clientY - (window.innerHeight / 2)) / zoomLevel + player.worldY;
     const HIT_RADIUS = 20;
+
     if (Math.abs(clickX - player.worldX) < HIT_RADIUS && Math.abs(clickY - player.worldY) < HIT_RADIUS) {
         openProfile('self', player.username); return;
     }
     for (let id in otherPlayers) {
-        if (Math.abs(clickX - otherPlayers[id].worldX) < HIT_RADIUS && Math.abs(clickY - otherPlayers[id].worldY) < HIT_RADIUS) {
-            openProfile(id, otherPlayers[id].username, otherPlayers[id]); return;
+        const p = otherPlayers[id];
+        if (p && p.worldX !== undefined && Math.abs(clickX - p.worldX) < HIT_RADIUS && Math.abs(clickY - p.worldY) < HIT_RADIUS) {
+            openProfile(id, p.username, p); return;
         }
     }
-}, { passive: false });
+});
+
 // Profile, Inbox & Settings logic has been modularized into js/ui_phone.js
 
 // Inventory logic moved to ui_inventory.js

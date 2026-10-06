@@ -294,6 +294,7 @@ window.addEventListener('DOMContentLoaded', () => {
         chkBgm.addEventListener('change', (e) => {
             gameSettings.bgmEnabled = e.target.checked;
             saveSettings();
+            if (typeof applySettingsToGame === 'function') applySettingsToGame();
         });
     }
 
@@ -336,6 +337,60 @@ window.addEventListener('DOMContentLoaded', () => {
         chkShadows.addEventListener('change', (e) => {
             gameSettings.disableShadows = e.target.checked;
             saveSettings();
+        });
+    }
+
+    // ⚠️ Eliminar cuenta
+    const openDelBtn = document.getElementById('open-delete-account-btn');
+    const delModal = document.getElementById('delete-account-modal');
+    const delInput = document.getElementById('delete-account-confirm-input');
+    const delPass = document.getElementById('delete-account-password-input');
+    const delConfirm = document.getElementById('confirm-delete-account-btn');
+    const delCancel = document.getElementById('cancel-delete-account-btn');
+
+    function closeDeleteModal() {
+        if (delModal) delModal.style.display = 'none';
+        if (delInput) delInput.value = '';
+        if (delPass) delPass.value = '';
+        if (delConfirm) { delConfirm.disabled = true; delConfirm.style.opacity = '0.45'; delConfirm.style.cursor = 'not-allowed'; delConfirm.innerText = 'Eliminar'; }
+    }
+    function validateDeleteForm() {
+        const okText = delInput && delInput.value.trim().toLowerCase() === 'eliminar cuenta';
+        const okPass = delPass && delPass.value.length > 0;
+        const ok = !!(okText && okPass);
+        if (delConfirm) {
+            delConfirm.disabled = !ok;
+            delConfirm.style.opacity = ok ? '1' : '0.45';
+            delConfirm.style.cursor = ok ? 'pointer' : 'not-allowed';
+        }
+    }
+    if (openDelBtn && delModal) {
+        openDelBtn.addEventListener('click', () => {
+            delModal.style.display = 'flex';
+            if (delInput) { delInput.value = ''; delInput.focus(); }
+        });
+    }
+    if (delCancel) delCancel.addEventListener('click', closeDeleteModal);
+    if (delModal) delModal.addEventListener('click', (e) => { if (e.target === delModal) closeDeleteModal(); });
+    if (delInput) delInput.addEventListener('input', validateDeleteForm);
+    if (delPass) delPass.addEventListener('input', validateDeleteForm);
+    if (delConfirm) {
+        delConfirm.addEventListener('click', () => {
+            if (delConfirm.disabled) return;
+            if (!window.ws || window.ws.readyState !== WebSocket.OPEN) { alert('No hay conexión con el servidor.'); return; }
+            window.ws.send(MessagePack.encode({ type: 'delete_account', password: delPass ? delPass.value : '' }));
+            delConfirm.innerText = 'Eliminando...';
+            delConfirm.disabled = true;
+            delConfirm.style.opacity = '0.45';
+        });
+    }
+
+    // 🌐 Selector de idioma
+    const selLang = document.getElementById('sel-language');
+    if (selLang) {
+        if (window.I18N) selLang.value = window.I18N.lang;
+        selLang.addEventListener('change', (e) => {
+            if (typeof setLang === 'function') setLang(e.target.value);
         });
     }
 

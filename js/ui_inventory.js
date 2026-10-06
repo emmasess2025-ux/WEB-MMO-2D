@@ -139,7 +139,7 @@ function renderEquipModal() {
                 slot.appendChild(iconElement);
             }
         } else {
-            slot.innerText = "EMPTY";
+            slot.innerText = (typeof t === 'function') ? t('inv.empty') : "EMPTY";
             slot.style.fontSize = "11px";
             slot.style.fontWeight = "900";
             slot.style.letterSpacing = "1px";
@@ -459,7 +459,7 @@ function openItemInspector(itemId, quantity) {
 
     // 🛑 LIMPIEZA INICIAL DE SEGURIDAD
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    title.innerText = "Cargando...";
+    title.innerText = (typeof t === 'function') ? t('inv.loading') : "Cargando...";
     statsBox.innerHTML = "";
     btnEquip.style.display = 'none';
     btnEquip.disabled = false;
@@ -493,17 +493,19 @@ function openItemInspector(itemId, quantity) {
         `;
 
         btnEquip.style.display = 'block';
-        btnEquip.innerText = (player.equippedWeapon === itemId) ? "Equipada" : "🗡️ Equipar";
+        btnEquip.innerText = (player.equippedWeapon === itemId)
+            ? ((typeof t === 'function') ? t('inv.equippedWeapon') : "Equipada")
+            : ((typeof t === 'function') ? t('inv.equipWeapon') : "Equipar");
         if (player.equippedWeapon === itemId) btnEquip.disabled = true;
 
         if (btnQuickSwap) {
             btnQuickSwap.style.display = 'block';
             if (player.quickSwaps && player.quickSwaps.includes(itemId)) {
-                btnQuickSwap.innerText = "⭐ En Hotkey";
+                btnQuickSwap.innerText = (typeof t === 'function') ? t('inv.inHotkey') : "En Hotkey";
                 btnQuickSwap.style.background = "#7f8c8d";
                 btnQuickSwap.style.boxShadow = "0 4px 0 #34495e";
             } else {
-                btnQuickSwap.innerText = "⭐ Hotkey";
+                btnQuickSwap.innerText = (typeof t === 'function') ? t('inv.addHotkey') : "Add to Hotkey";
                 btnQuickSwap.style.background = "#9b59b6";
                 btnQuickSwap.style.boxShadow = "0 4px 0 #8e44ad";
             }
@@ -568,7 +570,9 @@ function openItemInspector(itemId, quantity) {
         if (['mount', 'head', 'body', 'hat'].includes(item.category)) {
             const isEquipped = (player.equipped && player.equipped[item.category] === itemId);
             btnEquip.style.display = 'block';
-            btnEquip.innerText = isEquipped ? "Equipado" : "?? Equipar";
+            btnEquip.innerText = isEquipped
+                ? ((typeof t === 'function') ? t('inv.equipped') : "Equipado")
+                : ((typeof t === 'function') ? t('inv.equip') : "Equipar");
             btnEquip.disabled = isEquipped;
         }
 
@@ -620,8 +624,8 @@ function openItemInspector(itemId, quantity) {
         }
     } else {
         if (btnQuickSwap) btnQuickSwap.style.display = 'none';
-        title.innerText = "Objeto Desconocido";
-        statsBox.innerHTML = `<div style="color:orange;">ID: ${itemId}<br>No se encontró en la base de datos local.</div>`;
+        title.innerText = (typeof t === 'function') ? t('inv.unknown') : "Objeto Desconocido";
+        statsBox.innerHTML = `<div style="color:orange;">ID: ${itemId}<br>${(typeof t === 'function') ? t('inv.notFound') : 'No se encontró en la base de datos local.'}</div>`;
     }
 
     modal.style.display = 'flex';

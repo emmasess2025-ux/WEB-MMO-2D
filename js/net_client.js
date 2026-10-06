@@ -218,6 +218,28 @@ ws.onmessage = (event) => {
             }
         }
     }
+    else if (data.type === 'block_state') {
+        if (!Array.isArray(player.blocked)) player.blocked = [];
+        if (data.blocked) { if (!player.blocked.includes(data.targetAccountId)) player.blocked.push(data.targetAccountId); }
+        else { player.blocked = player.blocked.filter(x => x !== data.targetAccountId); }
+        if (typeof window.refreshBlockBtnLabel === 'function') window.refreshBlockBtnLabel();
+        if (typeof showNotification === 'function') showNotification(data.blocked ? 'Jugador bloqueado' : 'Jugador desbloqueado');
+    }
+    else if (data.type === 'report_sent') {
+        alert(data.ok ? 'Reporte enviado. Gracias, lo revisaremos.' : 'No se pudo enviar el reporte.');
+    }
+    else if (data.type === 'reports_list') {
+        if (typeof window.renderAdminReports === 'function') window.renderAdminReports(data.reports || []);
+    }
+    else if (data.type === 'delete_account_result') {
+        if (data.ok) {
+            try { localStorage.removeItem('gameToken'); } catch (e) {}
+            alert('Tu cuenta ha sido eliminada. Hasta pronto.');
+            window.location.reload();
+        } else {
+            alert(data.message || 'No se pudo eliminar la cuenta.');
+        }
+    }
     else if (data.type === 'delete_minigame') {
         if (window.soccerMinigame) {
             window.soccerMinigame.ball.active = false;
@@ -1278,6 +1300,7 @@ ws.onmessage = (event) => {
             }
         }
         // 🔄 NEW: Store tiles as objects with layer and collision data!
+        if (data.blocked) player.blocked = data.blocked;
         if (data.worldMap) {
             worldMap.clear();
             // Si el init trae el mapa vacío, el servidor lo enviará por lotes (map_chunk)

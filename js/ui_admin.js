@@ -628,6 +628,67 @@ function renderGodOnlinePlayers(playersList) {
 }
 window.renderGodOnlinePlayers = renderGodOnlinePlayers;
 
+// --- 🚩 PANEL DE REPORTES (dentro de #god-modal-content) ---
+function requestAdminReports() {
+    if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(MessagePack.encode({ type: 'get_reports' }));
+    }
+}
+window.requestAdminReports = requestAdminReports;
+
+function buildAdminReportsPanel() {
+    const content = document.getElementById('god-modal-content');
+    if (!content || document.getElementById('god-reports-col')) return;
+    const col = document.createElement('div');
+    col.id = 'god-reports-col';
+    col.style.cssText = 'flex: 0 0 auto; width: 230px; background: rgba(0,0,0,0.55); padding: 6px; border-radius: 6px; border: 1px solid rgba(241,196,15,0.4); display:flex; flex-direction:column; min-height:0;';
+    col.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-weight:bold; font-size:9.5px; color:#f1c40f; text-transform:uppercase; letter-spacing:0.5px;">🚩 Reportes</span>
+            <button id="god-reports-refresh" style="background:none; border:none; color:#f1c40f; cursor:pointer; font-size:11px;">↻</button>
+        </div>
+        <div id="god-reports-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; font-family:sans-serif;">Cargando...</div>`;
+    content.appendChild(col);
+    const rb = col.querySelector('#god-reports-refresh');
+    if (rb) rb.addEventListener('click', requestAdminReports);
+}
+window.renderAdminReports = function (reports) {
+    buildAdminReportsPanel();
+    const list = document.getElementById('god-reports-list');
+    if (!list) return;
+    if (!reports || reports.length === 0) { list.innerHTML = '<div style="font-size:9px;color:#888;">Sin reportes.</div>'; return; }
+    list.innerHTML = '';
+    reports.forEach(r => {
+        const el = document.createElement('div');
+        el.style.cssText = 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:5px; padding:5px; font-size:9px; color:#ddd;';
+        const d = r.date ? new Date(r.date).toLocaleString() : '';
+        const reviewed = r.status === 'reviewed';
+        el.innerHTML = `<div style="color:#f1c40f; font-weight:bold;">${(r.reason || '').toUpperCase()}${reviewed ? ' · ✓' : ''}</div>
+            <div><span class="rep-name" data-gid="${r.reporterGameId || ''}" title="Click para poner el ID en Target" style="color:#3498db; cursor:pointer; font-weight:bold;">${r.reporterName || r.reporterGameId || '?'}</span>
+            <span style="color:#888;">→</span>
+            <span class="rep-name" data-gid="${r.targetGameId || ''}" title="Click para poner el ID en Target" style="color:#38ef7d; cursor:pointer; font-weight:bold;">${r.targetName || r.targetGameId || '?'}</span></div>
+            ${r.message ? `<div style="color:#aaa; font-style:italic;">"${r.message}"</div>` : ''}
+            <div style="color:#666; font-size:8px;">${d}</div>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+                <button data-act="reviewed" style="flex:1; font-size:8px; padding:2px; border:none; border-radius:3px; background:${reviewed ? '#27ae60' : '#3498db'}; color:white; cursor:pointer;">${reviewed ? '✓ Revisado' : 'Revisar'}</button>
+                <button data-act="delete" style="flex:1; font-size:8px; padding:2px; border:none; border-radius:3px; background:#e74c3c; color:white; cursor:pointer;">Borrar</button>
+            </div>`;
+        el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+            if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(MessagePack.encode({ type: 'resolve_report', id: r.id, action: b.dataset.act }));
+            }
+        }));
+        el.querySelectorAll('.rep-name').forEach(sp => sp.addEventListener('click', () => {
+            const gid = sp.dataset.gid;
+            if (!gid) return;
+            const field = document.getElementById('admin-target-id');
+            if (field) { field.value = gid; field.dispatchEvent(new Event('input', { bubbles: true })); }
+        }));
+        list.appendChild(el);
+    });
+};
+buildAdminReportsPanel();
+
 // Modal lifecycle & controls
 if (appGodPanel && godModal && closeGodModal) {
 
@@ -636,6 +697,7 @@ if (appGodPanel && godModal && closeGodModal) {
         godModal.style.display = 'flex';
         if (typeof clampGodModalToViewport === 'function') clampGodModalToViewport();
         requestGodOnlinePlayers();
+        requestAdminReports();
         if (godRefreshTimer) clearInterval(godRefreshTimer);
         godRefreshTimer = setInterval(() => {
             if (godModal.style.display !== 'none') {

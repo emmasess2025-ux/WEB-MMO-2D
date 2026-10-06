@@ -181,17 +181,17 @@ function buildItemViewModel(itemId) {
     if (!rawData) return null;
 
     const viewModel = {
-        name: rawData.name || "Objeto Desconocido",
+        name: rawData.name || ((typeof t === 'function') ? t('shop.name.unknown') : "Objeto Desconocido"),
         price: rawData.price || 0,
         uiStats: [] // Aquí se guardará la lista procesada para el Modal
     };
 
     // 🛑 EL FIX: Quitamos el "Alcance" para ahorrar espacio
     const rules = {
-        damage: { label: "Daño", icon: "", suffix: "" },
-        fireRate: { label: "Cadencia", icon: "", suffix: "ms" },
-        magSize: { label: "Cargador", icon: "", suffix: " bls" },
-        reloadTime: { label: "Recarga", icon: "", suffix: "ms" }
+        damage: { labelKey: "shop.stat.damage", icon: "", suffix: "" },
+        fireRate: { labelKey: "shop.stat.fireRate", icon: "", suffix: "ms" },
+        magSize: { labelKey: "shop.stat.magSize", icon: "", suffix: " bls" },
+        reloadTime: { labelKey: "shop.stat.reloadTime", icon: "", suffix: "ms" }
     };
 
     // LÓGICA RETROCOMPATIBLE: 
@@ -202,7 +202,7 @@ function buildItemViewModel(itemId) {
         if (statsSource[key] !== undefined) {
             viewModel.uiStats.push({
                 icon: rule.icon,
-                label: rule.label,
+                label: (typeof t === 'function') ? t(rule.labelKey) : rule.labelKey,
                 value: `${statsSource[key]}${rule.suffix}`
             });
         }
@@ -275,7 +275,7 @@ closeShopModal.addEventListener('click', () => {
 buyItemBtn.addEventListener('click', () => {
     if (currentShopItemId && ws.readyState === WebSocket.OPEN) {
         // Cambiar visualmente el botón para dar feedback
-        buyItemBtn.innerText = "Procesando...";
+            buyItemBtn.innerText = (typeof t === 'function') ? t('shop.processing') : "Procesando...";
         buyItemBtn.style.background = "#f1c40f";
 
         // Pedirle al servidor que ejecute el cobro

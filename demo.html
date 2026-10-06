@@ -41,9 +41,9 @@
             <img src="lp/aargon.png" alt="Argon MMO Logo"
                 style="width: 500px; max-width: 90vw; margin-bottom: 50px; animation: pulseLogo 3.5s infinite ease-in-out; image-rendering: pixelated;">
 
-            <h3 id="loading-text"
-                style="color: #d1383b; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 4px; font-size: 15px; text-shadow: 0 2px 15px rgba(209, 56, 59, 0.7); font-weight: 800;">
-                INICIALIZANDO MOTOR...</h3>
+        <h3 id="loading-text" data-i18n="loading.initial"
+            style="color: #d1383b; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 4px; font-size: 15px; text-shadow: 0 2px 15px rgba(209, 56, 59, 0.7); font-weight: 800;">
+            INICIALIZANDO MOTOR...</h3>
 
             <div
                 style="width: 400px; height: 8px; background: rgba(0,0,0,0.8); border: 1px solid rgba(209, 56, 59, 0.5); border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.9);">
@@ -58,7 +58,7 @@
             <button id="play-now-btn"
                 style="margin-top: 35px; padding: 14px 46px; border: 1px solid rgba(209, 56, 59, 0.5); border-radius: 10px; background: linear-gradient(90deg, #d1383b, #c7734a, #245f46); color: #ffffff; font-family: sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; cursor: pointer; box-shadow: 0 0 25px rgba(199, 115, 74, 0.8); text-shadow: 0 2px 8px rgba(0,0,0,0.6); transform: translateY(14px) scale(0.96); transition: transform 0.6s cubic-bezier(.22,1,.36,1), box-shadow 0.2s ease;"
                 onmouseover="this.style.boxShadow='0 0 35px rgba(199, 115, 74, 1)';"
-                onmouseout="this.style.boxShadow='0 0 25px rgba(199, 115, 74, 0.8)';">
+                onmouseout="this.style.boxShadow='0 0 25px rgba(199, 115, 74, 0.8)';" data-i18n="loading.play">
                 PLAY NOW</button>
         </div>
     </div>
@@ -78,13 +78,15 @@
 
     <div id="safezone-ui"
         style="display: none; opacity: 0; transition: opacity 0.6s ease; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; width: max-content; max-width: 90vw;">
-        <div
-            style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span id="safezone-text"
-                style="color: #fff; font-size: 11px; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px; text-shadow: 1.5px 1.5px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 3px 5px rgba(0,0,0,0.8); white-space: nowrap;">ZONA SEGURA</span>
+                style="color: #fff; font-size: 11px; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px; text-shadow: 1.5px 1.5px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 3px 5px rgba(0,0,0,0.8); white-space: nowrap;">ZONA
+                SEGURA</span>
             <span id="safezone-desc"
-                style="color: rgba(255,255,255,0.75); font-size: 10px; font-family: sans-serif; text-shadow: 1px 1px 0 #000; white-space: nowrap;">No puedes recibir daño</span>
-            <img id="safezone-icon" src="items/icons/no-pvp.png" class="pixel-icon" style="width: 16px; height: 16px;" alt="">
+                style="color: rgba(255,255,255,0.75); font-size: 10px; font-family: sans-serif; text-shadow: 1px 1px 0 #000; white-space: nowrap;">No
+                puedes recibir daño</span>
+            <img id="safezone-icon" src="items/icons/no-pvp.png" class="pixel-icon" style="width: 16px; height: 16px;"
+                alt="">
         </div>
     </div>
 
@@ -171,17 +173,21 @@
     <div id="disconnect-screen"
         style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.2); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif; backdrop-filter: blur(8px);">
         <h1
-            style="color: #e74c3c; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);">
+            style="color: #e74c3c; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);"
+            data-i18n="disconnect.title">
             Connection Lost</h1>
         <p
-            style="font-size: 18px; margin-bottom: 25px; color: #ecf0f1; text-align: center; max-width: 500px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+            style="font-size: 18px; margin-bottom: 25px; color: #ecf0f1; text-align: center; max-width: 500px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);"
+            data-i18n="disconnect.text">
             The server has gone to sleep due to inactivity.
         </p>
         <button onclick="location.reload()"
-            style="padding: 12px 24px; font-size: 16px; font-weight: bold; background: #2ecc71; color: #000; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">
+            style="padding: 12px 24px; font-size: 16px; font-weight: bold; background: #2ecc71; color: #000; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;"
+            data-i18n="disconnect.reload">
             Reload and Wake Server
         </button>
-        <p style="font-size: 13px; color: #bdc3c7; margin-top: 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+        <p style="font-size: 13px; color: #bdc3c7; margin-top: 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);"
+            data-i18n="disconnect.hint">
             (It may take up to 30-50 seconds to wake up)
         </p>
     </div>
@@ -194,30 +200,33 @@
                     alt="Cerrar"></button>
 
             <div id="auth-login-view">
-                <h2 style="margin-top: 0; font-family: sans-serif;">Welcome</h2>
+                <h2 style="margin-top: 0; font-family: sans-serif;" data-i18n="auth.welcome">Welcome</h2>
                 <div id="auth-message"></div>
 
-                <input type="email" id="auth-email" placeholder="Email Address" autocomplete="off">
-                <input type="text" id="auth-username" placeholder="Display Name (For Sign Up)">
-                <input type="password" id="auth-password" placeholder="Password">
+                <input type="email" id="auth-email" placeholder="Email Address" autocomplete="off"
+                    data-i18n-placeholder="auth.email">
+                <input type="text" id="auth-username" placeholder="Display Name (For Sign Up)"
+                    data-i18n-placeholder="auth.username">
+                <input type="password" id="auth-password" placeholder="Password"
+                    data-i18n-placeholder="auth.password">
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="login-btn" class="auth-btn">Log In</button>
-                    <button id="register-btn" class="auth-btn" style="background: rgba(255,255,255,0.1);">Sign
-                        Up</button>
+                    <button id="login-btn" class="auth-btn" data-i18n="auth.login">Log In</button>
+                    <button id="register-btn" class="auth-btn" style="background: rgba(255,255,255,0.1);"
+                        data-i18n="auth.signup">Sign Up</button>
                 </div>
             </div>
 
             <div id="auth-signout-view" style="display: none;">
-                <h2 style="margin-top: 0; font-family: sans-serif;">Sign Out</h2>
-                <p style="color: white; font-size: 15px; margin-bottom: 20px;">Are you sure you want to sign out? Your
-                    location will be saved securely.</p>
+                <h2 style="margin-top: 0; font-family: sans-serif;" data-i18n="auth.signoutTitle">Sign Out</h2>
+                <p style="color: white; font-size: 15px; margin-bottom: 20px;" data-i18n="auth.signoutText">Are you sure
+                    you want to sign out? Your location will be saved securely.</p>
 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="confirm-signout-btn" class="auth-btn" style="background: rgba(255, 107, 107, 0.5);">Yes,
-                        Sign Out</button>
-                    <button id="cancel-signout-btn" class="auth-btn"
-                        style="background: rgba(255,255,255,0.1);">Cancel</button>
+                    <button id="confirm-signout-btn" class="auth-btn" style="background: rgba(255, 107, 107, 0.5);"
+                        data-i18n="auth.signoutConfirm">Yes, Sign Out</button>
+                    <button id="cancel-signout-btn" class="auth-btn" style="background: rgba(255,255,255,0.1);"
+                        data-i18n="auth.cancel">Cancel</button>
                 </div>
             </div>
 
@@ -228,7 +237,8 @@
         <button id="chat-toggle">
             <img src="items/icons/Message-Three-Dots.png" class="pixel-icon" alt="Chat">
         </button>
-        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off"
+            data-i18n-placeholder="chat.placeholder">
         <button id="send-btn">
             <img src="items/icons/Right-Arrow.png" class="pixel-icon" alt="Send">
         </button>
@@ -283,43 +293,44 @@
             <div class="app-bg" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
                 <img src="items/icons/door.png" class="pixel-icon" alt="Login">
             </div>
-            <span>Log In</span>
+            <span data-i18n="hud.login">Log In</span>
         </div>
 
         <div class="app-icon" id="app-inventory">
             <div class="app-bg" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                 <img src="items/icons/Bag.png" class="pixel-icon" alt="Bag">
             </div>
-            <span>Bag</span>
+            <span data-i18n="hud.bag">Bag</span>
         </div>
 
         <div class="app-icon" id="app-friends">
             <div class="app-bg" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
                 <img src="items/icons/friends.png" class="pixel-icon" alt="Friends">
             </div>
-            <span>Friends</span>
+            <span data-i18n="hud.friends">Friends</span>
         </div>
 
 
         <div class="app-icon" id="app-battlepass">
             <div class="app-bg" style="background: linear-gradient(135deg, #ffcc00 0%, #ff6600 100%);">
-                <img src="items/icons/argem.png" class="pixel-icon" alt="Battle Pass" style="filter: hue-rotate(45deg);">
+                <img src="items/icons/argem.png" class="pixel-icon" alt="Battle Pass"
+                    style="filter: hue-rotate(45deg);">
             </div>
-            <span>Pass</span>
+            <span data-i18n="hud.pass">Pass</span>
         </div>
 
         <div class="app-icon" id="open-squads-btn">
             <div class="app-bg" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
                 <img src="items/icons/squads.png" class="pixel-icon" alt="Squads">
             </div>
-            <span>Squads</span>
+            <span data-i18n="hud.squads">Squads</span>
         </div>
 
         <div class="app-icon" id="app-house">
             <div class="app-bg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <img src="items/icons/house.png" class="pixel-icon" alt="House">
             </div>
-            <span>House</span>
+            <span data-i18n="hud.house">House</span>
         </div>
 
         <div class="app-icon" id="app-updates">
@@ -327,21 +338,21 @@
                 style="background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); box-shadow: 0 0 10px rgba(0, 114, 255, 0.5);">
                 <img src="items/icons/info.png" class="pixel-icon" alt="Updates">
             </div>
-            <span>Updates</span>
+            <span data-i18n="hud.updates">Updates</span>
         </div>
 
         <div class="app-icon" id="app-feedback">
             <div class="app-bg" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
                 <img src="items/icons/Message-Three-Dots.png" class="pixel-icon" alt="Feedback">
             </div>
-            <span style="color: #ff9a9e;">Feedback</span>
+            <span style="color: #ff9a9e;" data-i18n="hud.feedback">Feedback</span>
         </div>
 
         <div class="app-icon" id="app-guide">
             <div class="app-bg" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
                 <img src="items/icons/question.png" class="pixel-icon" alt="Guide">
             </div>
-            <span>Guide</span>
+            <span data-i18n="hud.guide">Guide</span>
         </div>
 
         <div class="app-icon" id="app-discord">
@@ -369,7 +380,7 @@
             <div class="app-bg" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <img src="items/icons/edit-mode.png" class="pixel-icon" alt="Edit Mode">
             </div>
-            <span>Edit Mode</span>
+            <span data-i18n="hud.editMode">Edit Mode</span>
         </div>
 
         <div class="app-icon" id="app-god-panel" style="display: none;">
@@ -377,14 +388,14 @@
                 style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 0 15px #38ef7d;">
                 <img src="items/icons/admin.png" class="pixel-icon" alt="God Panel">
             </div>
-            <span style="color: #38ef7d;">God Panel</span>
+            <span style="color: #38ef7d;" data-i18n="hud.godPanel">God Panel</span>
         </div>
         <div class="app-icon" id="app-skel" style="display: none;">
             <div class="app-bg"
                 style="background: linear-gradient(135deg, #8e44ad 0%, #c39bd3 100%); box-shadow: 0 0 15px #8e44ad;">
                 <img src="items/icons/skel.png" class="pixel-icon" alt="Skel Edit">
             </div>
-            <span style="color: #c39bd3;">Skel Edit</span>
+            <span style="color: #c39bd3;" data-i18n="hud.skelEdit">Skel Edit</span>
         </div>
 
         <div class="app-icon" id="app-aargscript" style="display: none;">
@@ -687,8 +698,12 @@
 
     <div id="map-modal" style="display: none;">
         <div id="map-container" style="position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 10px;">
-                <h3 style="margin: 0; color: white; font-family: sans-serif; font-size: 14px; display: flex; align-items: center; gap: 8px;">World Map <span id="map-player-count" style="color: #aaa; font-size: 11px; font-weight: bold;">Players: 1</span></h3>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 10px;">
+                <h3
+                    style="margin: 0; color: white; font-family: sans-serif; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    World Map <span id="map-player-count"
+                        style="color: #aaa; font-size: 11px; font-weight: bold;">Players: 1</span></h3>
                 <button id="close-map"
                     style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 18px; height: 18px;"
@@ -715,7 +730,7 @@
     <div id="profile-modal"
         style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.05); justify-content: center; align-items: center; z-index: 3700;">
         <div
-            style="width: 500px; height: 300px; background: rgba(30, 30, 30, 0); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            style="width: 600px; height: 350px; background: rgba(30, 30, 30, 0); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
 
             <button id="close-profile"
                 style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; z-index: 10; transition: 0.2s;">
@@ -763,16 +778,17 @@
 
                     <div
                         style="background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); color: #f1c40f; font-weight: bold; display: flex; align-items: center; gap: 6px;">
-                        <span id="profile-coins-display">0</span><img src="items/icons/aargon-green.png" class="pixel-icon" style="width: 14px; height: 14px; vertical-align: -2px;" alt="">
+                        <span id="profile-coins-display">0</span><img src="items/icons/aargon-green.png"
+                            class="pixel-icon" style="width: 14px; height: 14px; vertical-align: -2px;" alt="">
                     </div>
 
                     <div
                         style="background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); color: #eee; font-family: sans-serif; font-size: 12px; display: flex; gap: 10px; width: 100%; box-sizing: border-box; justify-content: space-between; margin-top: 5px;">
-                        <div>Kills: <span id="profile-kills-display" style="color:#e74c3c; font-weight:bold;">0</span>
+                        <div><span data-i18n="profile.kills">Kills:</span> <span id="profile-kills-display" style="color:#e74c3c; font-weight:bold;">0</span>
                         </div>
-                        <div>Losses: <span id="profile-losses-display" style="color:#aaa; font-weight:bold;">0</span>
+                        <div><span data-i18n="profile.losses">Losses:</span> <span id="profile-losses-display" style="color:#aaa; font-weight:bold;">0</span>
                         </div>
-                        <div title="Kill Ratio (Kills / Losses)">KR: <span id="profile-kr-display"
+                        <div title="Kill Ratio (Kills / Losses)"><span data-i18n="profile.kr">KR:</span> <span id="profile-kr-display"
                                 style="color:#3498db; font-weight:bold;">0.00</span></div>
                     </div>
                 </div>
@@ -780,21 +796,26 @@
                 <div id="profile-main-actions"
                     style="display: none; width: 100%; max-width: 160px; gap: 6px; margin-top: 15px; z-index: 5;">
                     <button id="add-friend-btn"
-                        style="flex: 1; padding: 5px; border-radius: 5px; border: none; background: #3498db; color: white; font-weight: bold; cursor: pointer; font-size: 11px; font-family: sans-serif;">
+                        style="flex: 1; padding: 5px; border-radius: 5px; border: none; background: #3498db; color: white; font-weight: bold; cursor: pointer; font-size: 11px; font-family: sans-serif;"
+                        data-i18n="profile.addFriend">
                         Add Friend</button>
                     <button id="profile-message-btn"
-                        style="width: 28px; padding: 5px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; cursor: pointer; font-size: 12px; display: flex; justify-content: center; align-items: center;"><img src="items/icons/Message-Three-Dots.png" class="pixel-icon" style="width: 14px; height: 14px;" alt="Mensaje"></button>
+                        style="width: 28px; padding: 5px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; cursor: pointer; font-size: 12px; display: flex; justify-content: center; align-items: center;"><img
+                            src="items/icons/Message-Three-Dots.png" class="pixel-icon"
+                            style="width: 14px; height: 14px;" alt="Mensaje"></button>
                 </div>
 
                 <div id="profile-other-controls" style="display: none; flex: 1;"></div>
 
                 <span id="toggle-more-options-btn"
-                    style="display: none; position: absolute; bottom: 25px; right: 25px; color: rgba(255,255,255,0.65); cursor: pointer; font-size: 14px; font-weight: bold; font-family: sans-serif; text-decoration: none; transition: 0.2s; user-select: none;">
+                    style="display: none; position: absolute; bottom: 25px; right: 25px; color: rgba(255,255,255,0.65); cursor: pointer; font-size: 14px; font-weight: bold; font-family: sans-serif; text-decoration: none; transition: 0.2s; user-select: none;"
+                    data-i18n="profile.moreOptions">
                     More Options
                 </span>
 
                 <button id="profile-options-btn"
-                    style="display: none; position: absolute; bottom: 25px; right: 25px; padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); color: white; font-weight: bold; cursor: pointer; transition: background 0.2s;">
+                    style="display: none; position: absolute; bottom: 25px; right: 25px; padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); color: white; font-weight: bold; cursor: pointer; transition: background 0.2s;"
+                    data-i18n="profile.options">
                     Options</button>
             </div>
         </div>
@@ -804,7 +825,7 @@
         style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;  justify-content: center; align-items: center; z-index: 3750;">
 
         <div
-            style="width: 500px; height: 300px; background: rgba(30, 30, 30, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            style="width: 500px; height: auto; min-height: 300px; max-height: 85vh; background: rgba(30, 30, 30, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
 
             <div
                 style="padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
@@ -812,21 +833,55 @@
                     style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; transition: 0.2s;">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 20px; height: 20px;"
                         alt="Cerrar"></button>
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white; letter-spacing: 1px;">
+                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white; letter-spacing: 1px;"
+                    data-i18n="profile.moreTitle">
                     Interacciones Adicionales</h3>
                 <div style="width: 24px;"></div>
             </div>
 
             <div
-                style="flex: 1; padding: 30px 60px; display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+                style="flex: 1; padding: 24px 60px; display: flex; flex-direction: column; justify-content: center; gap: 12px; overflow-y: auto;">
                 <button id="invite-squad-btn"
                     style="padding: 15px; background: rgba(155, 89, 182, 0.2); border: 1px solid #9b59b6; border-radius: 10px; color: white; cursor: pointer; transition: 0.2s; font-size: 15px; font-weight: bold; text-align: center; letter-spacing: 0.5px;">
                     Invitar al Clan</button>
+                <button id="report-player-btn"
+                    style="padding: 15px; background: rgba(241, 196, 15, 0.15); border: 1px solid #f1c40f; border-radius: 10px; color: #f1c40f; cursor: pointer; transition: 0.2s; font-size: 15px; font-weight: bold; text-align: center; letter-spacing: 0.5px;">
+                    Reportar jugador</button>
+                <button id="block-player-btn"
+                    style="padding: 15px; background: rgba(231, 76, 60, 0.15); border: 1px solid #e74c3c; border-radius: 10px; color: #ff6b6b; cursor: pointer; transition: 0.2s; font-size: 15px; font-weight: bold; text-align: center; letter-spacing: 0.5px;">
+                    Bloquear jugador</button>
                 <button
                     style="padding: 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #777; cursor: not-allowed; font-size: 15px; text-align: center; letter-spacing: 0.5px;">
                     Invitar a Casa</button>
             </div>
 
+        </div>
+    </div>
+
+    <div id="report-player-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; z-index: 3900; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);">
+        <div
+            style="width: 340px; max-width: 92vw; background: rgba(25,25,25,0.97); border: 1.5px solid rgba(241,196,15,0.6); border-radius: 16px; padding: 22px; color: white; font-family: sans-serif;">
+            <h3 style="margin:0 0 12px 0; color:#f1c40f; text-align:center; font-size:17px;">🚩 Reportar jugador</h3>
+            <p id="report-player-name" style="font-size:12px; color:#aaa; text-align:center; margin:0 0 12px 0;"></p>
+            <label style="font-size:12px; color:#aaa;">Motivo:</label>
+            <select id="report-reason-select"
+                style="width:100%; margin-top:6px; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.15);">
+                <option value="spam">Spam</option>
+                <option value="acoso">Acoso / insultos</option>
+                <option value="lenguaje">Lenguaje inapropiado</option>
+                <option value="trampa">Trampa / hack</option>
+                <option value="otro">Otro</option>
+            </select>
+            <label style="font-size:12px; color:#aaa; display:block; margin-top:12px;">Detalle (opcional):</label>
+            <textarea id="report-message-input" rows="3" maxlength="300"
+                style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); color:white; border:1px solid rgba(255,255,255,0.15); resize:none; font-family:sans-serif;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button id="cancel-report-btn"
+                    style="flex:1; padding:11px; border-radius:10px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#ddd; font-weight:700; cursor:pointer;">Cancelar</button>
+                <button id="confirm-report-btn"
+                    style="flex:1; padding:11px; border-radius:10px; border:none; background:#f1c40f; color:#111; font-weight:800; cursor:pointer;">Reportar</button>
+            </div>
         </div>
     </div>
 
@@ -838,7 +893,7 @@
 
             <div
                 style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: rgba(0,0,0,0.3);">
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white;">Opciones</h3>
+                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white;" data-i18n="options.title">Opciones</h3>
                 <button id="close-options-modal"
                     style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0;">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 20px; height: 20px;"
@@ -847,11 +902,11 @@
 
             <div
                 style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; font-family: sans-serif;">
-                <button class="op-tab-btn active" data-target="tab-info"
+                <button class="op-tab-btn active" data-target="tab-info" data-i18n="options.tabInfo"
                     style="flex: 1; padding: 12px 5px; background: rgba(255,255,255,0.1); border: none; color: white; cursor: pointer; border-bottom: 2px solid #3498db; font-weight: bold; font-size: 13px;">Info</button>
-                <button class="op-tab-btn" data-target="tab-looks"
+                <button class="op-tab-btn" data-target="tab-looks" data-i18n="options.tabLooks"
                     style="flex: 1; padding: 12px 5px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px;">Apariencia</button>
-                <button class="op-tab-btn" data-target="tab-config"
+                <button class="op-tab-btn" data-target="tab-config" data-i18n="options.tabConfig"
                     style="flex: 1; padding: 12px 5px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px;">Ajustes</button>
             </div>
 
@@ -898,28 +953,38 @@
                 <div id="tab-config" class="op-tab-content"
                     style="display: none; padding-top: 10px; font-family: sans-serif; text-align: left;">
 
-                    <h4 style="color: #3498db; margin: 0 0 15px 0;">Controles Móviles</h4>
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #aaa; font-size: 12px;" data-i18n="settings.language">Idioma</label>
+                        <select id="sel-language"
+                            style="width: 100%; padding: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; margin-top: 5px; outline: none; font-family: sans-serif;">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+
+                    <h4 data-i18n="settings.mobileControls" style="color: #3498db; margin: 0 0 15px 0;">Controles Móviles</h4>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="color: #aaa; font-size: 12px;">Tamaño Joysticks: <span id="val-joy-size"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.joySize">Tamaño Joysticks:</span> <span id="val-joy-size"
                                 style="color:white; font-weight:bold;">120</span>px</label>
                         <input type="range" id="sl-joy-size" min="80" max="200" value="120" style="width: 100%;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="color: #aaa; font-size: 12px;">Separación Lateral (X): <span id="val-joy-x"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.joyX">Separación Lateral (X):</span> <span id="val-joy-x"
                                 style="color:white; font-weight:bold;">30</span>px</label>
                         <input type="range" id="sl-joy-x" min="10" max="150" value="30" style="width: 100%;">
                     </div>
 
                     <div style="margin-bottom: 25px;">
-                        <label style="color: #aaa; font-size: 12px;">Altura Base (Y): <span id="val-joy-y"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.joyY">Altura Base (Y):</span> <span id="val-joy-y"
                                 style="color:white; font-weight:bold;">30</span>px</label>
                         <input type="range" id="sl-joy-y" min="10" max="150" value="30" style="width: 100%;">
                     </div>
 
                     <h4
-                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;"
+                        data-i18n="settings.interface">
                         Interfaz</h4>
 
                     <div style="margin-bottom: 15px;">
@@ -927,12 +992,12 @@
                             style="color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="chk-show-nametags" checked
                                 style="width: 18px; height: 18px; accent-color: #3498db;">
-                            Mostrar Nombres y Clanes
+                            <span data-i18n="settings.showNametags">Mostrar Nombres y Clanes</span>
                         </label>
                     </div>
 
                     <div style="margin-bottom: 10px;">
-                        <label style="color: #aaa; font-size: 12px;">Opacidad de Nombres: <span id="val-name-opacity"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.nameOpacity">Opacidad de Nombres:</span> <span id="val-name-opacity"
                                 style="color:white; font-weight:bold;">85</span>%</label>
                         <input type="range" id="sl-name-opacity" min="10" max="100" value="85" style="width: 100%;">
                     </div>
@@ -942,28 +1007,29 @@
                             style="color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="chk-show-perf"
                                 style="width: 18px; height: 18px; accent-color: #3498db;">
-                            Mostrar Monitor de Rendimiento (FPS)
+                            <span data-i18n="settings.showPerf">Mostrar Monitor de Rendimiento (FPS)</span>
                         </label>
                     </div>
 
                     <div style="margin-bottom: 10px;">
-                        <label style="color: #aaa; font-size: 12px;">Transparencia del Monitor: <span
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.perfOpacity">Transparencia del Monitor:</span> <span
                                 id="val-perf-opacity" style="color:white; font-weight:bold;">85</span>%</label>
                         <input type="range" id="sl-perf-opacity" min="10" max="100" value="85" style="width: 100%;">
                     </div>
 
                     <!-- AÑADIR ESTO AL FINAL DEL TAB-CONFIG -->
                     <h4
-                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;"
+                        data-i18n="settings.weather">
                         Clima y Entorno</h4>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="color: #aaa; font-size: 12px;">Ciclo de Día / Noche:</label>
+                        <label style="color: #aaa; font-size: 12px;" data-i18n="settings.timeMode">Ciclo de Día / Noche:</label>
                         <select id="sel-time-mode"
                             style="width: 100%; padding: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; margin-top: 5px; outline: none; font-family: sans-serif;">
-                            <option value="auto">Auto (Hora Real)</option>
-                            <option value="day">Siempre Día</option>
-                            <option value="night">Siempre Noche</option>
+                            <option value="auto" data-i18n="settings.timeAuto">Auto (Hora Real)</option>
+                            <option value="day" data-i18n="settings.timeDay">Siempre Día</option>
+                            <option value="night" data-i18n="settings.timeNight">Siempre Noche</option>
                         </select>
                     </div>
 
@@ -972,35 +1038,37 @@
                             style="color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="chk-rain"
                                 style="width: 18px; height: 18px; accent-color: #3498db;">
-                            Activar Lluvia
+                            <span data-i18n="settings.rain">Activar Lluvia</span>
                         </label>
                     </div>
 
                     <!-- REMPLACE THE GRAPHICS SECTION WITH THIS -->
                     <h4
-                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;"
+                        data-i18n="settings.graphics">
                         Mejoras Gráficas (FX)</h4>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="color: #aaa; font-size: 12px;">Intensidad Bloom: <span id="val-fx-bloom"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.fxBloom">Intensidad Bloom:</span> <span id="val-fx-bloom"
                                 style="color:white; font-weight:bold;">0</span>%</label>
                         <input type="range" id="sl-fx-bloom" min="0" max="100" value="0" style="width: 100%;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="color: #aaa; font-size: 12px;">Gloom / Glow (Atmósfera): <span id="val-fx-gloom"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.fxGloom">Gloom / Glow (Atmósfera):</span> <span id="val-fx-gloom"
                                 style="color:white; font-weight:bold;">0</span>%</label>
                         <input type="range" id="sl-fx-gloom" min="0" max="100" value="0" style="width: 100%;">
                     </div>
 
                     <div style="margin-bottom: 25px;">
-                        <label style="color: #aaa; font-size: 12px;">Viñeta Oscura: <span id="val-fx-vignette"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.fxVignette">Viñeta Oscura:</span> <span id="val-fx-vignette"
                                 style="color:white; font-weight:bold;">0</span>%</label>
                         <input type="range" id="sl-fx-vignette" min="0" max="100" value="0" style="width: 100%;">
                     </div>
 
                     <h4
-                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                        style="color: #3498db; margin: 0 0 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;"
+                        data-i18n="settings.audio">
                         Audio y Música</h4>
 
                     <div style="margin-bottom: 12px;">
@@ -1008,18 +1076,19 @@
                             style="color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="chk-bgm-enabled" checked
                                 style="width: 18px; height: 18px; accent-color: #3498db;">
-                            Música de Fondo (BGM)
+                            <span data-i18n="settings.bgm">Música de Fondo (BGM)</span>
                         </label>
                     </div>
 
                     <div style="margin-bottom: 25px;">
-                        <label style="color: #aaa; font-size: 12px;">Volumen Música: <span id="val-bgm-volume"
+                        <label style="color: #aaa; font-size: 12px;"><span data-i18n="settings.bgmVolume">Volumen Música:</span> <span id="val-bgm-volume"
                                 style="color:white; font-weight:bold;">15</span>%</label>
                         <input type="range" id="sl-bgm-volume" min="0" max="100" value="15" style="width: 100%;">
                     </div>
                     <!-- RENDIMIENTO: nueva sección -->
                     <h4
-                        style="color:#e74c3c; margin:0 0 15px 0; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                        style="color:#e74c3c; margin:0 0 15px 0; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;"
+                        data-i18n="settings.performance">
                         Rendimiento
                     </h4>
 
@@ -1072,8 +1141,47 @@
                         style="background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:10px;font-size:11px;color:#e74c3c;margin-bottom:8px;display:none;">
                     </div>
 
+                    <!-- ⚠️ Zona de peligro -->
+                    <div style="margin-top:24px; border-top:1px solid rgba(231,76,60,0.35); padding-top:16px;">
+                        <h4 style="color:#e74c3c; margin:0 0 6px 0; font-size:14px;" data-i18n="settings.dangerZone">Zona de peligro</h4>
+                        <p style="color:#888; font-size:11px; margin:0 0 10px 0; line-height:1.4;">Eliminar tu cuenta borra
+                            permanentemente tu progreso, inventario y datos. No se puede deshacer.</p>
+                        <button id="open-delete-account-btn"
+                            style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(231,76,60,0.7); background:rgba(231,76,60,0.15); color:#ff6b6b; font-weight:800; font-size:13px; cursor:pointer; transition:0.2s;"
+                            onmouseover="this.style.background='rgba(231,76,60,0.3)'"
+                            onmouseout="this.style.background='rgba(231,76,60,0.15)'">
+                            Eliminar cuenta</button>
+                    </div>
+
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-account-modal"
+        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; z-index: 4000; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);">
+        <div
+            style="width: 360px; max-width: 92vw; background: rgba(25, 15, 15, 0.97); border: 1.5px solid rgba(231,76,60,0.7); border-radius: 16px; padding: 24px; color: white; font-family: sans-serif; box-shadow: 0 10px 40px rgba(231,76,60,0.25);">
+            <h3 style="margin: 0 0 12px 0; color: #ff6b6b; text-align: center; font-size: 18px;">⚠️ Eliminar cuenta</h3>
+            <p style="font-size: 13px; color: #ccc; margin: 0 0 14px 0; line-height: 1.5;">
+                Esta acción es <b style="color:#ff6b6b;">permanente</b>. Se borrarán tu progreso, inventario, monedas y
+                datos de cuenta. No se puede deshacer.
+            </p>
+            <label style="font-size: 12px; color: #aaa;">Escribe <b style="color:#fff;">eliminar cuenta</b> para
+                confirmar:</label>
+            <input id="delete-account-confirm-input" type="text" autocomplete="off" placeholder="eliminar cuenta"
+                style="width: 100%; box-sizing: border-box; margin-top: 8px; padding: 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.5); color: white; outline: none; font-size: 15px;">
+            <label style="font-size: 12px; color: #aaa; display:block; margin-top: 14px;">Confirma tu
+                contraseña:</label>
+            <input id="delete-account-password-input" type="password" autocomplete="current-password"
+                placeholder="Tu contraseña"
+                style="width: 100%; box-sizing: border-box; margin-top: 8px; padding: 11px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.5); color: white; outline: none; font-size: 15px;">
+            <div style="display: flex; gap: 10px; margin-top: 18px;">
+                <button id="cancel-delete-account-btn"
+                    style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #ddd; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button id="confirm-delete-account-btn" disabled
+                    style="flex: 1; padding: 12px; border-radius: 10px; border: none; background: #e74c3c; color: white; font-weight: 800; cursor: not-allowed; opacity: 0.45;">Eliminar</button>
             </div>
         </div>
     </div>
@@ -1107,7 +1215,7 @@
         style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; z-index: 3000;">
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
-                <h3 class="squad-modal-title">Centro de Clanes & Squads</h3>
+                <h3 class="squad-modal-title" data-i18n="squad.title">Centro de Clanes & Squads</h3>
                 <button id="close-squad-main" class="squad-modal-close-btn" title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
                         alt="X">
@@ -1116,36 +1224,37 @@
 
             <div style="padding: 16px 24px 4px 24px; text-align: center;">
                 <p style="margin: 0; color: #aaa; font-size: 13px; font-family: inherit;">
-                    Únete a un gremio, compite en las <b>Turf Wars</b> territoriales y forja tu legado en Argon.
+                    <span data-i18n="squad.subtitleA">Únete a un gremio, compite en las</span> <b>Turf Wars</b>
+                    <span data-i18n="squad.subtitleB">territoriales y forja tu legado en Argon.</span>
                 </p>
             </div>
 
             <div class="squad-hub-grid">
                 <button id="btn-my-squads" class="squad-hub-card">
                     <div class="squad-hub-info">
-                        <h4>Mis Squads</h4>
-                        <p>Gestiona tus clanes, miembros y roles asignados.</p>
+                        <h4 data-i18n="squad.hubMy">Mis Squads</h4>
+                        <p data-i18n="squad.hubMyDesc">Gestiona tus clanes, miembros y roles asignados.</p>
                     </div>
                 </button>
 
                 <button id="btn-create-squad" class="squad-hub-card">
                     <div class="squad-hub-info">
-                        <h4>Crear Squad</h4>
-                        <p>Funda tu propio clan oficial por 2000 Argons.</p>
+                        <h4 data-i18n="squad.hubCreate">Crear Squad</h4>
+                        <p data-i18n="squad.hubCreateDesc">Funda tu propio clan oficial por 2000 Argons.</p>
                     </div>
                 </button>
 
                 <button id="btn-search-squads" class="squad-hub-card">
                     <div class="squad-hub-info">
-                        <h4>Buscar Squads</h4>
-                        <p>Explora clanes del reino y solicita tu ingreso.</p>
+                        <h4 data-i18n="squad.hubSearch">Buscar Squads</h4>
+                        <p data-i18n="squad.hubSearchDesc">Explora clanes del reino y solicita tu ingreso.</p>
                     </div>
                 </button>
 
                 <button id="btn-squad-leaderboard" class="squad-hub-card">
                     <div class="squad-hub-info">
-                        <h4>Puntajes & Ranking</h4>
-                        <p>Tabla de dominio territorial y bases en vivo.</p>
+                        <h4 data-i18n="squad.hubRank">Puntajes & Ranking</h4>
+                        <p data-i18n="squad.hubRankDesc">Tabla de dominio territorial y bases en vivo.</p>
                     </div>
                 </button>
             </div>
@@ -1158,9 +1267,9 @@
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
                 <button id="close-create-squad" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
-                <h3 class="squad-modal-title" style="color: #3498db;">Fundar Nuevo Clan</h3>
+                <h3 class="squad-modal-title" style="color: #3498db;" data-i18n="squad.create.title">Fundar Nuevo Clan</h3>
                 <button class="squad-modal-close-btn" onclick="document.getElementById('close-create-squad').click()"
                     title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
@@ -1173,19 +1282,22 @@
                 <div class="squad-studio-preview">
                     <div id="create-squad-logo-preview"
                         style="width: 96px; height: 96px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border-radius: 22px; display: flex; justify-content: center; align-items: center; font-size: 46px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.25); overflow: hidden;">
-                        
+
                     </div>
                     <div>
                         <h3 id="create-squad-name-preview"
-                            style="margin: 0; font-size: 17px; font-weight: bold; color: #f1c40f; text-transform: uppercase; word-break: break-word; letter-spacing: 0.5px;">
+                            style="margin: 0; font-size: 17px; font-weight: bold; color: #f1c40f; text-transform: uppercase; word-break: break-word; letter-spacing: 0.5px;"
+                            data-i18n="squad.create.previewName">
                             Tu Clan
                         </h3>
-                        <span style="display: block; font-size: 11px; color: #888; margin-top: 4px;">Fundador |
+                        <span style="display: block; font-size: 11px; color: #888; margin-top: 4px;"
+                            data-i18n="squad.create.previewInfo">Fundador |
                             1/25
                             Miembros</span>
                     </div>
                     <div
-                        style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #bbb;">
+                        style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #bbb;"
+                        data-i18n="squad.create.livePreview">
                         Vista previa en vivo
                     </div>
                 </div>
@@ -1193,27 +1305,30 @@
                 <!-- Columna Derecha: Formulario -->
                 <div class="squad-studio-form">
                     <div>
-                        <label class="squad-form-label">Nombre del Clan (Máx 20 letras)</label>
+                        <label class="squad-form-label" data-i18n="squad.nameLabel">Nombre del Clan (Máx 20 letras)</label>
                         <input type="text" id="new-squad-name" class="squad-input" placeholder="Ej. Conquistadores"
+                            data-i18n-placeholder="squad.create.namePlaceholder"
                             maxlength="20" autocomplete="off">
                     </div>
 
                     <div>
-                        <label class="squad-form-label">URL del Emblema / Logo (Opcional)</label>
+                        <label class="squad-form-label" data-i18n="squad.logoLabelOptional">URL del Emblema / Logo (Opcional)</label>
                         <input type="text" id="new-squad-logo" class="squad-input"
-                            placeholder="https://i.pinimg.com/... o enlace directo de imagen" autocomplete="off">
+                            placeholder="https://i.pinimg.com/... o enlace directo de imagen"
+                            data-i18n-placeholder="squad.create.logoPlaceholder" autocomplete="off">
                     </div>
 
                     <p id="squad-create-msg"
                         style="color: #ff6b6b; font-size: 13px; min-height: 18px; margin: 0; text-align: center; font-family: inherit;">
                     </p>
 
-                    <button id="confirm-create-squad" class="squad-primary-btn">
+                    <button id="confirm-create-squad" class="squad-primary-btn" data-i18n="squad.create.confirmBtn">
                         Fundar Clan — 2000 Argons
                     </button>
 
                     <!-- Botón Éxito -->
-                    <button id="go-to-new-squad-btn" class="squad-primary-btn" style="display: none;">
+                    <button id="go-to-new-squad-btn" class="squad-primary-btn" style="display: none;"
+                        data-i18n="squad.create.successBtn">
                         ¡Éxito! Ver mi Clan
                     </button>
                 </div>
@@ -1227,9 +1342,9 @@
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
                 <button id="close-edit-squad" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
-                <h3 class="squad-modal-title" style="color: #f1c40f;">Ajustes del Clan</h3>
+                <h3 class="squad-modal-title" style="color: #f1c40f;" data-i18n="squad.settings">Ajustes del Clan</h3>
                 <button class="squad-modal-close-btn" onclick="document.getElementById('close-edit-squad').click()"
                     title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
@@ -1242,14 +1357,15 @@
                 <div class="squad-studio-preview">
                     <div id="edit-squad-logo-preview"
                         style="width: 96px; height: 96px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 22px; display: flex; justify-content: center; align-items: center; font-size: 46px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.25); overflow: hidden;">
-                        
+
                     </div>
                     <div>
                         <h3 id="edit-squad-name-preview"
-                            style="margin: 0; font-size: 17px; font-weight: bold; color: #f1c40f; text-transform: uppercase; word-break: break-word; letter-spacing: 0.5px;">
+                            style="margin: 0; font-size: 17px; font-weight: bold; color: #f1c40f; text-transform: uppercase; word-break: break-word; letter-spacing: 0.5px;"
+                            data-i18n="squad.edit.previewName">
                             Nombre
                         </h3>
-                        <span style="display: block; font-size: 11px; color: #888; margin-top: 4px;">Ajustes de
+                        <span style="display: block; font-size: 11px; color: #888; margin-top: 4px;" data-i18n="squad.settings">Ajustes de
                             Clan</span>
                     </div>
                 </div>
@@ -1258,19 +1374,23 @@
                 <div class="squad-studio-form">
                     <div
                         style="background: rgba(241, 196, 15, 0.1); border: 1px solid rgba(241, 196, 15, 0.25); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #f1c40f; line-height: 1.4;">
-                        Cambiar el <b>logo es GRATIS</b>. Cambiar el <b>nombre cuesta 350</b>.
+                        <span data-i18n="squad.edit.infoA">Cambiar el</span> <b data-i18n="squad.edit.infoB">logo es
+                            GRATIS</b><span data-i18n="squad.edit.infoC">. Cambiar el</span> <b
+                            data-i18n="squad.edit.infoD">nombre cuesta 350</b><span data-i18n="squad.edit.infoE">.</span>
                     </div>
 
                     <div>
-                        <label class="squad-form-label">Nombre del Clan (Máx 20 letras)</label>
-                        <input type="text" id="edit-squad-name" class="squad-input"
-                            placeholder="Nombre (Máx 20 letras)" maxlength="20" autocomplete="off">
+                        <label class="squad-form-label" data-i18n="squad.nameLabel">Nombre del Clan (Máx 20 letras)</label>
+                        <input type="text" id="edit-squad-name" class="squad-input" placeholder="Nombre (Máx 20 letras)"
+                            data-i18n-placeholder="squad.edit.namePlaceholder"
+                            maxlength="20" autocomplete="off">
                     </div>
 
                     <div>
-                        <label class="squad-form-label">URL del Emblema / Logo</label>
+                        <label class="squad-form-label" data-i18n="squad.logoLabel">URL del Emblema / Logo</label>
                         <input type="text" id="edit-squad-logo" class="squad-input"
-                            placeholder="URL Logo Pinterest / Imgur" autocomplete="off">
+                            placeholder="URL Logo Pinterest / Imgur"
+                            data-i18n-placeholder="squad.edit.logoPlaceholder" autocomplete="off">
                     </div>
 
                     <p id="squad-edit-msg"
@@ -1278,7 +1398,8 @@
                     </p>
 
                     <button id="confirm-edit-squad" class="squad-primary-btn"
-                        style="background: linear-gradient(135deg, #f1c40f, #d4ac0d); color: black;">
+                        style="background: linear-gradient(135deg, #f1c40f, #d4ac0d); color: black;"
+                        data-i18n="squad.edit.save">
                         Guardar Cambios
                     </button>
                 </div>
@@ -1315,8 +1436,9 @@
             <div
                 style="flex: 1.5; display: flex; flex-direction: column; gap: 10px; padding-right: 15px; border-right: 1px solid rgba(255,255,255,0.1); justify-content: center;">
                 <div>
-                    <label class="squad-form-label">TÍTULO EN EL CLAN:</label>
+                    <label class="squad-form-label" data-i18n="squad.member.titleLabel">TÍTULO EN EL CLAN:</label>
                     <input type="text" id="sm-title" class="squad-input" placeholder="Ej. Mano Derecha" maxlength="15"
+                        data-i18n-placeholder="squad.member.titlePlaceholder"
                         autocomplete="off" style="padding: 9px 12px; font-size: 13px;">
                 </div>
 
@@ -1324,17 +1446,20 @@
                     <label
                         style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: sans-serif; font-size: 13px; color: #eee;">
                         <input type="checkbox" id="sm-can-invite"
-                            style="accent-color: #3498db; width: 16px; height: 16px;"> Puede Reclutar
+                            style="accent-color: #3498db; width: 16px; height: 16px;"> <span
+                            data-i18n="squad.member.canInvite">Puede Reclutar</span>
                     </label>
                     <label
                         style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: sans-serif; font-size: 13px; color: #eee;">
                         <input type="checkbox" id="sm-can-kick"
-                            style="accent-color: #e74c3c; width: 16px; height: 16px;"> Puede Expulsar
+                            style="accent-color: #e74c3c; width: 16px; height: 16px;"> <span
+                            data-i18n="squad.member.canKick">Puede Expulsar</span>
                     </label>
                     <label
                         style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: sans-serif; font-size: 13px; color: #eee;">
                         <input type="checkbox" id="sm-can-assign"
-                            style="accent-color: #f1c40f; width: 16px; height: 16px;"> Admin (Dar Roles)
+                            style="accent-color: #f1c40f; width: 16px; height: 16px;"> <span
+                            data-i18n="squad.member.canAssign">Admin (Dar Roles)</span>
                     </label>
                 </div>
             </div>
@@ -1342,10 +1467,12 @@
             <!-- COLUMNA 3: Botones (Derecha) -->
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center;">
                 <button id="sm-profile-btn"
-                    style="width: 100%; padding: 12px 10px; background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; font-weight: bold; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 13px; transition: 0.2s;">
+                    style="width: 100%; padding: 12px 10px; background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; font-weight: bold; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 13px; transition: 0.2s;"
+                    data-i18n="squad.member.viewProfile">
                     Ver Perfil</button>
                 <button id="sm-kick-btn"
-                    style="width: 100%; padding: 12px 10px; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; font-weight: bold; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 13px; transition: 0.2s;">
+                    style="width: 100%; padding: 12px 10px; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; font-weight: bold; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 13px; transition: 0.2s;"
+                    data-i18n="squad.member.kick">
                     Expulsar</button>
             </div>
         </div>
@@ -1357,9 +1484,9 @@
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
                 <button id="back-to-squad-main" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
-                <h3 class="squad-modal-title">Tus Afiliaciones</h3>
+                <h3 class="squad-modal-title" data-i18n="squad.list.title">Tus Afiliaciones</h3>
                 <button class="squad-modal-close-btn" onclick="document.getElementById('back-to-squad-main').click()"
                     title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
@@ -1379,9 +1506,11 @@
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
                 <button id="close-search-squads" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
-                <h3 class="squad-modal-title"><img src="items/icons/lupa.png" alt="" style="width: 16px; height: 16px; image-rendering: pixelated; image-rendering: crisp-edges; vertical-align: -3px;"> Explorar Clanes</h3>
+                <h3 class="squad-modal-title"><img src="items/icons/lupa.png" alt=""
+                        style="width: 16px; height: 16px; image-rendering: pixelated; image-rendering: crisp-edges; vertical-align: -3px;">
+                    <span data-i18n="squad.search.title">Explorar Clanes</span></h3>
                 <button class="squad-modal-close-btn" onclick="document.getElementById('close-search-squads').click()"
                     title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
@@ -1392,7 +1521,7 @@
             <div
                 style="padding: 14px 25px; background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.08);">
                 <input type="text" id="search-squads-input" class="squad-input" placeholder="Buscar por nombre..."
-                    autocomplete="off">
+                    data-i18n-placeholder="squad.search.placeholder" autocomplete="off">
             </div>
 
             <div id="squad-search-results-container"
@@ -1407,9 +1536,9 @@
         <div class="squad-standard-frame">
             <div class="squad-modal-header">
                 <button id="close-leaderboard-modal" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
-                <h3 class="squad-modal-title" style="color: #f1c40f;">Ranking Global</h3>
+                <h3 class="squad-modal-title" style="color: #f1c40f;" data-i18n="squad.lb.title">Ranking Global</h3>
                 <button class="squad-modal-close-btn"
                     onclick="document.getElementById('close-leaderboard-modal').click()" title="Cerrar">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 14px; height: 14px; opacity: 0.85;"
@@ -1418,16 +1547,16 @@
             </div>
 
             <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.35);">
-                <button class="lb-tab-btn active" data-target="live"
+                <button class="lb-tab-btn active" data-target="live" data-i18n="squad.lb.live"
                     style="flex: 1; padding: 13px 8px; background: rgba(241,196,15,0.12); border: none; color: #f1c40f; cursor: pointer; border-bottom: 2px solid #f1c40f; font-weight: bold; font-size: 13px; font-family: inherit; transition: 0.2s;">
                     En Vivo</button>
-                <button class="lb-tab-btn" data-target="daily"
+                <button class="lb-tab-btn" data-target="daily" data-i18n="squad.lb.daily"
                     style="flex: 1; padding: 13px 8px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px; font-family: inherit; transition: 0.2s;">
                     Diario</button>
-                <button class="lb-tab-btn" data-target="weekly"
+                <button class="lb-tab-btn" data-target="weekly" data-i18n="squad.lb.weekly"
                     style="flex: 1; padding: 13px 8px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px; font-family: inherit; transition: 0.2s;">
                     Semanal</button>
-                <button class="lb-tab-btn" data-target="total"
+                <button class="lb-tab-btn" data-target="total" data-i18n="squad.lb.total"
                     style="flex: 1; padding: 13px 8px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px; font-family: inherit; transition: 0.2s;">
                     Histórico</button>
             </div>
@@ -1454,7 +1583,8 @@
 
                 <button id="edit-squad-btn"
                     style="display: none; position: absolute; top: 15px; left: 15px; background: none; border: none; color: #f1c40f; font-size: 20px; cursor: pointer; text-shadow: 0 2px 5px black;"
-                    title="Ajustes del Clan"><img src="items/icons/settings.png" class="pixel-icon" style="width: 16px; height: 16px;" alt="Ajustes"></button>
+                    title="Ajustes del Clan" data-i18n-title="squad.settings"><img src="items/icons/settings.png" class="pixel-icon"
+                        style="width: 16px; height: 16px;" alt="Ajustes"></button>
 
                 <div id="my-squad-logo-container"
                     style="width: 92px; height: 92px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border-radius: 22px; display: flex; justify-content: center; align-items: center; font-size: 45px; margin-bottom: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.25); overflow: hidden;">
@@ -1465,7 +1595,7 @@
                     <h2 id="my-squad-title"
                         style="margin: 0 0 5px 0; font-family: inherit; font-size: 20px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; word-break: break-word;">
                         Cargando...</h2>
-                    <span id="my-squad-member-count"
+                    <span id="my-squad-member-count" data-i18n="squad.memberCount"
                         style="color: #aaa; font-size: 13px; font-family: inherit; margin-bottom: 20px;">0 / 25
                         Miembros</span>
                 </div>
@@ -1477,7 +1607,8 @@
                         style="display: none; flex: 1; padding: 10px 5px; border-radius: 8px; font-weight: bold; font-family: inherit; cursor: pointer; border: none; font-size: 11px; transition: 0.2s;"></button>
 
                     <button id="leave-squad-btn"
-                        style="display: none; flex: 1; padding: 10px 5px; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; font-size: 11px;">Abandonar</button>
+                        style="display: none; flex: 1; padding: 10px 5px; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; font-size: 11px;"
+                        data-i18n="squad.leave">Abandonar</button>
                 </div>
             </div>
 
@@ -1485,7 +1616,8 @@
             <div id="my-squad-members-panel"
                 style="flex: 1; display: flex; flex-direction: column; padding: 25px 20px 20px 20px; overflow: hidden; min-height: 0;">
                 <h3 id="my-squad-members-title"
-                    style="margin: 0 0 15px 5px; color: #3498db; font-family: inherit; font-size: 16px; font-weight: bold; flex-shrink: 0;">
+                    style="margin: 0 0 15px 5px; color: #3498db; font-family: inherit; font-size: 16px; font-weight: bold; flex-shrink: 0;"
+                    data-i18n="squad.membersTitle">
                     Miembros del Clan
                 </h3>
 
@@ -1503,7 +1635,7 @@
 
             <div
                 style="padding: 15px; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white;">Social</h3>
+                <h3 style="margin: 0; font-family: sans-serif; font-size: 18px; color: white;" data-i18n="friends.title">Social</h3>
                 <button id="close-friends-modal"
                     style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 20px; height: 20px;"
@@ -1511,10 +1643,10 @@
             </div>
 
             <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);">
-                <button class="fr-tab-btn active" data-target="tab-my-friends"
+                <button class="fr-tab-btn active" data-target="tab-my-friends" data-i18n="friends.tabMy"
                     style="flex: 1; padding: 12px 5px; background: rgba(255,255,255,0.1); border: none; color: white; cursor: pointer; border-bottom: 2px solid #3498db; font-weight: bold; font-size: 13px;">Mis
                     Amigos</button>
-                <button class="fr-tab-btn" data-target="tab-search-players"
+                <button class="fr-tab-btn" data-target="tab-search-players" data-i18n="friends.tabSearch"
                     style="flex: 1; padding: 12px 5px; background: transparent; border: none; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; font-size: 13px;">Buscar
                     Global</button>
             </div>
@@ -1528,13 +1660,15 @@
                 <div id="tab-search-players" class="fr-tab-content"
                     style="flex: 1; padding: 15px; overflow-y: auto; display: none; flex-direction: column; gap: 10px;">
                     <input type="text" id="search-players-input" placeholder="Escribe un nombre para buscar..."
+                        data-i18n-placeholder="friends.searchPlaceholder"
                         autocomplete="off"
                         style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white; outline: none; font-family: sans-serif; font-size: 14px;">
 
                     <div id="search-results-container"
                         style="display: flex; flex-direction: column; gap: 5px; margin-top: 5px;">
                         <div
-                            style="text-align:center; color:#777; font-size: 13px; margin-top:10px; font-style: italic;">
+                            style="text-align:center; color:#777; font-size: 13px; margin-top:10px; font-style: italic;"
+                            data-i18n="friends.searchHint">
                             Ingresa al menos 3 letras.</div>
                     </div>
                 </div>
@@ -1572,7 +1706,7 @@
             <div
                 style="padding: 15px; background: rgba(0,0,0,0.5); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px;">
                 <button id="back-to-inbox-btn" class="squad-modal-back-btn">
-                    <span>← Volver</span>
+                    <span data-i18n="squad.back">← Volver</span>
                 </button>
 
                 <div id="pm-header-avatar"
@@ -1592,8 +1726,10 @@
                 <input type="text" id="pm-input" placeholder="Mensaje..." autocomplete="off"
                     style="flex: 1; padding: 10px; border-radius: 20px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; font-family: sans-serif;">
                 <button id="pm-send-btn"
-                    style="background: #2ecc71; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center;" title="Enviar">
-                    <img src="items/icons/Right-Arrow.png" class="pixel-icon" style="width: 18px; height: 18px;" alt="Enviar">
+                    style="background: #2ecc71; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center;"
+                    title="Enviar">
+                    <img src="items/icons/Right-Arrow.png" class="pixel-icon" style="width: 18px; height: 18px;"
+                        alt="Enviar">
                 </button>
             </div>
         </div>
@@ -1765,7 +1901,8 @@
                     <canvas id="shop-player-preview" width="200" height="300"
                         style="image-rendering: pixelated; transform: scale(1.2);"></canvas>
                     <span
-                        style="position: absolute; top: 8px; left: 10px; font-family: sans-serif; font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">Previsualización</span>
+                        style="position: absolute; top: 8px; left: 10px; font-family: sans-serif; font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;"
+                        data-i18n="shop.preview">Previsualización</span>
                 </div>
 
                 <div
@@ -1780,7 +1917,7 @@
                             style="display: flex; flex-direction: row; align-items: center; gap: 15px; margin-bottom: 15px; justify-content: center;">
 
                             <!-- Sin fondo, sin bordes, solo el espacio para que flote el arma -->
-                            
+
 
                             <!-- Contenedor de estadísticas (Se llenará verticalmente en JS) -->
                             <div id="shop-item-stats-container"
@@ -1792,7 +1929,8 @@
 
                     <button id="buy-item-btn"
                         style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #2ecc71; color: black; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 2px 0px 4px #27ae60; flex-shrink: 0; margin-top: 10px;">
-                        <img src="items/icons/aargon-green.png" class="pixel-icon" style="width: 18px; height: 18px;" alt=""> <span id="shop-item-price">0</span>
+                        <img src="items/icons/aargon-green.png" class="pixel-icon" style="width: 18px; height: 18px;"
+                            alt=""> <span id="shop-item-price">0</span>
                     </button>
                 </div>
             </div>
@@ -1967,7 +2105,7 @@
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 20px;"></span>
-                    <h3 style="margin: 0; font-size: 18px; color: white; font-weight: bold;">Inventory</h3>
+                    <h3 style="margin: 0; font-size: 18px; color: white; font-weight: bold;" data-i18n="inv.title">Inventory</h3>
                 </div>
                 <button id="close-inventory"
                     style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px; display: flex; align-items: center;">
@@ -2113,7 +2251,10 @@
 
             <div
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: white;"><img src="items/icons/lupa.png" alt="" style="width: 16px; height: 16px; image-rendering: pixelated; image-rendering: crisp-edges; vertical-align: -3px;"> Detalles</h3>
+                <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: white;"><img src="items/icons/lupa.png"
+                        alt=""
+                        style="width: 16px; height: 16px; image-rendering: pixelated; image-rendering: crisp-edges; vertical-align: -3px;">
+                    Detalles</h3>
                 <button id="btn-close-item-detail"
                     style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px; display: flex; align-items: center; outline: none;">
                     <img src="items/icons/x.png" class="pixel-icon" style="width: 18px; height: 18px;"
@@ -3332,113 +3473,205 @@
         </div>
     </div>
 
-    <div id="purchase-celebration" style="display: none; opacity: 0; transition: opacity 0.6s ease; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 99999; flex-direction: column; pointer-events: auto; backdrop-filter: blur(5px); cursor: pointer; overflow: hidden;">
+    <div id="purchase-celebration"
+        style="display: none; opacity: 0; transition: opacity 0.6s ease; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 99999; flex-direction: column; pointer-events: auto; backdrop-filter: blur(5px); cursor: pointer; overflow: hidden;">
         <!-- Full-screen fusion rim -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,1) 100%); mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,1) 100%); pointer-events: none; z-index: 0; overflow: hidden;">
-            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, #d1383b, #c7734a, #245f46, #d1383b); filter: blur(80px); opacity: 0.85; animation: rotateAura 15s linear infinite;"></div>
+        <div
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,1) 100%); mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,1) 100%); pointer-events: none; z-index: 0; overflow: hidden;">
+            <div
+                style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, #d1383b, #c7734a, #245f46, #d1383b); filter: blur(80px); opacity: 0.85; animation: rotateAura 15s linear infinite;">
+            </div>
         </div>
-        <div id="celebration-content" style="transform: scale(0); opacity: 0; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s; display: flex; flex-direction: column; align-items: center; width: 100%;">
-            <div id="mobile-layout-wrapper" style="width: 550px; height: 550px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
-                <div id="mobile-3d-scaler" style="perspective: 1500px; width: 550px; height: 550px; display: flex; justify-content: center; align-items: center; position: relative; transform-origin: center; transform: scale(1);">
-                    
-                
-                
-                <div id="celebration-3d-wrapper" style="position: relative; width: 450px; height: 450px; transform-style: preserve-3d; animation: minecraftSpin 4s linear infinite;">
-                    <img class="celeb-item-layer" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(10px) rotateZ(20deg); filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.9)); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9.9px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(8.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(8px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(7.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(7px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(6.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(6px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(5.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(4.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(4px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(3.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(3px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(2.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(2px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(1.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(1px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(0.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(0px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-0.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-1px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-1.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-2px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-2.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-3px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-3.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-4px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-4.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-5.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-6px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-6.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-7px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-7.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-8px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-8.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9.5px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer-black" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9.9px) rotateZ(20deg); image-rendering: pixelated;">
-                    <img class="celeb-item-layer" src="" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-10px) rotateZ(20deg); filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.9)); image-rendering: pixelated;">
-                </div>
-            
+        <div id="celebration-content"
+            style="transform: scale(0); opacity: 0; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s; display: flex; flex-direction: column; align-items: center; width: 100%;">
+            <div id="mobile-layout-wrapper"
+                style="width: 550px; height: 550px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px;">
+                <div id="mobile-3d-scaler"
+                    style="perspective: 1500px; width: 550px; height: 550px; display: flex; justify-content: center; align-items: center; position: relative; transform-origin: center; transform: scale(1);">
+
+
+
+                    <div id="celebration-3d-wrapper"
+                        style="position: relative; width: 450px; height: 450px; transform-style: preserve-3d; animation: minecraftSpin 4s linear infinite;">
+                        <img class="celeb-item-layer" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(10px) rotateZ(20deg); filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.9)); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9.9px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(9px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(8.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(8px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(7.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(7px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(6.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(6px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(5.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(4.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(4px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(3.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(3px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(2.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(2px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(1.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(1px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(0.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(0px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-0.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-1px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-1.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-2px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-2.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-3px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-3.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-4px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-4.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-5.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-6px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-6.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-7px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-7.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-8px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-8.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9.5px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer-black" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-9.9px) rotateZ(20deg); image-rendering: pixelated;">
+                        <img class="celeb-item-layer" src=""
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(-10px) rotateZ(20deg); filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.9)); image-rendering: pixelated;">
+                    </div>
+
                 </div>
             </div>
-            <h1 style="color: #f1c40f; font-family: sans-serif; font-size: 32px; text-shadow: 0 0 20px #f1c40f, 4px 4px 0px #000; margin: 0; text-align: center; text-transform: uppercase;">
+            <h1
+                style="color: #f1c40f; font-family: sans-serif; font-size: 32px; text-shadow: 0 0 20px #f1c40f, 4px 4px 0px #000; margin: 0; text-align: center; text-transform: uppercase;">
                 ¡COMPRA EXITOSA!
             </h1>
-            <p id="celebration-item-name" style="color: white; font-family: sans-serif; font-size: 20px; font-weight: bold; margin-top: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+            <p id="celebration-item-name"
+                style="color: white; font-family: sans-serif; font-size: 20px; font-weight: bold; margin-top: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
                 Item Acquired
             </p>
         </div>
-        <p style="position: absolute; bottom: 20px; color: rgba(255,255,255,1); font-family: sans-serif; font-size: 12px; letter-spacing: 2px; animation: pulseOpacity 1.5s infinite;">TOCA PARA CONTINUAR</p>
+        <p
+            style="position: absolute; bottom: 20px; color: rgba(255,255,255,1); font-family: sans-serif; font-size: 12px; letter-spacing: 2px; animation: pulseOpacity 1.5s infinite;">
+            TOCA PARA CONTINUAR</p>
         <style>
             @keyframes rotateAura {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg);
+                }
             }
+
             @keyframes pulseOpacity {
-                0% { opacity: 0.3; }
-                50% { opacity: 1; }
-                100% { opacity: 0.3; }
+                0% {
+                    opacity: 0.3;
+                }
+
+                50% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0.3;
+                }
             }
+
             @keyframes minecraftSpin {
-                0% { transform: rotateX(-12deg) rotateY(0deg) translateY(0px); }
-                50% { transform: rotateX(-12deg) rotateY(180deg) translateY(-35px); }
-                100% { transform: rotateX(-12deg) rotateY(360deg) translateY(0px); }
+                0% {
+                    transform: rotateX(-12deg) rotateY(0deg) translateY(0px);
+                }
+
+                50% {
+                    transform: rotateX(-12deg) rotateY(180deg) translateY(-35px);
+                }
+
+                100% {
+                    transform: rotateX(-12deg) rotateY(360deg) translateY(0px);
+                }
             }
+
             /* Mobile adjustments */
             @media (max-width: 600px) {
-                #purchase-celebration h1 { font-size: 22px !important; }
+                #purchase-celebration h1 {
+                    font-size: 22px !important;
+                }
+
                 #celebration-item-name {
                     font-size: 16px !important;
                     margin-top: 5px !important;
                 }
+
                 #mobile-layout-wrapper {
                     width: 380px !important;
                     height: 380px !important;
                     margin-bottom: 0px !important;
                 }
+
                 #mobile-3d-scaler {
                     transform: scale(0.80) !important;
                 }
             }
+
             /* Height constraints so it doesn't overflow on landscape/short phones */
             @media (max-height: 600px) {
-                #purchase-celebration h1 { font-size: 18px !important; }
-                #celebration-item-name { margin-top: 5px !important; }
+                #purchase-celebration h1 {
+                    font-size: 18px !important;
+                }
+
+                #celebration-item-name {
+                    margin-top: 5px !important;
+                }
+
                 #mobile-layout-wrapper {
                     width: 320px !important;
                     height: 320px !important;
                     margin-bottom: -5px !important;
                 }
+
                 #mobile-3d-scaler {
                     transform: scale(0.58) !important;
                 }
@@ -3447,13 +3680,14 @@
     </div>
 
     <!-- Client boot order: core + UI, then net, then render loop -->
+    <script src="js/i18n.js?v=32"></script>
     <script src="js/audio_manager.js?v=31"></script>
-    <script src="js/game_core.js?v=31"></script>
+    <script src="js/game_core.js?v=32"></script>
     <script src="js/fx_dust.js?v=31"></script>
     <script src="js/minigames/soccer.js?v=31"></script>
     <script src="js/ui_modals.js?v=31"></script>
-    <script src="js/ui_settings.js?v=31"></script>
-    <script src="js/ui_phone.js?v=31"></script>
+    <script src="js/ui_settings.js?v=32"></script>
+    <script src="js/ui_phone.js?v=32"></script>
     <script src="js/ui_battlepass.js?v=31"></script>
     <script src="js/ui_tasks.js?v=31"></script>
     <script src="js/ui_chat.js?v=31"></script>
@@ -3461,8 +3695,8 @@
     <script src="js/ui_admin.js?v=31"></script>
     <script src="js/ui_editor.js?v=31"></script>
     <script src="js/ui_map_editor.js?v=31"></script>
-    <script src="js/ui_shop.js?v=31"></script>
-    <script src="js/ui_inventory.js?v=31"></script>
+    <script src="js/ui_shop.js?v=32"></script>
+    <script src="js/ui_inventory.js?v=32"></script>
     <script src="js/ui_island.js?v=31"></script>
     <script src="js/ui_joystick.js?v=31"></script>
     <script src="js/input_pc.js?v=31"></script>

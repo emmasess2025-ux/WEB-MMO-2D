@@ -286,20 +286,20 @@ function renderProfileUI(targetPlayer, targetId) {
             addFriendBtn.style.color = "white";
 
             if (isFriend) {
-                addFriendBtn.innerText = "Unfriend";
+                addFriendBtn.innerText = (typeof t === 'function') ? t('profile.unfriend') : "Unfriend";
                 addFriendBtn.onclick = () => {
                     ws.send(MessagePack.encode({ type: 'remove_friend', targetId: targetAccId }));
                     if (typeof profileModal !== 'undefined') profileModal.style.display = 'none';
                 };
             } else {
-                addFriendBtn.innerText = "Add Friend";
+                addFriendBtn.innerText = (typeof t === 'function') ? t('profile.addFriend') : "Add Friend";
                 addFriendBtn.onclick = () => {
                     if (!targetAccId) {
                         alert("No puedes agregar como amigo a un Invitado.");
                         return;
                     }
                     ws.send(MessagePack.encode({ type: 'add_friend', friendAccountId: targetAccId }));
-                    addFriendBtn.innerText = "✓ Sent";
+                    addFriendBtn.innerText = (typeof t === 'function') ? t('profile.friendSent') : "✓ Sent";
                     if (!player.friends) player.friends = [];
                     player.friends.push(targetAccId);
                 };
@@ -324,13 +324,14 @@ function renderProfileUI(targetPlayer, targetId) {
             moreOptionsBtn.onclick = () => {
                 if (typeof profileModal !== 'undefined') profileModal.style.display = 'none';
                 moreOptionsModal.style.display = 'flex';
+                if (typeof window.refreshBlockBtnLabel === 'function') window.refreshBlockBtnLabel();
 
                 if (inviteSquadBtn) {
                     if (!player.squad || !player.squadCanInvite) {
                         inviteSquadBtn.style.display = 'none';
                     } else {
                         inviteSquadBtn.style.display = 'block';
-                        inviteSquadBtn.innerText = "Invitar al Clan";
+                        inviteSquadBtn.innerText = (typeof t === 'function') ? t('squad.invite') : "Invitar al Clan";
                         inviteSquadBtn.style.background = "rgba(155, 89, 182, 0.2)";
                         inviteSquadBtn.style.borderColor = "#9b59b6";
                         inviteSquadBtn.style.color = "white";
@@ -472,6 +473,61 @@ profileOptionsBtn.addEventListener('click', () => {
     profileModal.style.display = 'none'; // 🛑 HIDE PROFILE MODAL
     optionsModal.style.display = 'flex';
 });
+
+// --- 🚩 REPORTAR / 🚫 BLOQUEAR (desde Más Opciones) ---
+(function initModerationButtons() {
+    const reportBtn = document.getElementById('report-player-btn');
+    const blockBtn = document.getElementById('block-player-btn');
+    const reportModal = document.getElementById('report-player-modal');
+    const reportName = document.getElementById('report-player-name');
+    const reportReason = document.getElementById('report-reason-select');
+    const reportMsg = document.getElementById('report-message-input');
+    const cancelReport = document.getElementById('cancel-report-btn');
+    const confirmReport = document.getElementById('confirm-report-btn');
+    let reportTarget = null;
+
+    const targetAccount = () => (typeof currentProfileData !== 'undefined' && currentProfileData && currentProfileData.accountId) || null;
+    const targetGameId = () => (typeof currentProfileData !== 'undefined' && currentProfileData && currentProfileData.gameId) || null;
+    const closeReport = () => { if (reportModal) reportModal.style.display = 'none'; };
+
+    if (reportBtn) reportBtn.addEventListener('click', () => {
+        const gid = targetGameId();
+        if (!gid) { alert('Este jugador no se puede reportar.'); return; }
+        reportTarget = { gameId: gid, username: (currentProfileData && currentProfileData.username) || 'Jugador' };
+        if (reportName) reportName.innerText = 'Jugador: ' + reportTarget.username;
+        if (reportMsg) reportMsg.value = '';
+        if (reportModal) reportModal.style.display = 'flex';
+    });
+    if (cancelReport) cancelReport.addEventListener('click', closeReport);
+    if (reportModal) reportModal.addEventListener('click', (e) => { if (e.target === reportModal) closeReport(); });
+    if (confirmReport) confirmReport.addEventListener('click', () => {
+        if (!reportTarget) return;
+        if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+            window.ws.send(MessagePack.encode({
+                type: 'report_user', targetGameId: reportTarget.gameId,
+                reason: reportReason ? reportReason.value : 'otro', message: reportMsg ? reportMsg.value : ''
+            }));
+        }
+        closeReport();
+    });
+
+    if (blockBtn) blockBtn.addEventListener('click', () => {
+        const acc = targetAccount();
+        if (!acc) { alert('Este jugador es un invitado, no se puede bloquear.'); return; }
+        const isBlocked = Array.isArray(player.blocked) && player.blocked.includes(acc);
+        if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+            window.ws.send(MessagePack.encode({ type: isBlocked ? 'unblock_user' : 'block_user', targetAccountId: acc }));
+        }
+    });
+
+    window.refreshBlockBtnLabel = function () {
+        const bb = document.getElementById('block-player-btn');
+        if (!bb) return;
+        const acc = targetAccount();
+        const isB = acc && Array.isArray(player.blocked) && player.blocked.includes(acc);
+        bb.innerText = isB ? 'Desbloquear jugador' : 'Bloquear jugador';
+    };
+})();
 
 // =========================================================
 // ---  SISTEMA DEL MODAL DE OPCIONES ---
@@ -867,7 +923,9 @@ function createPlayerCard(playerData, onClickCallback, inboxData = null) {
                     <span style="color: #aaa; font-family: sans-serif; font-size: 13px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(inboxData.lastMessage)}</span>
                 `;
     } else {
-        const statusHtml = playerData.isOnline ? `<span style="color: #2ecc71; font-size: 11px;">● Online</span>` : `<span style="color: #777; font-size: 11px;">○ Offline</span>`;
+        const statusHtml = playerData.isOnline
+            ? `<span style="color: #2ecc71; font-size: 11px;">● ${(typeof t === 'function') ? t('friends.online') : 'Online'}</span>`
+            : `<span style="color: #777; font-size: 11px;">○ ${(typeof t === 'function') ? t('friends.offline') : 'Offline'}</span>`;
         textDiv.innerHTML = `
                     <div style="display: flex; align-items: center;">
                         <span style="color: ${nameColor}; font-weight: bold; font-family: sans-serif; font-size: 15px;">${escapeHTML(playerData.username)}</span>
@@ -1281,7 +1339,7 @@ const openSquadChat = (e) => {
 
     updateSquadOnlineCount(); // Calcular conectados
 
-    sqChatHeaderName.innerText = player.squadName || "Mi Clan";
+    sqChatHeaderName.innerText = player.squadName || ((typeof t === 'function') ? t('squad.myClan') : "Mi Clan");
     if (player.squadLogo) {
         sqChatHeaderLogo.innerHTML = `<img src="${player.squadLogo}" style="width: 100%; height: 100%; object-fit: cover;">`;
     }
@@ -1457,7 +1515,7 @@ if (searchPlayersInput) {
         if (searchTimeout) clearTimeout(searchTimeout);
 
         if (text.length >= 3) {
-            searchResultsContainer.innerHTML = '<div style="text-align:center; color:#aaa; font-size: 13px; margin-top:10px;">Buscando...</div>';
+            searchResultsContainer.innerHTML = '<div style="text-align:center; color:#aaa; font-size: 13px; margin-top:10px;">' + ((typeof t === 'function') ? t('friends.searching') : 'Buscando...') + '</div>';
             // Esperamos medio segundo después de que deje de escribir para no hacer spam al servidor
             searchTimeout = setTimeout(() => {
                 if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
@@ -1465,7 +1523,7 @@ if (searchPlayersInput) {
                 }
             }, 500);
         } else {
-            searchResultsContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:10px; font-style: italic;">Ingresa al menos 3 letras.</div>';
+                searchResultsContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:10px; font-style: italic;">' + ((typeof t === 'function') ? t('friends.searchHint') : 'Ingresa al menos 3 letras.') + '</div>';
         }
     });
 }
@@ -1474,7 +1532,7 @@ if (searchPlayersInput) {
 function renderSearchResults(results) {
     searchResultsContainer.innerHTML = "";
     if (results.length === 0) {
-        searchResultsContainer.innerHTML = '<div style="text-align:center; color:#e74c3c; font-size: 13px; margin-top:10px;">No se encontró a nadie con ese nombre.</div>';
+        searchResultsContainer.innerHTML = '<div style="text-align:center; color:#e74c3c; font-size: 13px; margin-top:10px;">' + ((typeof t === 'function') ? t('friends.searchNone') : 'No se encontró a nadie con ese nombre.') + '</div>';
         return;
     }
 
@@ -1513,7 +1571,7 @@ let offlineFriendAccountId = null; // Memoria temporal para poder enviarle PMs a
 // Abrir la app desde el Menú
 appFriends.addEventListener('click', () => {
     hideTrayForModal();
-    friendsListContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 14px; margin-top:20px;">Cargando amigos...</div>';
+        friendsListContainer.innerHTML = '<div style="text-align:center; color:#777; font-size: 14px; margin-top:20px;">' + ((typeof t === 'function') ? t('friends.loading') : 'Cargando amigos...') + '</div>';
     friendsModal.style.display = 'flex';
 
     // Le pedimos al servidor nuestra lista fresca
@@ -1532,7 +1590,7 @@ function renderFriendsList(friendsData) {
     container.innerHTML = "";
 
     if (friendsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:20px; font-style:italic;">Tu lista de amigos está vacía.</div>';
+        container.innerHTML = '<div style="text-align:center; color:#777; font-size: 13px; margin-top:20px; font-style:italic;">' + ((typeof t === 'function') ? t('friends.empty') : 'Tu lista de amigos está vacía.') + '</div>';
         return;
     }
 
@@ -1586,7 +1644,7 @@ let activeLbTab = 'live';
 if (btnSquadLeaderboard) {
     btnSquadLeaderboard.addEventListener('click', () => {
         squadMainModal.style.display = 'none';
-        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Cargando clasificaciones...</div>';
+        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">' + ((typeof t === 'function') ? t('squad.lb.loading') : 'Cargando clasificaciones...') + '</div>';
         leaderboardModal.style.display = 'flex';
         ws.send(MessagePack.encode({ type: 'get_squad_leaderboard' }));
     });
@@ -1626,7 +1684,7 @@ function renderLeaderboard() {
     // --- PESTAÑA: EN VIVO (ESTADO DE LAS BASES) ---
     if (activeLbTab === 'live') {
         if (currentLeaderboardData.liveBases.length === 0) {
-            leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">No hay bases activas en el servidor.</div>';
+            leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">' + ((typeof t === 'function') ? t('squad.lb.noBases') : 'No hay bases activas en el servidor.') + '</div>';
             return;
         }
 
@@ -1669,7 +1727,7 @@ function renderLeaderboard() {
     sortedSquads = sortedSquads.filter(sq => sq[sortField] > 0);
 
     if (sortedSquads.length === 0) {
-        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">Nadie ha puntuado en esta categoría aún.</div>';
+        leaderboardContent.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">' + ((typeof t === 'function') ? t('squad.lb.noScores') : 'Nadie ha puntuado en esta categoría aún.') + '</div>';
         return;
     }
 
@@ -1697,7 +1755,7 @@ function renderLeaderboard() {
             lastSquadMenu = 'leaderboard';
             leaderboardModal.style.display = 'none';
             // 🛑 EL FIX: Pantalla de carga instantánea
-            document.getElementById('my-squad-title').innerText = "Cargando...";
+            document.getElementById('my-squad-title').innerText = (typeof t === 'function') ? t('inv.loading') : "Cargando...";
             document.getElementById('squad-members-list').innerHTML = "";
             document.getElementById('my-squad-modal').style.display = 'flex';
 
@@ -1735,7 +1793,7 @@ function renderSquadSearchResults(results) {
     resultsContainer.innerHTML = "";
 
     if (results.length === 0) {
-        resultsContainer.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">No se encontraron clanes.</div>';
+        resultsContainer.innerHTML = '<div style="text-align:center; color:#777; margin-top:20px;">' + ((typeof t === 'function') ? t('squad.search.none') : 'No se encontraron clanes.') + '</div>';
         return;
     }
 
@@ -1758,7 +1816,7 @@ function renderSquadSearchResults(results) {
             ${logoHtml}
             <div style="flex: 1;">
                 <div style="color: #f1c40f; font-weight: bold; font-size: 15px;">${escapeHTML(sq.name)}</div>
-                <div style="color: #777; font-size: 11px;">${sq.memberCount} miembros | ${sq.infamia} min</div>
+                <div style="color: #777; font-size: 11px;">${sq.memberCount} ${(typeof t === 'function') ? t('squad.membersWord') : 'miembros'} | ${sq.infamia} min</div>
             </div>
             <span style="color: #555;">➔</span>
         `;
@@ -1768,7 +1826,7 @@ function renderSquadSearchResults(results) {
             lastSquadMenu = 'search';
             document.getElementById('squad-search-modal').style.display = 'none';
             // 🛑 EL FIX: Pantalla de carga instantánea
-            document.getElementById('my-squad-title').innerText = "Cargando...";
+            document.getElementById('my-squad-title').innerText = (typeof t === 'function') ? t('inv.loading') : "Cargando...";
             document.getElementById('squad-members-list').innerHTML = "";
             document.getElementById('my-squad-modal').style.display = 'flex';
 
@@ -1866,7 +1924,7 @@ function renderSquadGrid(sq) {
     const defaultHead = window.headImg;
 
     const allMembers = [
-        { ...sq.leader, isLeader: true, title: "Líder" },
+        { ...sq.leader, isLeader: true, title: (typeof t === 'function') ? t('squad.leader') : "Líder" },
         ...sq.members
     ];
 
@@ -2026,7 +2084,7 @@ btnCreateSquad.addEventListener('click', () => {
     const logoInput = document.getElementById('new-squad-logo');
     if (logoInput) logoInput.value = "";
     const previewName = document.getElementById('create-squad-name-preview');
-    if (previewName) previewName.innerText = "Tu Clan";
+        if (previewName) previewName.innerText = (typeof t === 'function') ? t('squad.create.previewName') : "Tu Clan";
     const previewLogo = document.getElementById('create-squad-logo-preview');
     if (previewLogo) previewLogo.innerHTML = "🏴‍☠️";
 });
@@ -2036,7 +2094,7 @@ if (newSquadNameInput) {
     newSquadNameInput.addEventListener('input', (e) => {
         const previewName = document.getElementById('create-squad-name-preview');
         if (previewName) {
-            previewName.innerText = e.target.value.trim() || "Tu Clan";
+            previewName.innerText = e.target.value.trim() || ((typeof t === 'function') ? t('squad.create.previewName') : "Tu Clan");
         }
     });
 }
@@ -2236,13 +2294,13 @@ function openSquadMemberModal(member, squad) {
     const kickBtn = document.getElementById('sm-kick-btn');
 
     // 1. Cargar datos
-    titleInput.value = member.title || "Miembro";
+    titleInput.value = member.title || ((typeof t === 'function') ? t('squad.member') : "Miembro");
     chkInvite.checked = !!member.canInvite;
     chkKick.checked = !!member.canKick;
     chkAssign.checked = !!member.canAssignRoles;
 
     // Guardar snapshot de estado ya sincronizado para evitar disparos dobles
-    member._savedTitle = (member.title || "Miembro").trim();
+    member._savedTitle = (member.title || ((typeof t === 'function') ? t('squad.member') : "Miembro")).trim();
     member._savedInvite = !!member.canInvite;
     member._savedKick = !!member.canKick;
     member._savedAssign = !!member.canAssignRoles;
@@ -2369,7 +2427,11 @@ if (kickBtnElement) {
     kickBtnElement.onclick = () => {
         const sq = currentEditingSquad || window.mySquadData;
         if (!currentEditingMember || !sq) return;
-        if (confirm(`¿Estás seguro de que quieres expulsar a ${currentEditingMember.name || "este miembro"} del clan?`)) {
+        const _kickName = currentEditingMember.name || ((typeof t === 'function') ? t('squad.thisMember') : "este miembro");
+        const _kickMsg = (typeof t === 'function')
+            ? t('squad.kickConfirm').replace('{name}', _kickName)
+            : `¿Estás seguro de que quieres expulsar a ${_kickName} del clan?`;
+        if (confirm(_kickMsg)) {
             if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(MessagePack.encode({
                     type: 'kick_squad_member',

@@ -114,8 +114,14 @@ bgmPlayer.volume = 0.15;
 bgmPlayer.loop = false;
 window.bgmPlayer = bgmPlayer;
 
+// ¿El usuario tiene la música activada en Ajustes?
+function isBgmEnabled() {
+    return !(window.gameSettings && window.gameSettings.bgmEnabled === false);
+}
+window.isBgmEnabled = isBgmEnabled;
+
 bgmPlayer.addEventListener('ended', () => {
-    if (bgmPlaylist.length === 0) return;
+    if (!isBgmEnabled() || bgmPlaylist.length === 0) return;
     currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
     window.currentBgmIndex = currentBgmIndex;
     bgmPlayer.src = bgmPlaylist[currentBgmIndex];
@@ -123,7 +129,10 @@ bgmPlayer.addEventListener('ended', () => {
 });
 
 function startBGM() {
-    if (isBgmPlaying || bgmPlaylist.length === 0) return;
+    if (!isBgmEnabled() || isBgmPlaying || bgmPlaylist.length === 0) return;
+    if (window.gameSettings && typeof window.gameSettings.bgmVolume === 'number') {
+        bgmPlayer.volume = window.gameSettings.bgmVolume / 100;
+    }
     bgmPlayer.src = bgmPlaylist[currentBgmIndex];
     bgmPlayer.play().then(() => {
         isBgmPlaying = true;
@@ -149,14 +158,14 @@ window.unlockAudioCtx = unlockAudioCtx;
 // Desbloqueo de BGM con el primer clic o toque
 document.body.addEventListener('click', () => {
     unlockAudioCtx();
-    if (!isBgmPlaying && bgmPlaylist.length > 0) {
+    if (isBgmEnabled() && !isBgmPlaying && bgmPlaylist.length > 0) {
         startBGM();
     }
 }, { once: false });
 
 document.body.addEventListener('touchstart', () => {
     unlockAudioCtx();
-    if (!isBgmPlaying && bgmPlaylist.length > 0) {
+    if (isBgmEnabled() && !isBgmPlaying && bgmPlaylist.length > 0) {
         startBGM();
     }
 }, { once: false, passive: true });
