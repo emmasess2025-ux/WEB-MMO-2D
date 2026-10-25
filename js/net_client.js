@@ -469,7 +469,7 @@ ws.onmessage = (event) => {
                 const isRanged = isWep && wepData.type === 'ranged';
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
-                img.src = rawData.src;
+                img.src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(rawData.src) : rawData.src;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     let sw = img.naturalWidth;
@@ -1231,7 +1231,8 @@ ws.onmessage = (event) => {
         for (let itemId in window.MASTER_CATALOG) {
             const item = window.MASTER_CATALOG[itemId];
             if (item && item.src) {
-                window.loadedItemSprites[itemId] = loadCountedImage(item.src);
+                const _src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(item.src) : item.src;
+                window.loadedItemSprites[itemId] = loadCountedImage(_src);
             }
         }
         updateLoadingBar("Descargando mapas y armas...");
@@ -2423,7 +2424,7 @@ window.testBuyCelebration = function(itemName = 'Arma de Prueba', iconSrc = 'ite
     celebItemName.innerText = itemName;
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = iconSrc;
+    img.src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(iconSrc) : iconSrc;
     img.onload = () => {
         const canvas = document.createElement('canvas');
         const isWep = img.naturalHeight >= 64 && img.naturalWidth >= 48; 
@@ -2505,7 +2506,7 @@ window.showCelebration = function (title, itemName, iconSrc, onClose) {
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = iconSrc || '';
+    img.src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(iconSrc || '') : (iconSrc || '');
     img.onload = () => {
         const canvas = document.createElement('canvas');
         let sw = img.naturalWidth, sh = img.naturalHeight, sy = 0, rot = 'rotateZ(20deg)';

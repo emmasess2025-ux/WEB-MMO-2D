@@ -1015,7 +1015,7 @@ function _endFinalTour() {
         if (typeof window.showCelebration !== 'function') return;
         const compTitle = (typeof t === 'function') ? t('guide.compTitle') : 'TU NUEVO COMPAÑERO';
         const compName = (typeof t === 'function') ? t('guide.compName') : 'Boba';
-        window.showCelebration(compTitle, compName, 'items/Companions/boba.png', function () {
+        window.showCelebration(compTitle, compName, 'items/companions/boba.png', function () {
             if (window.ws && window.ws.readyState === WebSocket.OPEN) {
                 try { window.ws.send(MessagePack.encode({ type: 'claim_guide_reward' })); } catch (e) { }
             }

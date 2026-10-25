@@ -419,6 +419,17 @@ canvas.addEventListener('touchend', (e) => {
 });
 
 // (PC Inputs handled in js/input_pc.js)
+// 🖼️ Normaliza rutas de assets. GitHub Pages es case-sensitive: fuerza la
+// carpeta 'companions' a minúsculas y añade cache-buster para evitar 404 cacheados.
+window.fixAssetUrl = function (url) {
+    if (!url) return url;
+    let u = String(url);
+    if (/companions\//i.test(u)) {
+        u = u.replace(/companions\//gi, 'companions/');
+        if (u.indexOf('?') === -1) u += '?v=2';
+    }
+    return u;
+};
 // 🚶 Velocidad base GLOBAL de todos los jugadores (ajusta solo este número)
 const PLAYER_BASE_SPEED = 3;
 const player = {

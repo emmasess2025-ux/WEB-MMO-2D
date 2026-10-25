@@ -60,7 +60,7 @@ function getItemSprite(itemId, isWeapon) {
     if (wData && wData.src) {
         const img = new Image();
         img.crossOrigin = 'anonymous'; // DUST 1:1
-        img.src = wData.src;
+        img.src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(wData.src) : wData.src;
         if (!window.loadedWeaponSprites) window.loadedWeaponSprites = {};
         window.loadedWeaponSprites[itemId] = img;
         return img;
@@ -70,7 +70,7 @@ function getItemSprite(itemId, isWeapon) {
     if (cData && cData.src) {
         const img = new Image();
         img.crossOrigin = 'anonymous'; // DUST 1:1
-        img.src = cData.src;
+        img.src = (typeof window.fixAssetUrl === 'function') ? window.fixAssetUrl(cData.src) : cData.src;
         if (!window.loadedItemSprites) window.loadedItemSprites = {};
         window.loadedItemSprites[itemId] = img;
         return img;
