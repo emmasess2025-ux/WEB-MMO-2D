@@ -309,36 +309,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Tutorial Listeners
-    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-    const tutorialSkipBtn = document.getElementById('tutorial-skip-btn');
-    const appGuideBtn = document.getElementById('app-guide');
-    const tutorialModal = document.getElementById('tutorial-modal');
-
-    if (tutorialNextBtn) {
-        tutorialNextBtn.addEventListener('click', () => {
-            if (currentTutorialStep < tutorialSteps.length - 1) {
-                currentTutorialStep++;
-                renderTutorialStep();
-            } else {
-                closeTutorial();
-            }
-        });
-    }
-
-    if (tutorialSkipBtn) {
-        tutorialSkipBtn.addEventListener('click', closeTutorial);
-    }
-
-    if (appGuideBtn) {
-        appGuideBtn.addEventListener('click', () => {
-            window.hideTrayForModal();
-            currentTutorialStep = 0;
-            renderTutorialStep();
-            if (tutorialModal) tutorialModal.style.display = 'flex';
-        });
-    }
-
     // Discord App Button
     const appDiscordBtn = document.getElementById('app-discord');
     if (appDiscordBtn) {

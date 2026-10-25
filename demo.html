@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/demo_styles.css?v=29">
+    <link rel="stylesheet" href="css/demo_styles.css?v=32">
 </head>
 
 <body>
@@ -60,6 +60,17 @@
                 onmouseover="this.style.boxShadow='0 0 35px rgba(199, 115, 74, 1)';"
                 onmouseout="this.style.boxShadow='0 0 25px rgba(199, 115, 74, 0.8)';" data-i18n="loading.play">
                 PLAY NOW</button>
+            <div id="lang-choice"
+                style="display: none; margin-top: 30px; flex-direction: column; align-items: center; gap: 14px;">
+                <div style="color: #d1383b; font-family: sans-serif; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; font-size: 15px; text-shadow: 0 2px 15px rgba(209,56,59,0.7);"
+                    data-i18n="lang.question">Language?</div>
+                <div style="display: flex; gap: 12px;">
+                    <button id="lang-en"
+                        style="padding: 12px 28px; border: 1px solid rgba(209, 56, 59, 0.5); border-radius: 10px; background: linear-gradient(90deg, #d1383b, #c7734a, #245f46); color: #fff; font-family: sans-serif; font-size: 16px; letter-spacing: 2px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(199,115,74,0.7); text-transform: uppercase;">English</button>
+                    <button id="lang-es"
+                        style="padding: 12px 28px; border: 1px solid rgba(209, 56, 59, 0.5); border-radius: 10px; background: linear-gradient(90deg, #d1383b, #c7734a, #245f46); color: #fff; font-family: sans-serif; font-size: 16px; letter-spacing: 2px; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(199,115,74,0.7); text-transform: uppercase;">Español</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -348,13 +359,6 @@
             <span style="color: #ff9a9e;" data-i18n="hud.feedback">Feedback</span>
         </div>
 
-        <div class="app-icon" id="app-guide">
-            <div class="app-bg" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
-                <img src="items/icons/question.png" class="pixel-icon" alt="Guide">
-            </div>
-            <span data-i18n="hud.guide">Guide</span>
-        </div>
-
         <div class="app-icon" id="app-discord">
             <div class="app-bg"
                 style="background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%); box-shadow: 0 0 12px rgba(88, 101, 242, 0.6); display: flex; align-items: center; justify-content: center;">
@@ -462,42 +466,6 @@
                 style="width: 100%; padding: 10px; background: #2ecc71; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
                 Awesome!
             </button>
-        </div>
-    </div>
-
-    <!-- TUTORIAL MODAL -->
-    <div id="tutorial-modal"
-        style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 4000; backdrop-filter: blur(8px);">
-        <div
-            style="width: 400px; max-width: 90%; background: rgba(20, 20, 25, 0.95); border: 2px solid #38ef7d; border-radius: 15px; padding: 25px; color: white; display: flex; flex-direction: column; box-shadow: 0 10px 50px rgba(56, 239, 125, 0.3);">
-
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(56, 239, 125, 0.3); padding-bottom: 10px; margin-bottom: 20px;">
-                <h3 id="tutorial-title" style="margin: 0; font-family: sans-serif; color: #38ef7d; font-size: 22px;">How
-                    to Play</h3>
-            </div>
-
-            <div id="tutorial-content"
-                style="text-align: center; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <!-- Icon and Description inserted via JS -->
-            </div>
-
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;">
-                <div id="tutorial-dots" style="display: flex; gap: 8px;">
-                    <!-- Dots inserted via JS -->
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button id="tutorial-skip-btn"
-                        style="padding: 10px 15px; background: transparent; color: #aaa; border: 1px solid #aaa; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                        Skip
-                    </button>
-                    <button id="tutorial-next-btn"
-                        style="padding: 10px 20px; background: #38ef7d; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                        Next ➔
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1884,7 +1852,7 @@
 
     <div id="shop-modal"
         style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; z-index: 2500;">
-        <div
+        <div id="shop-panel"
             style="width: 600px; height: 62vh; background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 25px; color: white; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); position: relative; display: flex; flex-direction: column; max-height: 90vh;">
 
             <button id="close-shop-modal"
@@ -2113,10 +2081,58 @@
                         alt="Cerrar"></button>
             </div>
 
+            <div id="inv-tabs" style="display: flex; gap: 8px; margin-bottom: 14px;">
+                <button class="inv-tab-btn active" data-tab="general" data-i18n="inv.tabGeneral"
+                    style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.12); color:white; font-weight:bold; font-size:12px; cursor:pointer;">General</button>
+                <button class="inv-tab-btn" data-tab="companions" data-i18n="inv.tabCompanions"
+                    style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#aaa; font-weight:bold; font-size:12px; cursor:pointer;">Companions</button>
+            </div>
+
             <div id="inventory-grid"
                 style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; min-height: 150px;">
             </div>
         </div>
+    </div>
+
+    <div id="guide-dialog"
+        style="display: none; position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); width: min(680px, 92vw); z-index: 4600;">
+        <div
+            style="background: rgba(12,12,16,0.96); border: 2px solid #000; border-radius: 12px; padding: 16px 22px 18px; color: #fff; font-family: 'VT323', monospace; box-shadow: 0 8px 30px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.6);">
+            <div id="guide-name"
+                style="color: #f1c40f; font-weight: bold; font-size: 20px; margin-bottom: 4px; letter-spacing: 1px;">Boba
+            </div>
+            <div id="guide-text"
+                style="font-size: 21px; line-height: 1.25; min-height: 54px; letter-spacing: 0.5px;"></div>
+            <div id="guide-options" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;"></div>
+        </div>
+    </div>
+
+    <!-- 🐾 Boba Tip: NPC flotante minimalista con retrato + texto -->
+    <div id="boba-tip"
+        style="display: none; position: fixed; left: 16px; bottom: 110px; z-index: 200002; pointer-events: none; align-items: flex-end; gap: 8px; max-width: 340px;">
+        <div
+            style="background: rgba(12,12,16,0.95); border: 2px solid #000; border-radius: 12px; padding: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.7); flex-shrink: 0;">
+            <canvas id="boba-tip-canvas" width="40" height="40"
+                style="image-rendering: pixelated; width: 40px; height: 40px; display: block;"></canvas>
+        </div>
+        <div
+            style="background: rgba(12,12,16,0.95); border: 2px solid #000; border-radius: 12px; padding: 9px 13px; color: #fff; font-family: 'VT323', monospace; font-size: 18px; line-height: 1.2; box-shadow: 0 6px 20px rgba(0,0,0,0.7); max-width: 220px; display: flex; align-items: center; gap: 6px;">
+            <canvas id="boba-tip-icon" width="32" height="32"
+                style="display: none; image-rendering: pixelated; width: 32px; height: 32px; flex-shrink: 0;"></canvas>
+            <div id="boba-tip-text" style="white-space: normal; overflow-wrap: anywhere; word-break: break-word;"></div>
+            <button id="boba-tip-next"
+                style="display: none; pointer-events: auto; flex-shrink: 0; margin-left: 4px; padding: 4px 10px; background: linear-gradient(135deg,#d1383b,#c7734a); border: 2px solid #000; border-radius: 8px; color: #fff; font-family: 'VT323', monospace; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.4);">Next</button>
+        </div>
+    </div>
+
+    <!-- 🌑 Spotlight: oscurece el fondo dejando un hueco en el objetivo -->
+    <div id="guide-spotlight"
+        style="display: none; position: fixed; pointer-events: none; z-index: 200000; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.62); transition: left 0.2s ease, top 0.2s ease, width 0.2s ease, height 0.2s ease;">
+    </div>
+
+    <!-- 🔆 Puntero que resalta un elemento -->
+    <div id="guide-pointer"
+        style="display: none; position: fixed; border: 3px solid #f1c40f; border-radius: 12px; pointer-events: none; z-index: 200001; box-shadow: 0 0 0 4px rgba(241,196,15,0.25), 0 0 22px rgba(241,196,15,0.8); animation: guidePulse 1s ease-in-out infinite;">
     </div>
 
     <div id="ammo-display"
@@ -3583,7 +3599,7 @@
 
                 </div>
             </div>
-            <h1
+            <h1 id="celebration-title"
                 style="color: #f1c40f; font-family: sans-serif; font-size: 32px; text-shadow: 0 0 20px #f1c40f, 4px 4px 0px #000; margin: 0; text-align: center; text-transform: uppercase;">
                 ¡COMPRA EXITOSA!
             </h1>
@@ -3680,9 +3696,9 @@
     </div>
 
     <!-- Client boot order: core + UI, then net, then render loop -->
-    <script src="js/i18n.js?v=32"></script>
+    <script src="js/i18n.js?v=54"></script>
     <script src="js/audio_manager.js?v=31"></script>
-    <script src="js/game_core.js?v=33"></script>
+    <script src="js/game_core.js?v=37"></script>
     <script src="js/fx_dust.js?v=31"></script>
     <script src="js/minigames/soccer.js?v=31"></script>
     <script src="js/ui_modals.js?v=31"></script>
@@ -3695,14 +3711,14 @@
     <script src="js/ui_admin.js?v=31"></script>
     <script src="js/ui_editor.js?v=31"></script>
     <script src="js/ui_map_editor.js?v=31"></script>
-    <script src="js/ui_shop.js?v=32"></script>
-    <script src="js/ui_inventory.js?v=32"></script>
-    <script src="js/ui_island.js?v=31"></script>
+    <script src="js/ui_shop.js?v=34"></script>
+    <script src="js/ui_inventory.js?v=36"></script>
+    <script src="js/ui_island.js?v=32"></script>
     <script src="js/ui_joystick.js?v=31"></script>
     <script src="js/input_pc.js?v=31"></script>
-    <script src="js/net_client.js?v=34"></script>
+    <script src="js/net_client.js?v=49"></script>
     <script src="js/ui_discovery.js?v=31"></script>
-    <script src="js/engine_loop.js?v=33"></script>
+    <script src="js/engine_loop.js?v=86"></script>
     <script src="js/webrtc_squad.js?v=31"></script>
 
 </body>

@@ -101,6 +101,60 @@ function sendTileInteract(gx, gy, gl, kind) {
 }
 window.sendTileInteract = sendTileInteract;
 
+// =========================================================
+// 💾 PERSISTENCIA LOCAL DEL GUEST (localStorage) + MERGE AL REGISTRAR
+// =========================================================
+window.getGuestId = function () {
+    try {
+        let gid = localStorage.getItem('aargon_guest_id');
+        if (!gid) { gid = 'g_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('aargon_guest_id', gid); }
+        return gid;
+    } catch (e) { return null; }
+};
+window.saveGuestSnapshot = function () {
+    try {
+        if (window.__newPlayerReset) return; // no re-guardar si estamos reseteando
+        if (!player || !player.isGuest) return;
+        const snap = {
+            coins: Number(player.coins) || 0,
+            gems: Number(player.gems) || 0,
+            inventory: player.inventory || [],
+            hotbar: player.hotbar || [],
+            equipped: player.equipped || {},
+            companions: player.companions || []
+        };
+        localStorage.setItem('aargon_guest_save', JSON.stringify(snap));
+    } catch (e) { }
+};
+window.loadGuestSnapshot = function () {
+    try {
+        const raw = localStorage.getItem('aargon_guest_save');
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+};
+window.clearGuestSnapshot = function () {
+    try { localStorage.removeItem('aargon_guest_save'); } catch (e) { }
+};
+// 🧹 Reset total para probar como jugador NUEVO (invitado).
+// Uso en consola: resetToNewPlayer()  |  resetToNewPlayer({reload:false})
+window.resetToNewPlayer = function (opts) {
+    opts = opts || {};
+    window.__newPlayerReset = true;
+    try {
+        ['aargon_guest_id', 'aargon_guest_save', 'aargon_guide_done', 'aargon_guide_target',
+            'gameToken', 'gameUsername', 'gameCoins', 'gameHead'].forEach(function (k) {
+                localStorage.removeItem(k);
+            });
+    } catch (e) { }
+    try { if (typeof player !== 'undefined' && player) player.isGuest = true; } catch (e) { }
+    try { if (typeof ws !== 'undefined' && ws && ws.readyState === WebSocket.OPEN) ws.close(); } catch (e) { }
+    if (opts.reload === false) return;
+    setTimeout(function () { location.reload(); }, 150);
+};
+window.newPlayerReset = window.resetToNewPlayer;
+// Autoguardado del guest mientras juega
+setInterval(() => { if (typeof player !== 'undefined' && player && player.isGuest) window.saveGuestSnapshot(); }, 3000);
+
 function _applyWorldTiles(tiles) {
     if (!tiles || !tiles.length) return;
     for (let i = 0; i < tiles.length; i++) {
@@ -145,7 +199,7 @@ ws.onmessage = (event) => {
 
         // 3. Flash rojo y penalti SOLO si es anti-hack real, NO por colisiones con paredes
         if (data.reason === 'antihack' || (!data.reason)) {
-            player.speed = 4; // Matar posible speedhack
+            player.speed = (typeof PLAYER_BASE_SPEED !== 'undefined') ? PLAYER_BASE_SPEED : 3.4; // Matar posible speedhack
             if (uiFadeOverlay) {
                 uiFadeOverlay.style.background = 'red';
                 uiFadeOverlay.style.opacity = '0.5';
@@ -218,6 +272,13 @@ ws.onmessage = (event) => {
             }
         }
     }
+    else if (data.type === 'companion_update') {
+        if (!Array.isArray(player.companions)) player.companions = [];
+        player.companions = data.companions || [];
+        if (!player.equipped) player.equipped = {};
+        player.equipped.companion = player.companions[0] || 'none';
+        if (typeof window.saveGuestSnapshot === 'function') window.saveGuestSnapshot();
+    }
     else if (data.type === 'block_state') {
         if (!Array.isArray(player.blocked)) player.blocked = [];
         if (data.blocked) { if (!player.blocked.includes(data.targetAccountId)) player.blocked.push(data.targetAccountId); }
@@ -252,6 +313,12 @@ ws.onmessage = (event) => {
     else if (data.type === 'inventory_update') {
         player.inventory = data.inventory;
         renderInventory();
+        if (typeof window.saveGuestSnapshot === 'function') window.saveGuestSnapshot();
+    } else if (data.type === 'guide_reward_granted') {
+        if (data.ok && typeof data.newCoins === 'number') {
+            player.coins = data.newCoins;
+            if (typeof window.saveGuestSnapshot === 'function') window.saveGuestSnapshot();
+        }
     } else if (data.type === 'bp_xp_added') {
         bpXP = data.totalXP;
         showNotification(`⭐ +${data.amount} BP XP!`);
@@ -371,6 +438,7 @@ ws.onmessage = (event) => {
         // Actualizar billetera e inventario localmente
         player.coins = data.newCoins;
         player.inventory = data.newInventory;
+        if (typeof window.saveGuestSnapshot === 'function') window.saveGuestSnapshot();
 
         // Efectos visuales de éxito
         shopModal.style.display = 'none';
@@ -484,15 +552,7 @@ ws.onmessage = (event) => {
         authMessage.style.color = '#4cd137'; // Green
         authMessage.innerText = data.message;
     } else if (data.type === 'trigger_tutorial') {
-        // If they haven't seen the tutorial, open it automatically!
-        setTimeout(() => {
-            const tm = (typeof tutorialModal !== 'undefined' && tutorialModal) || document.getElementById('tutorial-modal');
-            if (tm) {
-                currentTutorialStep = 0;
-                renderTutorialStep();
-                tm.style.display = 'flex';
-            }
-        }, 500); // Pequeño retraso para que no sea súper agresivo
+        // Tutorial antiguo retirado (ahora lo cubre la guía de Boba). Ignorar.
     } else if (data.type === 'feedback_success') {
         // Restaurar botón
         if (submitFeedbackBtn) {
@@ -1301,6 +1361,21 @@ ws.onmessage = (event) => {
         }
         // 🔄 NEW: Store tiles as objects with layer and collision data!
         if (data.blocked) player.blocked = data.blocked;
+        if (data.companions) player.companions = data.companions;
+        // 💾 Guest: marcar y restaurar el progreso local
+        if (data.isGuest !== undefined) player.isGuest = !!data.isGuest;
+        if (player.isGuest) {
+            const snap = (typeof window.loadGuestSnapshot === 'function') ? window.loadGuestSnapshot() : null;
+            if (snap) {
+                if (typeof snap.coins === 'number') player.coins = snap.coins;
+                if (typeof snap.gems === 'number') player.gems = snap.gems;
+                if (Array.isArray(snap.inventory)) player.inventory = snap.inventory;
+                if (Array.isArray(snap.hotbar)) player.hotbar = snap.hotbar;
+                if (snap.equipped) player.equipped = Object.assign({}, player.equipped, snap.equipped);
+                if (Array.isArray(snap.companions)) player.companions = snap.companions;
+                try { if (window.ws && ws.readyState === WebSocket.OPEN) ws.send(MessagePack.encode({ type: 'restore_guest', snapshot: snap })); } catch (e) { }
+            }
+        }
         if (data.worldMap) {
             worldMap.clear();
             // Si el init trae el mapa vacío, el servidor lo enviará por lotes (map_chunk)
@@ -1344,6 +1419,23 @@ ws.onmessage = (event) => {
         if (typeof spawnDamageText === 'function') {
             spawnDamageText(player.worldX, player.worldY, data.text, false, data.color || "#3498db");
         }
+    }
+    else if (data.type === 'head_text') {
+        // Texto flotante en una posición concreta del mundo (arriba de un jugador)
+        if (typeof spawnDamageText === 'function' && typeof data.x === 'number' && typeof data.y === 'number') {
+            let txt = data.text;
+            let _key = data.textKey;
+            // Respaldo: si el server aún manda solo texto en español, detectar el aviso
+            if (!_key && txt) {
+                const low = String(txt).toLowerCase();
+                if (low.indexOf('inicia sesi') !== -1 || low.indexOf('iniciar sesi') !== -1) _key = 'guide.turfGuest';
+                else if (low.indexOf('squad') !== -1) _key = 'guide.turfNoSquad';
+            }
+            if (_key && typeof window.t === 'function') {
+                try { const tr = window.t(_key); if (tr && tr !== _key) txt = tr; } catch (e) { }
+            }
+            spawnDamageText(data.x, data.y, txt, false, data.color || '#e74c3c');
+        }
     }// (Pon esto junto a tus otros else if, por ejemplo debajo de 'shoot' o 'hp_update')
     else if (data.type === 'global_announcement') {
         window.serverAnnouncementsQueue = window.serverAnnouncementsQueue || [];
@@ -1386,7 +1478,10 @@ ws.onmessage = (event) => {
         const junkyard = document.getElementById('junkyard-modal');
         if (junkyard) junkyard.style.display = 'none';
         isJunkyardOpen = false;
-        lastJunkyardTile = null;
+        // ⚠️ NO poner lastJunkyardTile = null aquí: el motor reabriría el modal al instante
+        // porque el jugador sigue sobre la misma baldosa. Se resetea solo al caminar fuera.
+        // Guide: tras vender, continuar a la tienda de armas
+        if (typeof window._onSellSuccess === 'function') window._onSellSuccess();
 
         //  2. EL FIX: Cierra también la Joyería (si estaba abierta)
         const jeweler = document.getElementById('jeweler-modal');
@@ -1406,6 +1501,7 @@ ws.onmessage = (event) => {
         // 🛑 EL FIX: Tu juego guarda en su memoria local lo que envíe el servidor
         if (player) {
             player.inventory = data.inventory;
+            if (typeof window.saveGuestSnapshot === 'function') window.saveGuestSnapshot();
         }
     }// Recibir daño a la base en vivo
     else if (data.type === 'base_update') {
@@ -1663,7 +1759,7 @@ ws.onmessage = (event) => {
             // (spawnX/spawnY ya vienen de data.x/data.y), no la posición interpolada.
         }
 
-        // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar TRIGGER BITCH
+        // ⚡ LAG COMPENSATION: avanzar la bala los ms que tardó en llegar
         const bulletLag = data.t ? Math.max(0, Math.min(Date.now() - data.t, 150)) : 0;
         spawnProjectile(spawnX, spawnY, data.angle, data.id, data.weaponId, bulletLag);
         if (typeof triggerMuzzleFlash === 'function') {
@@ -2035,6 +2131,9 @@ ws.onmessage = (event) => {
         player.hotbar = data.player.hotbar || ["none", "none", "none"];
         player.quickSwaps = data.player.quickSwaps || [];
         player.accountId = data.player.accountId;
+        // Ya es una cuenta real: dejar de tratarlo como guest y limpiar su guardado local
+        player.isGuest = false;
+        if (typeof window.clearGuestSnapshot === 'function') window.clearGuestSnapshot();
 
         // --- 🌟 NUEVO: CARGAR TAREAS DEL SERVIDOR TRAS LOGIN 🌟 ---
         globalTasks = data.globalTasks || {};
@@ -2049,6 +2148,9 @@ ws.onmessage = (event) => {
 
         // 🛑 EL FIX 3: Cargar tu ropa desde el servidor al entrar
         player.equipped = data.player.equipped || { head: 'head_default', body: 'body_default', hands: 'none' };
+        // 🐾 Compañeros equipados
+        player.companions = Array.isArray(data.player.companions) ? data.player.companions : [];
+        if (!player.equipped.companion) player.equipped.companion = player.companions[0] || 'none';
         // --- NUEVO: RECIBIR TU ROL ---
         player.role = data.player.role;
 
@@ -2298,7 +2400,8 @@ registerBtn.addEventListener('click', () => {
             type: 'register',
             email: authEmail.value.trim().toLowerCase(), // Add email
             username: authUsername.value.trim(),         // Add display name
-            password: authPassword.value
+            password: authPassword.value,
+            guestSnapshot: (typeof window.loadGuestSnapshot === 'function') ? window.loadGuestSnapshot() : null
         }));
     } else {
         authMessage.style.color = '#ff6b6b';
@@ -2389,4 +2492,56 @@ window.testBuyCelebration = function(itemName = 'Arma de Prueba', iconSrc = 'ite
                 celebContent.style.opacity = '1';
             }, 50);
 };
+
+// 🎉 Celebración genérica (título + nombre + icono). Usada por la guía.
+window.showCelebration = function (title, itemName, iconSrc, onClose) {
+    const celebOverlay = document.getElementById('purchase-celebration');
+    if (!celebOverlay) return;
+    const celebContent = document.getElementById('celebration-content');
+    const celebItemName = document.getElementById('celebration-item-name');
+    const celebTitle = document.getElementById('celebration-title');
+    if (celebTitle) celebTitle.innerText = title || '¡COMPRA EXITOSA!';
+    if (celebItemName) celebItemName.innerText = itemName || '';
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = iconSrc || '';
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let sw = img.naturalWidth, sh = img.naturalHeight, sy = 0, rot = 'rotateZ(20deg)';
+        if (img.naturalWidth === 128 && img.naturalHeight === 128) {
+            // Sprite de compañero (4x4 de 32x32): usar primer frame
+            sw = 32; sh = 32; sy = 0; rot = 'rotateZ(0deg)';
+        } else if (img.naturalWidth === 384 && img.naturalHeight === 384) {
+            sw = 96; sh = 96; rot = 'rotateZ(0deg)';
+        } else if (img.naturalHeight >= 64 && img.naturalWidth >= 48) {
+            sw = 48; sh = 64; sy = (img.naturalHeight >= 128) ? 64 : 0;
+        }
+        canvas.width = sw; canvas.height = sh;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, sy, sw, sh, 0, 0, sw, sh);
+        const front = canvas.toDataURL();
+        ctx.globalCompositeOperation = 'source-in'; ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, sw, sh);
+        const edge = canvas.toDataURL();
+        document.querySelectorAll('.celeb-item-layer').forEach(l => { l.src = front; l.style.transform = l.style.transform.replace(/rotateZ\([^)]+\)/, rot); });
+        document.querySelectorAll('.celeb-item-layer-black').forEach(l => { l.src = edge; l.style.transform = l.style.transform.replace(/rotateZ\([^)]+\)/, rot); });
+    };
+
+    celebOverlay.style.display = 'flex';
+    celebOverlay.onclick = () => {
+        if (celebContent) { celebContent.style.transform = 'scale(0)'; celebContent.style.opacity = '0'; }
+        celebOverlay.style.opacity = '0';
+        setTimeout(() => { celebOverlay.style.display = 'none'; if (typeof onClose === 'function') onClose(); }, 600);
+    };
+    setTimeout(() => {
+        celebOverlay.style.opacity = '1';
+        if (celebContent) { celebContent.style.transform = 'scale(1)'; celebContent.style.opacity = '1'; }
+    }, 50);
+};
+
+// Recompensa de la guía
+if (typeof ws !== 'undefined') {
+    // se maneja en el router principal (ver más abajo)
+}
+
 

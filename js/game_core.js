@@ -6,7 +6,7 @@ const FRAME_HEIGHT = 64;
 let centralBase = null;
 
 // FIX: Función global para que el motor lea todas las bases del mapa
-window.getAllTurfBases = function() {
+window.getAllTurfBases = function () {
     return window.turfBases ? Object.values(window.turfBases) : [];
 };
 let RANKS = [];
@@ -64,7 +64,7 @@ function animateLoadingBar() {
     if (isVisualDone) return;
     const fill = document.getElementById('loading-bar-fill');
     const targetPct = (totalAssetsToLoad > 0) ? ((assetsLoaded / totalAssetsToLoad) * 100) : 0;
-    
+
     visualProgress += (targetPct - visualProgress) * 0.08;
     if (visualProgress < 95 && targetPct > 0) visualProgress += 0.3;
     if (visualProgress > targetPct && targetPct < 100) visualProgress = targetPct;
@@ -86,6 +86,8 @@ function animateLoadingBar() {
         isVisualDone = true;
         if (txt) txt.innerText = (typeof t === 'function' ? t('loading.ready') : '¡Mundo Listo!');
 
+        const guideDone = (() => { try { return localStorage.getItem('aargon_guide_done') === '1'; } catch (e) { return false; } })();
+
         const enterGame = () => {
             const screen = document.getElementById('loading-screen');
             if (screen) screen.style.opacity = '0';
@@ -98,16 +100,36 @@ function animateLoadingBar() {
                     authOverlay.style.opacity = '0';
                     authOverlay.style.pointerEvents = 'none';
                 }
+                // 🎬 1s después de entrar, arranca la cinemática de guía (solo si no la completó)
+                if (!guideDone) {
+                    setTimeout(() => { if (typeof window.startGuideCinematic === 'function') window.startGuideCinematic(); }, 1000);
+                }
             }, 800);
         };
 
-        const playBtn = document.getElementById('play-now-btn');
         const playWrap = document.getElementById('play-now-wrap');
-        if (playBtn && playWrap) {
-            playWrap.style.maxHeight = '140px';
+        const playBtn = document.getElementById('play-now-btn');
+        const langChoice = document.getElementById('lang-choice');
+        const langEn = document.getElementById('lang-en');
+        const langEs = document.getElementById('lang-es');
+
+        const startGame = (lang) => {
+            if (typeof setLang === 'function') setLang(lang);
+            enterGame();
+        };
+
+        if (playWrap && playBtn) {
+            playWrap.style.maxHeight = '220px';
             playWrap.style.opacity = '1';
             playBtn.style.transform = 'translateY(0) scale(1)';
-            playBtn.onclick = () => enterGame();
+            playBtn.onclick = () => {
+                // Si el guide ya terminó -> entra directo. Si no -> pide idioma y luego arranca el guide.
+                if (guideDone || !langChoice) { enterGame(); return; }
+                playBtn.style.display = 'none';
+                langChoice.style.display = 'flex';
+            };
+            if (langEn) langEn.onclick = () => startGame('en');
+            if (langEs) langEs.onclick = () => startGame('es');
         } else if (playBtn) {
             playBtn.style.display = 'block';
             playBtn.onclick = () => enterGame();
@@ -397,10 +419,12 @@ canvas.addEventListener('touchend', (e) => {
 });
 
 // (PC Inputs handled in js/input_pc.js)
+// 🚶 Velocidad base GLOBAL de todos los jugadores (ajusta solo este número)
+const PLAYER_BASE_SPEED = 3;
 const player = {
     worldX: 0,
     worldY: 0,
-    speed: 4,
+    speed: PLAYER_BASE_SPEED,
     vx: 0,
     vy: 0,
     message: "",
@@ -863,7 +887,7 @@ mapToggle.addEventListener('click', () => {
         const w = isTouch ? Math.min(Math.floor(window.innerWidth * 0.92), 380) : Math.min(Math.floor(window.innerWidth * 0.9), 1000);
         const h = isTouch ? Math.min(Math.floor(window.innerHeight * 0.5), 320) : Math.min(Math.floor(window.innerHeight * 0.7), 640);
         if (minimapCanvas && w > 200 && h > 200) { minimapCanvas.width = w; minimapCanvas.height = h; }
-    } catch (e) {}
+    } catch (e) { }
     // Auto-center the map when opening
     mapOffsetX = 0; mapOffsetY = 0;
 });
@@ -1129,7 +1153,7 @@ canvas.addEventListener('touchstart', (e) => {
             executeTileLogic(clickedLogicTile, `${gridClickX},${gridClickY}`);
             // 🧱 UGC: hook de tile script al hacer clic/tap
             if (clickedLogicTile.scriptId && typeof sendTileInteract === 'function') {
-                try { sendTileInteract(gridClickX, gridClickY, 15, 'click'); } catch (e) {}
+                try { sendTileInteract(gridClickX, gridClickY, 15, 'click'); } catch (e) { }
             }
             return; // Detenemos la ejecución
         }

@@ -278,6 +278,10 @@ buyItemBtn.addEventListener('click', () => {
             buyItemBtn.innerText = (typeof t === 'function') ? t('shop.processing') : "Procesando...";
         buyItemBtn.style.background = "#f1c40f";
 
+        // Ocultar el tip de la guía al confirmar la compra
+        if (typeof window.guideTipHide === 'function') window.guideTipHide();
+        if (window.guide) { window.guide.buyPickerDone = true; window.guide.buyPickerTipped = false; window.guide.buyTipped = false; }
+
         // Pedirle al servidor que ejecute el cobro
         ws.send(MessagePack.encode({ type: 'buy_item', itemId: currentShopItemId }));
     }

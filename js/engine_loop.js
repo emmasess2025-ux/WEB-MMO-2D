@@ -407,6 +407,1150 @@ function drawModularCharacter(ctx, p, drawX, drawY, zoom) {
     if (equippedMount) p.isSitting = false;
 } // <--- Fin de la función drawModularCharacter
 
+// 🎬 Inicia la cinemática de guía (zoom al jugador + Boba mirándolo)
+window.guide = window.guide || { phase: 'idle', t0: 0, baseZoom: 2, targetZoom: 4 };
+window.startGuideCinematic = function () {
+    window.guide.phase = 'zoom';
+    window.guide.t0 = performance.now();
+    window.guide.baseZoom = (typeof zoomLevel !== 'undefined') ? zoomLevel : 2;
+    window._guideNormalZoom = window.guide.baseZoom; // recordar zoom normal para restaurar al final
+    window.guide.targetZoom = Math.min(6, window.guide.baseZoom * 2);
+    window.guide.answered = false;
+    window.cinematicLock = true;
+};
+
+// Marca el guide como terminado (deja de aparecer la elección de idioma / cinemática)
+window.finishGuide = function () {
+    try { localStorage.setItem('aargon_guide_done', '1'); } catch (e) {}
+    if (window.guide) { window.guide.phase = 'idle'; window.guide.itemGlow = null; }
+    window._guideNormalZoom = undefined;
+    window.cinematicLock = false;
+    const box = document.getElementById('guide-dialog');
+    if (box) box.style.display = 'none';
+};
+
+// =========================================================
+// 🎓 TUTORIAL VISUAL DE EQUIPAR (Boba Tip flotante + puntero)
+// =========================================================
+function _bobaDrawPortrait() {
+    const cvs = document.getElementById('boba-tip-canvas');
+    if (!cvs) return;
+    const cx = cvs.getContext('2d');
+    const id = (typeof player !== 'undefined' && player && player.companions && player.companions[0]) || 'companion_boba';
+    const img = window.loadedItemSprites && window.loadedItemSprites[id];
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cvs.width, cvs.height);
+    if (img && img.complete && img.naturalWidth > 0) {
+        cx.drawImage(img, 0, 0, 32, 32, 0, 0, cvs.width, cvs.height); // frame 0 = mirando abajo
+    }
+}
+function _positionBobaTip(rect) {
+    const tip = document.getElementById('boba-tip');
+    if (!tip || tip.style.display === 'none') return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const tw = tip.offsetWidth || 260;
+    const th = tip.offsetHeight || 60;
+    // Centrar horizontalmente bajo el objetivo, sin salirse de la pantalla
+    let left = rect.left + rect.width / 2 - tw / 2;
+    left = Math.max(8, Math.min(left, vw - tw - 8));
+    // Debajo del objetivo; si no cabe, encima
+    let top = rect.bottom + 14;
+    if (top + th > vh - 8) top = rect.top - th - 14;
+    if (top < 8) top = 8;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+    tip.style.bottom = 'auto';
+    tip.style.transform = 'none';
+}
+// Coloca el tip a la izquierda, centrado verticalmente (para la fase de basura)
+function guideTipLeftCenter() {
+    const tip = document.getElementById('boba-tip');
+    if (!tip) return;
+    tip.style.left = '16px';
+    tip.style.top = '50%';
+    tip.style.bottom = 'auto';
+    tip.style.transform = 'translateY(-50%)';
+}
+function guidePointerTo(sel) {
+    const el = sel ? document.querySelector(sel) : null;
+    const ptr = document.getElementById('guide-pointer');
+    const spot = document.getElementById('guide-spotlight');
+    if (!ptr) return;
+    if (!el) { ptr.style.display = 'none'; if (spot) spot.style.display = 'none'; return; }
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) { ptr.style.display = 'none'; if (spot) spot.style.display = 'none'; return; }
+    ptr.style.display = 'block';
+    ptr.style.left = (r.left - 6) + 'px';
+    ptr.style.top = (r.top - 6) + 'px';
+    ptr.style.width = (r.width + 12) + 'px';
+    ptr.style.height = (r.height + 12) + 'px';
+    if (spot) {
+        spot.style.display = 'block';
+        spot.style.left = (r.left - 4) + 'px';
+        spot.style.top = (r.top - 4) + 'px';
+        spot.style.width = (r.width + 8) + 'px';
+        spot.style.height = (r.height + 8) + 'px';
+    }
+    _positionBobaTip(r);
+}
+function guideTip(text, sel, icon, next) {
+    const el = document.getElementById('boba-tip');
+    const tx = document.getElementById('boba-tip-text');
+    if (tx) tx.textContent = text;
+    if (el) {
+        el.style.display = 'flex';
+        // ✨ leve glow cada vez que cambia el texto (para que se note dinámico)
+        el.classList.remove('boba-tip-flash');
+        void el.offsetWidth;
+        el.classList.add('boba-tip-flash');
+        clearTimeout(window._bobaTipFlashT);
+        window._bobaTipFlashT = setTimeout(function () { el.classList.remove('boba-tip-flash'); }, 700);
+    }
+    _bobaDrawPortrait();
+    // Icono opcional (ej. el sprite de basura 16x16)
+    const ic = document.getElementById('boba-tip-icon');
+    if (ic) {
+        if (icon && icon.sheet === 'trash' && typeof trashSpritesheet !== 'undefined' && typeof CLIENT_TRASH_CATALOG !== 'undefined' && CLIENT_TRASH_CATALOG.length) {
+            const t0 = CLIENT_TRASH_CATALOG[0];
+            const cx = ic.getContext('2d');
+            cx.imageSmoothingEnabled = false;
+            cx.clearRect(0, 0, ic.width, ic.height);
+            if (trashSpritesheet.complete && trashSpritesheet.naturalWidth > 0) {
+                cx.drawImage(trashSpritesheet, t0.sx, t0.sy, 16, 16, 0, 0, ic.width, ic.height);
+            }
+            ic.style.display = 'inline-block';
+        } else {
+            ic.style.display = 'none';
+        }
+    }
+    // Botón "Siguiente" opcional dentro del tip (para avanzar pasos)
+    const nextBtn = document.getElementById('boba-tip-next');
+    if (nextBtn) {
+        if (next && typeof next.onClick === 'function') {
+            nextBtn.style.display = 'inline-block';
+            nextBtn.textContent = next.text || ((typeof t === 'function') ? t('guide.next') : 'Next');
+            nextBtn.onclick = function (ev) { if (ev) ev.stopPropagation(); next.onClick(); };
+        } else {
+            nextBtn.style.display = 'none';
+            nextBtn.onclick = null;
+        }
+    }
+    if (sel) guidePointerTo(sel);
+}
+function guideTipHide() {
+    const el = document.getElementById('boba-tip');
+    if (el) el.style.display = 'none';
+    const p = document.getElementById('guide-pointer');
+    if (p) p.style.display = 'none';
+    const s = document.getElementById('guide-spotlight');
+    if (s) s.style.display = 'none';
+    const nb = document.getElementById('boba-tip-next');
+    if (nb) { nb.style.display = 'none'; nb.onclick = null; }
+}
+// ------- 🧪 Helpers de prueba (consola) -------
+window.testGuideReset = function () {
+    try { localStorage.removeItem('aargon_guide_done'); } catch (e) { }
+    window.guide = { phase: 'idle', t0: 0, baseZoom: (typeof zoomLevel !== 'undefined' ? zoomLevel : 2), targetZoom: 4, answered: false, walk: null, waitingForItem: null, startWalkAfter: false };
+    window.camFocus = { active: false };
+    window.camReturn = false;
+    if (typeof guideTipHide === 'function') guideTipHide();
+    const box = document.getElementById('guide-dialog'); if (box) box.style.display = 'none';
+    console.log('[guide] reset');
+};
+// Deja el trash_picker en inventario pero SIN equipar (para probar el tutorial visual)
+window._guideEnsurePickerUnequipped = function () {
+    if (typeof player === 'undefined' || !player) return;
+    if (!Array.isArray(player.inventory)) player.inventory = [];
+    if (!player.inventory.some(i => ((typeof i === 'object' && i) ? i.id : i) === 'trash_picker')) player.inventory.push('trash_picker');
+    if (Array.isArray(player.hotbar)) player.hotbar = player.hotbar.map(x => (x === 'trash_picker' ? 'none' : x));
+    if (player.equippedWeapon === 'trash_picker') player.equippedWeapon = 'none';
+};
+// Probar SOLO el tutorial de equipar (rápido)
+window.testGuideEquip = function () {
+    window._guideEnsurePickerUnequipped();
+    if (typeof window.startEquipTutorial === 'function') window.startEquipTutorial();
+    console.log('[guide] test equip');
+};
+// Probar el guide COMPLETO desde el inicio (cinemática -> caminar -> yonke -> equipar)
+window.testGuideFromStart = function () {
+    window.testGuideReset();
+    window._guideEnsurePickerUnequipped();
+    if (typeof window.startGuideCinematic === 'function') window.startGuideCinematic();
+    console.log('[guide] test desde el inicio');
+};
+
+// Saltar directo al diálogo de llegada (yonke) sin caminar
+window.testGuideArrival = function () {
+    window.testGuideReset();
+    window._guideEnsurePickerUnequipped();
+    const box = document.getElementById('guide-dialog'); if (box) box.style.display = 'block';
+    if (typeof window.playGuideLine === 'function') window.playGuideLine('arrival');
+    console.log('[guide] test arrival');
+};
+
+window._equipTut = { active: false, step: 0, done: false };
+window.startEquipTutorial = function () {
+    window._equipTut = { active: true, step: 0, done: false };
+    const tray = document.getElementById('app-tray');
+    const trayOpen = !!(tray && tray.classList.contains('open'));
+    if (trayOpen) {
+        // Ya está abierta: saltar directo al paso de la mochila
+        window._equipTut.step = 1;
+        guideTip((typeof t === 'function') ? t('tut.openBag') : 'Open your bag', '#app-inventory');
+    } else {
+        // Paso nuevo: abrir el menú (menu-toggle) para que aparezca la bandeja
+        guideTip((typeof t === 'function') ? t('tut.openMenu') : 'Tap the menu button (☰) to open your apps.', '#menu-toggle');
+    }
+};
+window._equipTutTick = function () {
+    const tut = window._equipTut;
+    if (!tut || !tut.active) return;
+    if (typeof player === 'undefined' || !player) return;
+
+    const equipped = (player.equippedWeapon === 'trash_picker') || (Array.isArray(player.hotbar) && player.hotbar.includes('trash_picker'));
+    if (equipped) {
+        tut.active = false;
+        guideTipHide();
+        if (!tut.done) {
+            tut.done = true;
+            const box = document.getElementById('guide-dialog');
+            if (box) box.style.display = 'block';
+            if (typeof window.playGuideLine === 'function') window.playGuideLine('trash_hunt');
+        }
+        return;
+    }
+
+    const isOpen = (id) => { const e = document.getElementById(id); return e && e.style.display !== 'none'; };
+    // Si el tip se ocultó (p. ej. detrás de una celebración), reintentarlo
+    const tipShown = () => { const e = document.getElementById('boba-tip'); return !!(e && e.style.display !== 'none'); };
+    if (isOpen('item-detail-modal')) {
+        if (tut.step !== 4 || !tipShown()) { tut.step = 4; guideTip((typeof t === 'function') ? t('tut.equip') : 'Equip it', '#btn-equip-item'); }
+        else guidePointerTo('#btn-equip-item');
+    } else if (isOpen('inventory-modal')) {
+        const slotSel = '#inventory-grid [data-item-id="trash_picker"]';
+        if (tut.step !== 3 || !tipShown()) { tut.step = 3; guideTip((typeof t === 'function') ? t('tut.select') : 'Select your Trash Picker', slotSel); }
+        else guidePointerTo(slotSel);
+    } else if (isOpen('equip-modal')) {
+        if (tut.step !== 2 || !tipShown()) { tut.step = 2; guideTip((typeof t === 'function') ? t('tut.slot') : 'Choose a slot', '#equip-slots-container'); }
+        else guidePointerTo('#equip-slots-container');
+    } else {
+        const tray = document.getElementById('app-tray');
+        const trayOpen = !!(tray && tray.classList.contains('open'));
+        if (!trayOpen) {
+            // PASO NUEVO: tocar el botón de menú para abrir la bandeja
+            if (tut.step !== 0 || !tipShown()) { tut.step = 0; guideTip((typeof t === 'function') ? t('tut.openMenu') : 'Tap the menu button (☰) to open your apps.', '#menu-toggle'); }
+            else guidePointerTo('#menu-toggle');
+        } else {
+            // Bandeja abierta: tocar la mochila
+            if (tut.step !== 1 || !tipShown()) { tut.step = 1; guideTip((typeof t === 'function') ? t('tut.openBag') : 'Open your bag', '#app-inventory'); }
+            else guidePointerTo('#app-inventory');
+        }
+    }
+};
+
+// =========================================================
+// 🗑️ FASE: RECOLECTAR BASURA (guía a la más cercana) + regreso a vender
+// =========================================================
+window._trashCount = function () {
+    if (typeof player === 'undefined' || !player || !Array.isArray(player.inventory)) return 0;
+    let n = 0;
+    for (const it of player.inventory) {
+        const id = (typeof it === 'object' && it) ? it.id : it;
+        if (typeof id === 'string' && id.indexOf('trash_') === 0) {
+            n += (typeof it === 'object' && it && it.quantity) ? it.quantity : 1;
+        }
+    }
+    return n;
+};
+window._findNearestTrash = function () {
+    if (typeof groundItems === 'undefined' || typeof player === 'undefined' || !player) return null;
+    const planet = player.currentPlanet || 'main';
+    let best = null, bestD = Infinity;
+    for (const id in groundItems) {
+        const g = groundItems[id];
+        if (!g || g.type !== 'trash') continue;
+        if ((g.planetId || 'main') !== planet) continue;
+        const d = Math.hypot(g.x - player.worldX, g.y - player.worldY);
+        if (d < bestD) { bestD = d; best = { x: g.x, y: g.y, id: id }; }
+    }
+    return best;
+};
+window._trashHuntRetarget = function () {
+    const g = window.guide;
+    if (!g || !g.trashActive) return;
+    g.hold = null;
+    const near = window._findNearestTrash();
+    if (!near) return; // sin basura visible ahora mismo
+    g.trashTargetId = near.id;
+    window.startGuideWalk({ x: near.x, y: near.y }, function () {
+        // Llegó a la basura: quedarse FIJO ahí hasta que la recoja
+        if (window.guide && window.guide.trashActive) window.guide.hold = { x: near.x, y: near.y };
+    });
+};
+function _guideTrashTip(count) {
+    const txt = (typeof t === 'function')
+        ? t('guide.trashProgress').replace('{n}', count)
+        : ('Follow me to collect trash (' + count + '/10)');
+    guideTip(txt, null, { sheet: 'trash' });
+    guideTipLeftCenter();
+}
+window.startTrashHunt = function () {
+    window.guide = window.guide || {};
+    window.guide.trashActive = true;
+    window.guide.trashReturning = false;
+    window.guide.junkyardTipped = false;
+    window.guide.trashShown = -1;
+    window.guide.trashTargetId = null;
+    window.guide.hold = null;
+    _guideTrashTip(window._trashCount ? window._trashCount() : 0);
+    setTimeout(function () { window._trashHuntRetarget(); }, 1200);
+};
+window._trashTick = function () {
+    const g = window.guide;
+    if (!g) return;
+    // Si abrió el modal del yonke al regresar, Boba explica sus funciones
+    const jm = document.getElementById('junkyard-modal');
+    if (jm && jm.style.display !== 'none' && g.trashReturning && !g.junkyardTipped) {
+        g.junkyardTipped = true;
+        // ⛔ NO liberar a Boba aquí: se queda plantado durante la venta (evita free-roam raro)
+        window.startSellTutorial();
+    }
+    if (!g.trashActive) return;
+
+    // Si la basura objetivo desapareció (fue recogida) -> soltar hold y buscar otra
+    if (g.trashTargetId && typeof groundItems !== 'undefined' && !groundItems[g.trashTargetId]) {
+        g.trashTargetId = null;
+        g.hold = null;
+        setTimeout(function () { if (window.guide && window.guide.trashActive) window._trashHuntRetarget(); }, 400);
+    }
+
+    // Contador X/10
+    const count = window._trashCount();
+    if (g.trashShown !== count && count < 10) {
+        g.trashShown = count;
+        _guideTrashTip(count);
+    }
+
+    if (count >= 10 && !g.trashReturning) {
+        g.trashActive = false;
+        g.trashReturning = true;
+        g.junkyardTipped = false;
+        g.hold = null;
+        // 🎉 Celebración + felicitación
+        const doneTxt = (typeof t === 'function') ? t('guide.trashDone') : 'Great job! 10/10';
+        guideTip(doneTxt, null, { sheet: 'trash' });
+        const tip = document.getElementById('boba-tip');
+        if (tip) { tip.classList.add('boba-celebrate'); setTimeout(function () { tip.classList.remove('boba-celebrate'); }, 1600); }
+        setTimeout(function () {
+            guideTipHide();
+            const box = document.getElementById('guide-dialog');
+            if (box) box.style.display = 'block';
+            // Solo muestra el diálogo. El caminar se dispara al dar Next (en _guideEndDialogue)
+            if (typeof window.playGuideLine === 'function') window.playGuideLine('trash_return');
+        }, 1600);
+    }
+};
+
+// =========================================================
+// 🏪 FASE: VENDER en el yonke -> ir a la tienda de armas -> comprar melee
+// =========================================================
+window.startSellTutorial = function () {
+    window.guide = window.guide || {};
+    // Paso 0: presentar la ventana de venta del yonke (con botón Next)
+    window.guide.sellTut = { active: true, step: 0 };
+    guideTip(
+        (typeof t === 'function') ? t('guide.sellWindow') : 'This is the junkyard sell window.',
+        '#junkyard-modal', null,
+        {
+            text: (typeof t === 'function') ? t('guide.next') : 'Next',
+            onClick: function () {
+                const tut = window.guide && window.guide.sellTut;
+                if (!tut) return;
+                tut.step = 1;
+                guideTip((typeof t === 'function') ? t('guide.sellIntro') : "Here you can sell items individually or all. Today we'll sell everything.", '#row-all');
+            }
+        }
+    );
+};
+window._sellTutTick = function () {
+    const g = window.guide;
+    const tut = g && g.sellTut;
+    if (!tut || !tut.active) return;
+    const jm = document.getElementById('junkyard-modal');
+    if (!jm || jm.style.display === 'none') {
+        // El modal se cerró: si ya vendió (sin basura), continuar a la tienda de armas
+        const sold = (window._trashCount ? window._trashCount() : 0) === 0;
+        tut.active = false;
+        guideTipHide();
+        if (sold && window.guide && !window.guide.gunshopPhase) window.startGunshopIntro();
+        else if (window.guide) window.guide.junkyardTipped = false; // cerró sin vender: reintentar al reabrir
+        return;
+    }
+
+    const sellBtn = document.getElementById('btn-sell-action');
+    const isLiquidate = sellBtn && /liquidar/i.test(sellBtn.textContent || '');
+    if (tut.step === 0) {
+        // Esperando que el jugador pulse "Next" en el tip de la ventana de venta
+        return;
+    } else if (tut.step === 1) {
+        if (isLiquidate) {
+            tut.step = 2;
+            guideTip((typeof t === 'function') ? t('guide.sellLiquidate') : "Now press 'Liquidate Entire Backpack'.", '#btn-sell-action');
+        } else {
+            const tipEl = document.getElementById('boba-tip');
+            if (!tipEl || tipEl.style.display === 'none') {
+                guideTip((typeof t === 'function') ? t('guide.sellIntro') : "Here you can sell items individually or all. Today we'll sell everything.", '#row-all');
+            } else {
+                guidePointerTo('#row-all');
+            }
+        }
+    } else if (tut.step === 2) {
+        const _sb = document.getElementById('btn-sell-action');
+        if (_sb && _sb.disabled) {
+            // Al presionar "Liquidar" se cierra el modal solo
+            try { jm.style.display = 'none'; } catch (e) { }
+            try { isJunkyardOpen = false; } catch (e) { }
+        } else {
+            guidePointerTo('#btn-sell-action');
+        }
+        if ((window._trashCount ? window._trashCount() : 0) === 0) {
+            tut.active = false;
+            guideTipHide();
+            try { jm.style.display = 'none'; } catch (e) { }
+            try { isJunkyardOpen = false; } catch (e) { }
+            window.startGunshopIntro();
+        }
+    }
+};
+window._guideFlowTick = function () {
+    const g = window.guide;
+    if (!g) return;
+    // Tras vender en el yonke -> ir a la tienda de armas
+    if (g.trashReturning && !g.gunshopPhase) {
+        const jm = document.getElementById('junkyard-modal');
+        const modalOpen = jm && jm.style.display !== 'none';
+        const count = (window._trashCount ? window._trashCount() : 0);
+        const reachedLiquidate = !!(g.sellTut && g.sellTut.step >= 2);
+        if (!modalOpen && (count === 0 || reachedLiquidate)) {
+            guideTipHide();
+            window.startGunshopIntro();
+        }
+    }
+};
+// Se llama desde el handler sell_success (venta confirmada por el server)
+window._onSellSuccess = function () {
+    const g = window.guide;
+    if (g && g.trashReturning && !g.gunshopPhase) {
+        guideTipHide();
+        window.startGunshopIntro();
+    }
+};
+// Diálogo retro tras vender: "tienes dinero, sígueme a la tienda"
+window.startGunshopIntro = function () {
+    window.guide = window.guide || {};
+    if (window.guide.gunshopPhase) return;
+    window.guide.gunshopPhase = 'intro';
+    guideTipHide();
+    const box = document.getElementById('guide-dialog');
+    if (box) box.style.display = 'block';
+    if (typeof window.playGuideLine === 'function') window.playGuideLine('gunshop_intro');
+};
+window.startGunshopDoor = function () {
+    window.guide = window.guide || {};
+    window.guide.hold = null; // ahora sí puede caminar
+    window.guide.gunshopPhase = 'walkDoor';
+    // Fase 1: sígueme a encontrar la tienda
+    guideTip((typeof t === 'function') ? t('guide.gunshopFind') : 'Follow me to find the gun shop.');
+    guideTipLeftCenter();
+    // Boba se coloca junto a la puerta de la tienda (tile -108, -20)
+    window.startGuideWalk({ x: -108 * 16 + 8, y: -20 * 16 + 8 }, function () {
+        // Fase 2: llegamos -> entra por la puerta
+        guideTip((typeof t === 'function') ? t('guide.gunshopArrived') : "We've arrived — enter through the door.");
+        guideTipLeftCenter();
+    }, true);
+};
+window._guideTeleportTick = function () {
+    const g = window.guide;
+    if (!g || typeof player === 'undefined' || !player) return;
+    const px = player.worldX, py = player.worldY;
+    if (window._gLastPX === undefined) { window._gLastPX = px; window._gLastPY = py; return; }
+    const jump = Math.hypot(px - window._gLastPX, py - window._gLastPY);
+    window._gLastPX = px; window._gLastPY = py;
+    if (jump > 200 && g.gunshopPhase === 'walkDoor') {
+        g.gunshopPhase = 'inside';
+        g.hold = null; g.walk = null;
+        if (player._compStates) player._compStates = []; // Boba aparece contigo dentro
+        guideTipHide();
+        setTimeout(function () {
+            // Zoom al ítem melee (coordenadas de TILE) mientras se muestra el diálogo retro
+            if (typeof window.guideFocusTo === 'function') window.guideFocusTo(50992, 50995, 3);
+            const box = document.getElementById('guide-dialog');
+            if (box) box.style.display = 'block';
+            if (typeof window.playGuideLine === 'function') window.playGuideLine('buy_melee');
+        }, 800);
+    }
+
+    // 🎉 Celebración de compra — SOLO dentro de la tienda de armas.
+    // (Antes corría en cualquier fase y con la celebración del trash_picker
+    // ocultaba el tip del tutorial de equipar y dejaba _celebSeen pegado.)
+    const celeb = document.getElementById('purchase-celebration');
+    const celebOpen = !!(celeb && celeb.style.display !== 'none');
+    if (g.gunshopPhase === 'inside') {
+        if (celebOpen) {
+            g._celebSeen = true;
+            g.buyTipped = false;
+            guideTipHide(); // oculta el aro/tip del botón comprar mientras se ve la celebración
+        } else if (g._celebSeen) {
+            // Celebración cerrada -> arranca el TOUR FINAL
+            g._celebSeen = false;
+            g.buyTipped = false;
+            g.gunshopPhase = 'tour';
+            guideTipHide();
+            if (typeof window.startFinalTour === 'function') window.startFinalTour();
+        }
+
+        // 🛒 Spotlight al botón de comprar mientras la tienda está abierta
+        if (g.gunshopPhase === 'inside' && !celebOpen) {
+            const sm = document.getElementById('shop-modal');
+            const smOpen = sm && sm.style.display !== 'none';
+            if (smOpen) {
+                if (!g.buyTipped) {
+                    g.buyTipped = true;
+                    guideTip((typeof t === 'function') ? t('guide.buyMeleeBtn') : 'Press Buy to purchase your melee.', '#buy-item-btn');
+                } else {
+                    guidePointerTo('#buy-item-btn');
+                }
+            } else if (g.buyTipped) {
+                g.buyTipped = false;
+                guideTipHide();
+            }
+        }
+    }
+};
+
+// =========================================================
+// 🏁 TOUR FINAL (tras comprar el melee)
+// =========================================================
+window.GUIDE_BASE_LOOP = [[60001, 59975], [-169, -83], [-203, 152], [78, 139], [72, -80]];
+window.GUIDE_FINAL = [
+    { key: 'guide.finalCongrats' },
+    { key: 'guide.finalJob', focus: [51999, 51994] },
+    { key: 'guide.finalShops', focus: [-107, 29] },
+    { key: 'guide.finalMount', focus: [53000, 52985] },
+    { key: 'guide.finalWar1', loop: true },
+    { key: 'guide.finalWar2' },
+    { key: 'guide.finalWar3' },
+    { key: 'guide.finalWar4' },
+    { key: 'guide.finalWar5' },
+    { key: 'guide.finalAccount' },
+    { key: 'guide.finalEnd' }
+];
+function _applyBaseLoopFocus() {
+    const f = window.guide && window.guide.final;
+    if (!f || !f.loopActive) return;
+    const coords = window.GUIDE_BASE_LOOP || [];
+    if (!coords.length) return;
+    const c = coords[f.loopIdx % coords.length];
+    if (typeof window.guideFocusTo === 'function') window.guideFocusTo(c[0], c[1], 3);
+}
+window.startFinalTour = function () {
+    window.guide = window.guide || {};
+    window.guide.final = { active: true, idx: 0, loopActive: false, loopIdx: 0, loopNextAt: 0 };
+    if (typeof window.guideFocusClear === 'function') window.guideFocusClear();
+    _playFinalStep();
+};
+function _playFinalStep() {
+    const f = window.guide && window.guide.final;
+    if (!f || !f.active) return;
+    const steps = window.GUIDE_FINAL || [];
+    if (f.idx >= steps.length) { _endFinalTour(); return; }
+    const step = steps[f.idx];
+    const isLast = (f.idx === steps.length - 1);
+
+    if (isLast) {
+        // 🏁 Último diálogo (Boba se presenta): dejar el loop de coords
+        // y hacer zoom sobre el jugador/Boba; al terminarlo se vuelve a la normalidad.
+        f.loopActive = false;
+        if (typeof player !== 'undefined' && player && typeof window.guideFocusWorld === 'function') {
+            window.guideFocusWorld(player.worldX, player.worldY, 2.6);
+        }
+    } else if (step.loop) {
+        f.loopActive = true;
+        f.loopIdx = 0;
+        f.loopNextAt = Date.now() + 3000;
+        _applyBaseLoopFocus();
+    } else if (step.focus) {
+        if (typeof window.guideFocusTo === 'function') window.guideFocusTo(step.focus[0], step.focus[1], 3);
+    }
+
+    const box = document.getElementById('guide-dialog');
+    if (box) box.style.display = 'block';
+    typeGuideText((typeof t === 'function') ? t(step.key) : step.key);
+    const wrap = document.getElementById('guide-options');
+    if (wrap) {
+        wrap.innerHTML = '';
+        const b = document.createElement('button');
+        b.textContent = (typeof t === 'function') ? t('guide.next') : 'Next';
+        b.style.cssText = 'background: linear-gradient(135deg,#d1383b,#c7734a); border:none; color:#fff; font-family:inherit; font-size:19px; padding:8px 24px; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 3px 0 rgba(0,0,0,0.4);';
+        b.onclick = () => window._finalNext();
+        wrap.appendChild(b);
+    }
+}
+window._finalNext = function () {
+    const f = window.guide && window.guide.final;
+    if (!f || !f.active) return;
+    f.idx++;
+    _playFinalStep();
+};
+function _endFinalTour() {
+    const f = window.guide && window.guide.final;
+    if (f) { f.active = false; f.loopActive = false; }
+    const box = document.getElementById('guide-dialog');
+    if (box) box.style.display = 'none';
+    if (typeof window.guideFocusClear === 'function') window.guideFocusClear();
+    if (typeof window.finishGuide === 'function') window.finishGuide();
+
+    // 🎉 Celebraciones finales: Boba (nuevo compañero) y luego 1000 Argons
+    setTimeout(function () {
+        if (typeof window.showCelebration !== 'function') return;
+        const compTitle = (typeof t === 'function') ? t('guide.compTitle') : 'TU NUEVO COMPAÑERO';
+        const compName = (typeof t === 'function') ? t('guide.compName') : 'Boba';
+        window.showCelebration(compTitle, compName, 'items/Companions/boba.png', function () {
+            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+                try { window.ws.send(MessagePack.encode({ type: 'claim_guide_reward' })); } catch (e) { }
+            }
+            setTimeout(function () {
+                const rwTitle = (typeof t === 'function') ? t('guide.rewardTitle') : 'REGALO POR COMPLETAR LA GUÍA';
+                window.showCelebration(rwTitle, '1000 Argons', 'items/icons/aargon-green.png', null);
+            }, 500);
+        });
+    }, 700);
+}
+window._guideFinalTick = function () {
+    const f = window.guide && window.guide.final;
+    if (!f || !f.active || !f.loopActive) return;
+    const now = Date.now();
+    if (!f.loopNextAt) f.loopNextAt = now + 3000;
+    if (now >= f.loopNextAt) {
+        f.loopIdx++;
+        f.loopNextAt = now + 3000;
+        _applyBaseLoopFocus();
+    }
+};
+
+// 🗨️ Caja de diálogo retro (Boba). text = frase; audioUrl = opcional para voz/sonido.
+let _guideTypeTimer = null;
+function typeGuideText(text, audioUrl) {
+    const el = document.getElementById('guide-text');
+    if (!el) return;
+    if (_guideTypeTimer) clearInterval(_guideTypeTimer);
+    if (audioUrl && typeof playSound === 'function') playSound(audioUrl, 0.8);
+    el.textContent = '';
+    let i = 0;
+    _guideTypeTimer = setInterval(() => {
+        el.textContent += text[i++] || '';
+        // blip retro sutil cada 2 letras
+        if (i % 2 === 0 && typeof playUISound === 'function') playUISound('click');
+        if (i > text.length) { clearInterval(_guideTypeTimer); _guideTypeTimer = null; }
+    }, 30);
+}
+window._guideShowOptions = function (opts) {
+    const wrap = document.getElementById('guide-options');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    opts.forEach(o => {
+        const b = document.createElement('button');
+        b.textContent = o.label;
+        b.style.cssText = 'background: linear-gradient(135deg,#d1383b,#c7734a); border:none; color:#fff; font-family:inherit; font-size:19px; padding:8px 24px; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 3px 0 rgba(0,0,0,0.4);';
+        b.onclick = () => window.guideAnswer(o.value);
+        wrap.appendChild(b);
+    });
+};
+// 📜 Líneas del guía. Encadena con `next`. Añade `audio` por línea si luego quieres voz.
+window.GUIDE_LINES = window.GUIDE_LINES || {
+    intro: {
+        textKey: 'guide.intro', audio: null, next: 'identity',
+        options: [
+            { labelKey: 'guide.opt.yes', value: 'yes' },
+            { labelKey: 'guide.opt.no', value: 'no' },
+            { labelKey: 'guide.opt.both', value: 'both' }
+        ]
+    },
+    identity: { textKey: 'guide.identity', audio: null, next: 'money' },
+    money: { textKey: 'guide.money', audio: null, next: 'follow' },
+    follow: { textKey: 'guide.follow', audio: null, next: null }, // fin del diálogo -> comienza a caminar
+    arrival: { textKey: 'guide.arrival', audio: null, next: null, focus: { x: -134, y: 82, zoom: 3 }, waitItem: 'trash_picker' }, // al llegar al yonke
+    trash_hunt: { textKey: 'guide.trashHunt', audio: null, next: null, startTrash: true }, // cuando ya compró el trash_picker
+    trash_return: { textKey: 'guide.trashReturn', audio: null, next: null }, // al juntar 10 basuras
+    junkyard_help: { textKey: 'guide.junkyardHelp', audio: null, next: null }, // al abrir el modal del yonke
+    gunshop_intro: { textKey: 'guide.gunshopIntro', audio: null, next: null }, // tras vender: ir a la tienda
+    buy_melee: { textKey: 'guide.buyMelee', audio: null, next: null } // al entrar a la tienda
+};
+
+// 🎥 Enfocar la cámara a una tile (para resaltar algo del mapa)
+// Zoom "normal" que había antes de cualquier enfoque de la guía (para restaurarlo siempre)
+function _guideNormalZoomValue() {
+    if (typeof window._guideNormalZoom === 'number') return window._guideNormalZoom;
+    const prev = window.camFocus;
+    if (prev && prev.active && typeof prev.baseZoom === 'number') return prev.baseZoom;
+    return (typeof zoomLevel !== 'undefined') ? zoomLevel : 2;
+}
+window.guideFocusTo = function (tileX, tileY, zoom) {
+    const tx = tileX * 16 + 8, ty = tileY * 16 + 8;
+    const prev = window.camFocus;
+    const same = !!(prev && prev.active && prev.x === tx && prev.y === ty);
+    window.camFocus = {
+        active: true,
+        x: tx, y: ty,
+        zoom: zoom || 3,
+        baseZoom: _guideNormalZoomValue() // conserva el zoom normal, NO el transitorio
+    };
+    if (!same) {
+        // ✨ pulso de zoom cada vez que cambia el enfoque (animación)
+        zoomLevel = Math.max(1.6, (zoom || 3) - 0.9);
+    }
+    window.camReturn = false;
+};
+// Foco por coordenadas de MUNDO (píxeles), para interiores/zonas lejanas
+window.guideFocusWorld = function (worldX, worldY, zoom) {
+    window.camFocus = { active: true, x: worldX, y: worldY, zoom: zoom || 3, baseZoom: _guideNormalZoomValue() };
+    window.camReturn = false;
+};
+window.guideFocusClear = function () {
+    window.camReturnZoom = _guideNormalZoomValue();
+    if (window.camFocus) window.camFocus.active = false;
+    window.camReturn = true; // regresa suave al jugador (y al zoom original)
+    window.camReturnT = 0;
+};
+
+// 📍 Destino del guide en COORDENADAS DE TILE (como el coord-helper del editor).
+window.GUIDE_WALK_TILE = window.GUIDE_WALK_TILE || { x: -128, y: 93 };
+try { const _gt = localStorage.getItem('aargon_guide_target'); if (_gt) window.GUIDE_WALK_TILE = JSON.parse(_gt); } catch (e) { }
+const _guideTileToWorld = (t) => ({ x: t.x * 16 + 8, y: t.y * 16 + 8 });
+// Desde consola:  setGuideTarget(-128, 93)  -> fija el tile destino y lo recuerda
+window.setGuideTarget = function (x, y) {
+    window.GUIDE_WALK_TILE = { x: Number(x) || 0, y: Number(y) || 0 };
+    try { localStorage.setItem('aargon_guide_target', JSON.stringify(window.GUIDE_WALK_TILE)); } catch (e) { }
+    console.log('[guide] destino tile =', window.GUIDE_WALK_TILE, '-> world =', _guideTileToWorld(window.GUIDE_WALK_TILE));
+};
+
+// Arranca el caminar del guía hacia el objetivo
+window.startGuideWalk = function (target, onArrive, holdAtEnd) {
+    const tile = window.GUIDE_WALK_TILE || { x: -128, y: 93 };
+    const tgt = target || _guideTileToWorld(tile);
+    const st = (typeof player !== 'undefined' && player && player._compStates && player._compStates[0]) ? player._compStates[0] : null;
+    const startX = st ? st.wx : (typeof player !== 'undefined' ? player.worldX + 22 : 0);
+    const startY = st ? st.wy : (typeof player !== 'undefined' ? player.worldY : 0);
+    // 🧭 Calcular ruta con A* (rodea paredes)
+    let path = null;
+    try { path = _guideFindPathAuto(startX, startY, tgt.x, tgt.y); } catch (e) { path = null; }
+    window.guide = window.guide || {};
+    window.guide.walk = {
+        active: true,
+        tx: tgt.x, ty: tgt.y,
+        bx: startX, by: startY,
+        path: path, pathIdx: 0,
+        waitStart: 0,
+        hurryShown: false,
+        onArrive: (typeof onArrive === 'function') ? onArrive : null,
+        holdAtEnd: !!holdAtEnd,
+        stuckX: startX, stuckY: startY, stuckT: Date.now()
+    };
+    window.cinematicLock = false;
+};
+
+// Diálogo transitorio "¡oye, date prisa!"
+window.showGuideHurry = function () {
+    const box = document.getElementById('guide-dialog');
+    if (!box) return;
+    box.style.display = 'block';
+    typeGuideText((typeof t === 'function') ? t('guide.hurry') : "Hey hey, let's hurry!");
+    const wrap = document.getElementById('guide-options');
+    if (wrap) wrap.innerHTML = '';
+    clearTimeout(window._guideHurryTimer);
+    window._guideHurryTimer = setTimeout(() => { if (box) box.style.display = 'none'; }, 2500);
+};
+
+window._guideCurrent = null;
+window.playGuideLine = function (id) {
+    const line = (window.GUIDE_LINES || {})[id];
+    if (!line) { window._guideEndDialogue(); return; }
+    window._guideCurrent = id;
+    const tx = (line.textKey && typeof t === 'function') ? t(line.textKey) : (line.text || '');
+    typeGuideText(tx, line.audio);
+    if (line.focus && typeof window.guideFocusTo === 'function') window.guideFocusTo(line.focus.x, line.focus.y, line.focus.zoom);
+    if (line.options && line.options.length) {
+        window._guideShowOptions(line.options.map(o => ({
+            label: (o.labelKey && typeof t === 'function') ? t(o.labelKey) : o.label,
+            value: o.value
+        })));
+    } else {
+        // Sin opciones -> botón Next (o Fin si es la última)
+        window._guideShowOptions([{ label: (typeof t === 'function') ? t('guide.next') : 'Next', value: (line.next ? '__next' : '__end') }]);
+    }
+};
+window._guideEndDialogue = function () {
+    const box = document.getElementById('guide-dialog');
+    if (box) box.style.display = 'none';
+    const line = (window.GUIDE_LINES || {})[window._guideCurrent] || {};
+    if (line.waitItem && window.guide) window.guide.waitingForItem = line.waitItem;
+    if (typeof window.guideFocusClear === 'function') window.guideFocusClear();
+    if (window.guide) {
+        window.guide.answered = true; // hace zoom out (no marca "done")
+        if (window._guideCurrent === 'follow') window.guide.startWalkAfter = true; // solo tras 'follow' camina
+    }
+    if (window._guideCurrent === 'arrival' && window.guide) window.guide.hold = null; // libera a Boba al cerrar la charla
+    // Tras el diálogo de "sígueme" al yonke -> caminar a vender
+    if (window._guideCurrent === 'trash_return' && window.guide) {
+        window.startGuideWalk({ x: -136 * 16 + 8, y: 93 * 16 + 8 }, function () { /* el jugador debe pisar el tile */ }, true);
+    }
+    // Tras el diálogo de intro a la tienda -> caminar a la puerta
+    if (window._guideCurrent === 'gunshop_intro') setTimeout(function () { if (typeof window.startGunshopDoor === 'function') window.startGunshopDoor(); }, 200);
+    // Tras el diálogo de compra -> zoom out (ya lo hace guideFocusClear) + glow en el ítem
+    if (window._guideCurrent === 'buy_melee' && window.guide) window.guide.itemGlow = { tx: 50992, ty: 50995 };
+    if (line.startTrash) setTimeout(function () { if (typeof window.startTrashHunt === 'function') window.startTrashHunt(); }, 300);
+};
+window.showGuideDialogue = function () {
+    const box = document.getElementById('guide-dialog');
+    if (!box) return;
+    box.style.display = 'block';
+    window.playGuideLine('intro');
+};
+window.guideAnswer = function (val) {
+    const line = (window.GUIDE_LINES || {})[window._guideCurrent] || {};
+    const nextId = line.next || null;
+    const wrap = document.getElementById('guide-options');
+
+    // Opción de la intro: muestra reacción y luego avanza a la siguiente línea
+    if (val === 'yes' || val === 'no' || val === 'both') {
+        const reactionKey = { yes: 'guide.reply.yes', no: 'guide.reply.no', both: 'guide.reply.both' }[val];
+        typeGuideText((typeof t === 'function') ? t(reactionKey) : 'Okay!');
+        if (wrap) wrap.innerHTML = '';
+        setTimeout(() => window.playGuideLine(nextId), 1500);
+        return;
+    }
+
+    // Next / End
+    if (val === '__next' && nextId) { window.playGuideLine(nextId); return; }
+    window._guideEndDialogue();
+};
+
+// 🧱 Colisión para el guía (usa el worldMap + bases, igual que el jugador)
+function guideCollides(x, y) {
+    if (typeof worldMap === 'undefined' || typeof getMapKey !== 'function') return false;
+    const gx = Math.floor(x / 16), gy = Math.floor(y / 16);
+    for (let l = 0; l <= 15; l++) {
+        const t = worldMap.get(getMapKey(gx, gy, l));
+        if (t && t.hasCollision) return true;
+    }
+    const bases = (typeof getAllTurfBases === 'function') ? getAllTurfBases() : (window.centralBase ? [window.centralBase] : []);
+    for (let i = 0; i < bases.length; i++) {
+        const b = bases[i];
+        if (!b) continue;
+        const bx = b.worldX + (b.hitboxOffsetX || 0), by = b.worldY + (b.hitboxOffsetY || 0);
+        const hw = (b.hitboxW || 32) / 2, hh = (b.hitboxH || 32) / 2;
+        if (x >= bx - hw && x <= bx + hw && y >= by - hh && y <= by + hh) return true;
+    }
+    return false;
+}
+// 🧭 Un paso hacia el objetivo evitando obstáculos (elige el primer ángulo libre)
+function guideStep(cx, cy, tx, ty, speed) {
+    const baseAng = Math.atan2(ty - cy, tx - cx);
+    const tries = [0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05, 1.4, -1.4, 1.75, -1.75, 2.1, -2.1, 2.5, -2.5, Math.PI];
+    for (let i = 0; i < tries.length; i++) {
+        const a = baseAng + tries[i];
+        const nx = cx + Math.cos(a) * speed;
+        const ny = cy + Math.sin(a) * speed;
+        if (!guideCollides(nx, ny)) return { x: nx, y: ny, dx: nx - cx, dy: ny - cy };
+    }
+    return null; // bloqueado por todos lados
+}
+
+// 🧭 A* sobre el grid de tiles (ventana acotada) para rodear paredes
+// ¿Hay línea libre (sin colisión) entre dos puntos de mundo? (para suavizar la ruta)
+function _guideLineClear(ax, ay, bx, by) {
+    const d = Math.hypot(bx - ax, by - ay);
+    const steps = Math.max(1, Math.ceil(d / 8));
+    for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        if (guideCollides(ax + (bx - ax) * t, ay + (by - ay) * t)) return false;
+    }
+    return true;
+}
+
+function guideFindPath(startX, startY, goalX, goalY, maxTiles) {
+    const TS = 16;
+    const sx = Math.floor(startX / TS), sy = Math.floor(startY / TS);
+    const gx = Math.floor(goalX / TS), gy = Math.floor(goalY / TS);
+    if (sx === gx && sy === gy) return [{ x: goalX, y: goalY }];
+    const R = maxTiles || 60;
+    const key = (x, y) => x + ',' + y;
+    const wcache = new Map();
+    const walkable = (x, y) => {
+        const k = x + ',' + y;
+        let v = wcache.get(k);
+        if (v === undefined) { v = !guideCollides(x * TS + 8, y * TS + 8); wcache.set(k, v); }
+        return v;
+    };
+
+    const open = [{ x: sx, y: sy, g: 0, f: Math.abs(gx - sx) + Math.abs(gy - sy) }];
+    const came = new Map(); came.set(key(sx, sy), null);
+    const gScore = new Map(); gScore.set(key(sx, sy), 0);
+    const closed = new Set();
+    const N = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+    let found = false, guard = 0;
+
+    while (open.length && guard < 60000) {
+        guard++;
+        let bi = 0;
+        for (let i = 1; i < open.length; i++) if (open[i].f < open[bi].f) bi = i;
+        const cur = open.splice(bi, 1)[0];
+        const ck = key(cur.x, cur.y);
+        if (cur.x === gx && cur.y === gy) { found = true; break; }
+        if (closed.has(ck)) continue;
+        closed.add(ck);
+        for (let n = 0; n < N.length; n++) {
+            const nx = cur.x + N[n][0], ny = cur.y + N[n][1];
+            if (Math.abs(nx - sx) > R || Math.abs(ny - sy) > R) continue;
+            const nk = key(nx, ny);
+            if (closed.has(nk)) continue;
+            const isGoal = (nx === gx && ny === gy);
+            if (!isGoal && !walkable(nx, ny)) continue;
+            const diag = (N[n][0] !== 0 && N[n][1] !== 0);
+            // no cortar esquinas en diagonal
+            if (diag && (!walkable(cur.x + N[n][0], cur.y) || !walkable(cur.x, cur.y + N[n][1]))) continue;
+            const stepCost = diag ? 1.4142 : 1;
+            const ng = cur.g + stepCost;
+            if (gScore.has(nk) && ng >= gScore.get(nk)) continue;
+            gScore.set(nk, ng);
+            came.set(nk, cur);
+            const ddx = Math.abs(gx - nx), ddy = Math.abs(gy - ny);
+            const hCost = (ddx + ddy) + (1.4142 - 2) * Math.min(ddx, ddy); // octile
+            open.push({ x: nx, y: ny, g: ng, f: ng + hCost });
+        }
+    }
+    if (!found) return null;
+    const path = [];
+    let cur = { x: gx, y: gy };
+    while (cur) {
+        path.push({ x: cur.x * TS + 8, y: cur.y * TS + 8 });
+        cur = came.get(key(cur.x, cur.y));
+    }
+    path.reverse();
+    if (path.length) path.shift(); // quitar el tile de inicio
+    // Suavizado (string pulling): salta waypoints si la línea directa está libre -> diagonales suaves
+    if (path.length >= 2) {
+        const smoothed = [path[0]];
+        let anchor = 0;
+        for (let i = 1; i < path.length; i++) {
+            const isLast = (i === path.length - 1);
+            if (isLast || !_guideLineClear(path[anchor].x, path[anchor].y, path[i + 1].x, path[i + 1].y)) {
+                smoothed.push(path[i]);
+                anchor = i;
+            }
+        }
+        return smoothed;
+    }
+    return path;
+}
+
+// Busca ruta probando ventanas cada vez más grandes (por si el destino está lejos)
+function _guideFindPathAuto(sx, sy, gx, gy) {
+    const tries = [60, 140, 260];
+    for (let i = 0; i < tries.length; i++) {
+        const p = guideFindPath(sx, sy, gx, gy, tries[i]);
+        if (p) return p;
+    }
+    return null;
+}
+
+// 🐾 Compañeros: siguen detrás al dueño; si está quieto, hacen free-roam en un radio cercano.
+// Soporta hasta 3. Sprite 128x128 = 4 filas (0 abajo, 1 izq, 2 der, 3 arriba) x 4 frames de 32x32.
+function drawCompanionSprite(ctx, owner, ownerScreenX, ownerScreenY, zoom) {
+    let list = Array.isArray(owner.companions) ? owner.companions.filter(Boolean) : [];
+    if (list.length === 0 && owner.equipped && owner.equipped.companion && owner.equipped.companion !== 'none') {
+        list = [owner.equipped.companion];
+    }
+    if (list.length === 0) return;
+    if (!owner._compStates) owner._compStates = [];
+
+    const now = Date.now();
+    const offs = [[0, -24], [24, 0], [-24, 0], [0, 24]];
+    const ownerDir = Math.max(0, Math.min(3, owner.frameY || 0));
+    const ow = owner.worldX, oh = owner.worldY; // 🎯 todo en coordenadas de MUNDO
+    const cinematic = (owner === player) && window.guide && window.guide.phase !== 'idle';
+    const gw = (owner === player && window.guide) ? window.guide.walk : null;
+    const walking = !!(gw && gw.active);
+    const holding = (owner === player) && !!(window.guide && window.guide.hold);
+
+    // 🚶 Movimiento del guía (solo para tu compañero): sigue la ruta A* (rodea paredes)
+    if (walking) {
+        const speed = 2.2;
+        const distToPlayer = Math.hypot(ow - gw.bx, oh - gw.by);
+        const distToTarget = Math.hypot(gw.tx - gw.bx, gw.ty - gw.by);
+        const nowMs = Date.now();
+
+        // Punto objetivo actual (waypoint de la ruta si existe)
+        let wx = gw.tx, wy = gw.ty;
+        if (gw.path && gw.path.length) {
+            if (gw.pathIdx === undefined) gw.pathIdx = 0;
+            if (gw.pathIdx < gw.path.length) {
+                wx = gw.path[gw.pathIdx].x;
+                wy = gw.path[gw.pathIdx].y;
+                if (Math.hypot(wx - gw.bx, wy - gw.by) < 7) gw.pathIdx++;
+            }
+        }
+
+        if (distToTarget < 10) {
+            gw.active = false;
+            // Si debe quedarse parado en el destino (hold)
+            if (gw.holdAtEnd) window.guide.hold = { x: gw.tx, y: gw.ty };
+            if (typeof gw.onArrive === 'function') {
+                const _f = gw.onArrive; gw.onArrive = null; _f();
+            } else {
+                const box = document.getElementById('guide-dialog');
+                if (box) box.style.display = 'block';
+                if (typeof window.playGuideLine === 'function') window.playGuideLine('arrival');
+            }
+        } else if (distToPlayer > 220) {
+            // Radio de seguimiento amplio: solo espera si te alejas MUCHO
+            if (!gw.waitStart) gw.waitStart = nowMs;
+            if ((nowMs - gw.waitStart) > 5000 && !gw.hurryShown) {
+                gw.hurryShown = true;
+                if (typeof window.showGuideHurry === 'function') window.showGuideHurry();
+            }
+            gw.mdx = 0; gw.mdy = 0;
+        } else {
+            if (gw.waitStart && distToPlayer < 170) { gw.waitStart = 0; gw.hurryShown = false; }
+            if (!gw.waitStart) {
+                const step = guideStep(gw.bx, gw.by, wx, wy, speed);
+                if (step) {
+                    gw.bx = step.x; gw.by = step.y;
+                    gw.mdx = step.dx; gw.mdy = step.dy;
+                } else {
+                    gw.mdx = 0; gw.mdy = 0;
+                }
+                // 🛑 Detector de atascado -> recalcular ruta
+                if (Math.hypot(gw.bx - (gw.stuckX || gw.bx), gw.by - (gw.stuckY || gw.by)) > 2) {
+                    gw.stuckX = gw.bx; gw.stuckY = gw.by; gw.stuckT = nowMs;
+                } else if (nowMs - (gw.stuckT || nowMs) > 2500) {
+                    try {
+                        const p = _guideFindPathAuto(gw.bx, gw.by, gw.tx, gw.ty);
+                        gw.path = p; gw.pathIdx = 0;
+                    } catch (e) { }
+                    gw.stuckT = nowMs; gw.stuckX = gw.bx; gw.stuckY = gw.by;
+                }
+            }
+        }
+    }
+
+    for (let i = 0; i < list.length; i++) {
+        const img = window.loadedItemSprites && window.loadedItemSprites[list[i]];
+        if (!img || !img.complete || img.naturalWidth === 0) continue;
+        const st = owner._compStates[i] || (owner._compStates[i] = {});
+        const spread = i * 18; // separa varios compañeros
+
+        let twx, twy; // objetivo en mundo
+        if (owner.isMoving) {
+            const off = offs[ownerDir];
+            const px = off[1] !== 0 ? (i % 2 === 0 ? 1 : -1) : 0;
+            const py = off[0] !== 0 ? (i % 2 === 0 ? 1 : -1) : 0;
+            twx = ow + off[0] + px * spread;
+            twy = oh + off[1] + py * spread;
+            st.idleSince = now;
+            st.roamTarget = null;
+        } else {
+            if (!st.idleSince) st.idleSince = now;
+            if (now - st.idleSince > 900) {
+                if (!st.roamTarget || now > (st.roamUntil || 0)) {
+                    // Elegir un destino de free-roam que NO esté en pared
+                    let _tx, _ty, _tries = 0;
+                    do {
+                        const ang = Math.random() * Math.PI * 2;
+                        const rad = 20 + Math.random() * 18;
+                        _tx = ow + Math.cos(ang) * rad;
+                        _ty = oh + Math.sin(ang) * rad;
+                        _tries++;
+                    } while (guideCollides(_tx, _ty) && _tries < 10);
+                    st.roamTarget = { x: _tx, y: _ty };
+                    st.roamUntil = now + 1200 + Math.random() * 1800;
+                }
+                twx = st.roamTarget.x; twy = st.roamTarget.y;
+            } else {
+                twx = (st.wx !== undefined) ? st.wx : ow;
+                twy = (st.wy !== undefined) ? st.wy : (oh - 20 - i * 14);
+            }
+        }
+
+        // 🎬 Durante la cinemática, Boba se coloca al lado derecho mirando al jugador
+        // 🚶 Durante el walk, Boba va hacia el destino (guiando)
+        let forceFace = null;
+        if (holding && i === 0) {
+            // 🛑 Boba se queda parado en el punto (hasta el trigger)
+            twx = window.guide.hold.x; twy = window.guide.hold.y;
+        }
+        else if (cinematic && i === 0) { twx = ow + 22; twy = oh; forceFace = 1; }
+        else if (walking && i === 0) {
+            twx = gw.bx; twy = gw.by;
+            const mdx = (gw.mdx !== undefined) ? gw.mdx : (gw.tx - gw.bx);
+            const mdy = (gw.mdy !== undefined) ? gw.mdy : (gw.ty - gw.by);
+            if (Math.abs(mdx) > 0.2 || Math.abs(mdy) > 0.2) {
+                forceFace = (Math.abs(mdx) >= Math.abs(mdy)) ? (mdx >= 0 ? 2 : 1) : (mdy >= 0 ? 0 : 3);
+            }
+        }
+
+        if (st.wx === undefined) { st.wx = twx; st.wy = twy; }
+        const idleRoam = (!owner.isMoving && !cinematic && !walking && !holding);
+        if (idleRoam) {
+            // 🧱 Free-roam con colisión (sin noclip): avanza si no choca, si choca elige otro destino
+            let ddx = twx - st.wx, ddy = twy - st.wy;
+            const dd = Math.hypot(ddx, ddy);
+            if (dd > 0.4) {
+                const sl = Math.min(1.2, dd);
+                const nx = st.wx + (ddx / dd) * sl;
+                const ny = st.wy + (ddy / dd) * sl;
+                if (!guideCollides(nx, ny)) { st.wx = nx; st.wy = ny; }
+                else { st.roamTarget = null; st.roamUntil = 0; }
+            }
+        } else {
+            const lerp = holding ? 0.3 : (cinematic ? 0.25 : (walking ? 1 : (owner.isMoving ? 0.16 : 0.06)));
+            st.wx += (twx - st.wx) * lerp;
+            st.wy += (twy - st.wy) * lerp;
+        }
+
+        // 🧱 El dueño es "pared": nunca atravesarlo (mínima separación en mundo)
+        const minDist = 16;
+        let ox = ow - st.wx, oy = oh - st.wy;
+        let od = Math.hypot(ox, oy);
+        if (od < minDist && od > 0.001) { st.wx = ow - (ox / od) * minDist; st.wy = oh - (oy / od) * minDist; }
+
+        // Dirección: al caminar mira como el dueño; en free-roam mira hacia donde va
+        let cdir = ownerDir;
+        if (!owner.isMoving) {
+            const dxv = twx - st.wx, dyv = twy - st.wy;
+            if (Math.abs(dxv) > 0.5 || Math.abs(dyv) > 0.5) {
+                if (Math.abs(dxv) >= Math.abs(dyv)) cdir = dxv >= 0 ? 2 : 1;
+                else cdir = dyv >= 0 ? 0 : 3;
+            }
+        }
+        if (forceFace !== null) cdir = forceFace;
+
+        // Mundo -> pantalla (anclado al dueño, así la cámara no lo arrastra)
+        const sx = Math.floor(ownerScreenX + (st.wx - ow) * zoom);
+        const sy = Math.floor(ownerScreenY + (st.wy - oh) * zoom);
+
+        const FRAME = 32;
+        const cols = Math.max(1, Math.floor(img.naturalWidth / FRAME));
+        const rows = Math.max(1, Math.floor(img.naturalHeight / FRAME));
+        const row = Math.min(cdir, rows - 1);
+        const frame = Math.floor((now + i * 180) / 120) % cols;
+        const size = FRAME * zoom;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, frame * FRAME, row * FRAME, FRAME, FRAME,
+            sx - Math.floor(size / 2), sy - Math.floor(size / 2), size, size);
+    }
+}
+
 function executeTileLogic(logicTile, tileKey) {
     if (logicTile.triggerType === 'teleport') {
         player.isTeleporting = true;
@@ -733,6 +1877,32 @@ function _real_update(currentTime) {
     if (dtScale > 1.2) dtScale = 1.2;
     if (dtScale < 0.8) dtScale = 0.8;
 
+    // 🎬 CINEMÁTICA DE GUÍA (Boba): zoom in -> mirada -> zoom out
+    if (window.guide && window.guide.phase !== 'idle') {
+        const g = window.guide;
+        const gp = performance.now();
+        const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        if (g.phase === 'zoom') {
+            const pr = Math.min(1, (gp - g.t0) / 1200);
+            zoomLevel = g.baseZoom + (g.targetZoom - g.baseZoom) * ease(pr);
+            if (pr >= 1) {
+                g.phase = 'hold'; g.t0 = gp; g.answered = false;
+                if (typeof window.showGuideDialogue === 'function') window.showGuideDialogue();
+            }
+        } else if (g.phase === 'hold') {
+            zoomLevel = g.targetZoom;
+            if (g.answered) { g.phase = 'out'; g.t0 = gp; }
+        } else if (g.phase === 'out') {
+            const pr = Math.min(1, (gp - g.t0) / 1000);
+            zoomLevel = g.targetZoom + (g.baseZoom - g.targetZoom) * ease(pr);
+            if (pr >= 1) {
+                zoomLevel = g.baseZoom; g.phase = 'idle'; window.cinematicLock = false;
+                if (g.startWalkAfter) { g.startWalkAfter = false; if (typeof window.startGuideWalk === 'function') window.startGuideWalk(null, null, true); }
+            }
+        }
+    }
+
+
     // 📊 CALCULADORA MAESTRA DE RENDIMIENTO (Siempre activa para proteger el celular)
     fpsFrameCount++;
     frameTimesTotal += rawDelta; // Sumamos el MS real de la computadora
@@ -841,8 +2011,99 @@ function _real_update(currentTime) {
     window._lastRenderY = player.worldY;
 
     // Use player position directly — no pixel-snap, just Math.floor at draw time
-    const renderWorldX = player.worldX;
-    const renderWorldY = player.worldY;
+    let renderWorldX = player.worldX;
+    let renderWorldY = player.worldY;
+
+    // 🎥 Enfoque de cámara (guide): centra la cámara EXACTO en el objetivo (ignora al jugador)
+    if (window.camFocus && window.camFocus.active) {
+        const cf = window.camFocus;
+        renderWorldX = cf.x;   // dead center en la tile (no sigue al jugador ni a WASD)
+        renderWorldY = cf.y;
+        // Solo el zoom se anima (al cambiar de enfoque guideFocusTo lo baja y aquí sube suave)
+        if (typeof cf.zoom === 'number') zoomLevel += (cf.zoom - zoomLevel) * 0.15;
+    } else if (window.camReturn) {
+        // Regreso suave al jugador + restauración del zoom (máx ~0.5s)
+        renderWorldX += (player.worldX - renderWorldX) * 0.15;
+        renderWorldY += (player.worldY - renderWorldY) * 0.15;
+        if (typeof window.camReturnZoom === 'number') zoomLevel += (window.camReturnZoom - zoomLevel) * 0.15;
+        window.camReturnT = (window.camReturnT || 0) + 1;
+        if (Math.hypot(player.worldX - renderWorldX, player.worldY - renderWorldY) < 8 || window.camReturnT > 30) {
+            window.camReturn = false; window.camReturnT = 0;
+            renderWorldX = player.worldX; renderWorldY = player.worldY;
+            if (typeof window.camReturnZoom === 'number') { zoomLevel = window.camReturnZoom; window.camReturnZoom = null; }
+        }
+    }
+
+    // 🗑️ Guide: esperando que el jugador compre el ítem clave
+    if (window.guide && window.guide.waitingForItem) {
+        const _needed = window.guide.waitingForItem;
+        if (player && Array.isArray(player.inventory) && player.inventory.some(i => ((typeof i === 'object' && i) ? i.id : i) === _needed)) {
+            window.guide.waitingForItem = null;
+            window.guide.buyPickerTipped = false;
+            window.guide.pickerStep = 0;
+            window.guide.buyPickerDone = false;
+            const box = document.getElementById('guide-dialog');
+            if (box) box.style.display = 'none';
+            // El tutorial de equipar arranca cuando cierre la celebración de compra (ver abajo)
+            window.guide.pendingEquipTutorial = true;
+        } else {
+            // 🛒 Tienda del ítem clave: primero presentar la ventana, luego el botón Comprar
+            const _sm = document.getElementById('shop-modal');
+            const _smOpen = _sm && _sm.style.display !== 'none';
+            const _celeb = document.getElementById('purchase-celebration');
+            const _celebOpen = _celeb && _celeb.style.display !== 'none';
+            if (!window.guide.pickerStep) window.guide.pickerStep = 0;
+
+            if (!_smOpen || _celebOpen) {
+                // Tienda cerrada o comprando: limpiar
+                if (window.guide.buyPickerTipped || window.guide.pickerStep || window.guide.buyPickerDone) {
+                    window.guide.buyPickerTipped = false;
+                    window.guide.pickerStep = 0;
+                    window.guide.buyPickerDone = false;
+                    guideTipHide();
+                }
+            } else if (!window.guide.buyPickerDone) {
+                if (window.guide.pickerStep === 0) {
+                    if (!window.guide.buyPickerTipped) {
+                        window.guide.buyPickerTipped = true;
+                        guideTip(
+                            (typeof t === 'function') ? t('guide.pickerWindow') : 'This is the purchase window.',
+                            '#shop-panel', null,
+                            {
+                                text: (typeof t === 'function') ? t('guide.next') : 'Next',
+                                onClick: function () {
+                                    window.guide.pickerStep = 1;
+                                    window.guide.buyPickerTipped = false; // forzar el siguiente tip
+                                }
+                            }
+                        );
+                    }
+                } else if (!window.guide.buyPickerTipped) {
+                    window.guide.buyPickerTipped = true;
+                    guideTip((typeof t === 'function') ? t('guide.buyPickerBtn') : 'Press Buy to acquire it.', '#buy-item-btn');
+                } else {
+                    guidePointerTo('#buy-item-btn');
+                }
+            }
+        }
+    }
+    // Si hay una celebración de compra abierta, esperar a que se cierre antes del tutorial
+    if (window.guide && window.guide.pendingEquipTutorial) {
+        const _celeb = document.getElementById('purchase-celebration');
+        const _celebOpen = _celeb && _celeb.style.display !== 'none';
+        if (!_celebOpen) {
+            window.guide.pendingEquipTutorial = false;
+            // Ahora el tutorial VISUAL de equipar (mochila -> slot -> inventario -> equipar)
+            if (typeof window.startEquipTutorial === 'function') window.startEquipTutorial();
+        }
+    }
+    // 🎓 Avanza el tutorial visual de equipar segun los modales abiertos
+    if (typeof window._equipTutTick === 'function') window._equipTutTick();
+    if (typeof window._trashTick === 'function') window._trashTick();
+    if (typeof window._sellTutTick === 'function') window._sellTutTick();
+    if (typeof window._guideFlowTick === 'function') window._guideFlowTick();
+    if (typeof window._guideTeleportTick === 'function') window._guideTeleportTick();
+    if (typeof window._guideFinalTick === 'function') window._guideFinalTick();
 
     // Centro de pantalla en píxeles CSS enteros
     const screenCenterX = Math.floor(cachedScreenWidth / 2);
@@ -903,8 +2164,13 @@ function _real_update(currentTime) {
         player.isMoving = false;
     }
 
+    // 🎬 Bloqueo durante la cinemática de guía
+    if (window.cinematicLock) {
+        player.vx = 0; player.vy = 0; player.isMoving = false; isShooting = false;
+    }
+
     /// --- CONTROLES HÍBRIDOS (MOUSE + TOUCH) ---
-    if (!player.isDead) {
+    if (!player.isDead && !window.cinematicLock) {
 
         // 🛑 EL FIX: SISTEMA DE HIT-STOP SUAVE (SIN JITTER) 🛑
         let speedMult = 1;
@@ -1711,10 +2977,10 @@ function _real_update(currentTime) {
         const screenWorldW = cachedScreenWidth / zoomLevel;
         const screenWorldH = cachedScreenHeight / zoomLevel;
 
-        const minWorldX = player.worldX - screenWorldW / 2;
-        const maxWorldX = player.worldX + screenWorldW / 2;
-        const minWorldY = player.worldY - screenWorldH / 2;
-        const maxWorldY = player.worldY + screenWorldH / 2;
+        const minWorldX = renderWorldX - screenWorldW / 2;
+        const maxWorldX = renderWorldX + screenWorldW / 2;
+        const minWorldY = renderWorldY - screenWorldH / 2;
+        const maxWorldY = renderWorldY + screenWorldH / 2;
 
         const minCX = Math.floor((minWorldX / TILE_SIZE) / CHUNK_SIZE);
         const maxCX = Math.floor((maxWorldX / TILE_SIZE) / CHUNK_SIZE);
@@ -1775,10 +3041,10 @@ function _real_update(currentTime) {
                     const chunkEndX = (cx + 1) * CHUNK_SIZE * TILE_SIZE;
                     const chunkEndY = (cy + 1) * CHUNK_SIZE * TILE_SIZE;
 
-                    const rawDx1 = screenCenterX + (chunkStartX - player.worldX) * zoomLevel;
-                    const rawDy1 = screenCenterY + (chunkStartY - player.worldY) * zoomLevel;
-                    const rawDx2 = screenCenterX + (chunkEndX - player.worldX) * zoomLevel;
-                    const rawDy2 = screenCenterY + (chunkEndY - player.worldY) * zoomLevel;
+                    const rawDx1 = screenCenterX + (chunkStartX - renderWorldX) * zoomLevel;
+                    const rawDy1 = screenCenterY + (chunkStartY - renderWorldY) * zoomLevel;
+                    const rawDx2 = screenCenterX + (chunkEndX - renderWorldX) * zoomLevel;
+                    const rawDy2 = screenCenterY + (chunkEndY - renderWorldY) * zoomLevel;
 
                     const drawX = Math.floor(rawDx1);
                     const drawY = Math.floor(rawDy1);
@@ -1988,6 +3254,8 @@ function _real_update(currentTime) {
             setShadow(20 * zoomLevel, 'red');
             ctx.globalAlpha = 0.6;
         }
+        // 🐾 Compañero DEBAJO del jugador (su sombra no queda encima)
+        drawCompanionSprite(ctx, p, pDrawX, pDrawY, zoomLevel);
         // 👇 DIBUJO LIMPIO DEL ENSAMBLADOR 👇
         drawModularCharacter(ctx, p, pDrawX, pDrawY, zoomLevel);
 
@@ -2019,10 +3287,17 @@ function _real_update(currentTime) {
         ctx.globalAlpha = 0.6;
     }
 
-    // 🚀 EL FIX DEL JITTER: Pegar el personaje a la cuadrícula del mapa!
-    const myDrawX = screenCenterX + (window.camErrorX || 0);
-    const myDrawY = screenCenterY + (window.camErrorY || 0);
+    // 🚀 EL FIX DEL JITTER: el jugador SIEMPRE dead center, salvo cuando la cámara enfoca otra zona
+    const _camLocked = (window.camFocus && window.camFocus.active) || window.camReturn;
+    const myDrawX = _camLocked
+        ? Math.floor(screenCenterX + (player.worldX - renderWorldX) * zoomLevel)
+        : screenCenterX;
+    const myDrawY = _camLocked
+        ? Math.floor(screenCenterY + (player.worldY - renderWorldY) * zoomLevel)
+        : screenCenterY;
 
+    // 🐾 Compañero DEBAJO del jugador
+    drawCompanionSprite(ctx, player, myDrawX, myDrawY, zoomLevel);
     // 👇 DIBUJO LIMPIO DEL ENSAMBLADOR PARA TI 👇
     drawModularCharacter(ctx, player, myDrawX, myDrawY, zoomLevel);
 
@@ -2031,6 +3306,26 @@ function _real_update(currentTime) {
         ctx.beginPath(); ctx.arc(myDrawX, myDrawY, 12 * zoomLevel, 0, Math.PI * 2); ctx.fill();
     }
     ctx.shadowBlur = 0; ctx.globalAlpha = 1.0;
+
+    // ✨ Glow del ítem objetivo del guide (para que sepa cuál comprar)
+    if (window.guide && window.guide.itemGlow) {
+        const _gt = window.guide.itemGlow;
+        const _gwx = _gt.tx * TILE_SIZE + 8, _gwy = _gt.ty * TILE_SIZE + 8;
+        const _gsx = Math.floor(screenCenterX + (_gwx - renderWorldX) * zoomLevel);
+        const _gsy = Math.floor(screenCenterY + (_gwy - renderWorldY) * zoomLevel);
+        const _pulse = 0.5 + 0.5 * Math.sin(Date.now() / 300);
+        const _rad = (11 + _pulse * 6) * zoomLevel;
+        ctx.save();
+        ctx.globalAlpha = 0.55 + _pulse * 0.45;
+        ctx.strokeStyle = '#f1c40f';
+        ctx.lineWidth = 2 * zoomLevel;
+        ctx.shadowBlur = 18 * zoomLevel;
+        ctx.shadowColor = '#f1c40f';
+        ctx.beginPath();
+        ctx.arc(_gsx, _gsy, _rad, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
 
     // --- MUZZLE FLASHES DRAW & UPDATE ---
     if (window.muzzleFlashes && window.muzzleFlashes.length > 0) {
@@ -2149,10 +3444,10 @@ function _real_update(currentTime) {
 
         const screenWorldW = cachedScreenWidth / zoomLevel;
         const screenWorldH = cachedScreenHeight / zoomLevel;
-        const minWorldX = player.worldX - screenWorldW / 2;
-        const maxWorldX = player.worldX + screenWorldW / 2;
-        const minWorldY = player.worldY - screenWorldH / 2;
-        const maxWorldY = player.worldY + screenWorldH / 2;
+        const minWorldX = renderWorldX - screenWorldW / 2;
+        const maxWorldX = renderWorldX + screenWorldW / 2;
+        const minWorldY = renderWorldY - screenWorldH / 2;
+        const maxWorldY = renderWorldY + screenWorldH / 2;
         const minCX = Math.floor((minWorldX / TILE_SIZE) / CHUNK_SIZE);
         const maxCX = Math.floor((maxWorldX / TILE_SIZE) / CHUNK_SIZE);
         const minCY = Math.floor((minWorldY / TILE_SIZE) / CHUNK_SIZE);
@@ -2169,10 +3464,10 @@ function _real_update(currentTime) {
                     const chunkEndX = (cx + 1) * CHUNK_SIZE * TILE_SIZE;
                     const chunkEndY = (cy + 1) * CHUNK_SIZE * TILE_SIZE;
 
-                    const rawDx1 = screenCenterX + (chunkStartX - player.worldX) * zoomLevel;
-                    const rawDy1 = screenCenterY + (chunkStartY - player.worldY) * zoomLevel;
-                    const rawDx2 = screenCenterX + (chunkEndX - player.worldX) * zoomLevel;
-                    const rawDy2 = screenCenterY + (chunkEndY - player.worldY) * zoomLevel;
+                    const rawDx1 = screenCenterX + (chunkStartX - renderWorldX) * zoomLevel;
+                    const rawDy1 = screenCenterY + (chunkStartY - renderWorldY) * zoomLevel;
+                    const rawDx2 = screenCenterX + (chunkEndX - renderWorldX) * zoomLevel;
+                    const rawDy2 = screenCenterY + (chunkEndY - renderWorldY) * zoomLevel;
 
                     const drawX = Math.floor(rawDx1);
                     const drawY = Math.floor(rawDy1);

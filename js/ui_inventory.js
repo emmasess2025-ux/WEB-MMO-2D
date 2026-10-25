@@ -251,6 +251,29 @@ function isCosmeticItem(itemId) {
     return false;
 }
 
+let activeInventoryTab = 'general';
+window.activeInventoryTab = activeInventoryTab;
+
+// --- Pestañas del inventario (General / Companions) ---
+function initInventoryTabs() {
+    const tabs = document.querySelectorAll('.inv-tab-btn');
+    if (!tabs.length) return;
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            activeInventoryTab = btn.getAttribute('data-tab') || 'general';
+            window.activeInventoryTab = activeInventoryTab;
+            tabs.forEach(b => {
+                const on = (b === btn);
+                b.classList.toggle('active', on);
+                b.style.background = on ? 'rgba(255,255,255,0.12)' : 'transparent';
+                b.style.color = on ? 'white' : '#aaa';
+            });
+            renderInventory();
+        });
+    });
+}
+initInventoryTabs();
+
 function renderInventory() {
     if (!inventoryGrid) return;
     inventoryGrid.innerHTML = "";
@@ -307,7 +330,7 @@ function renderInventory() {
             ws.send(MessagePack.encode({ type: 'update_hotbar', slotIndex: equippingSlotIndex, weaponId: "none" }));
         }
     };
-    inventoryGrid.appendChild(noneSlot);
+    if (activeInventoryTab !== 'companions') inventoryGrid.appendChild(noneSlot);
 
     // --- 2. FILTRAR ITEMS REALES (EXCLUYENDO ROPA, CABEZAS, SOMBREROS) ---
     const rawList = player.inventory || [];
@@ -321,6 +344,13 @@ function renderInventory() {
 
         // Si es cosmético, se gestiona exclusivamente desde el perfil / armario
         if (isCosmeticItem(itemId)) return;
+
+        // 🐾 Pestañas: General vs Companions
+        const _catItem = getCatalogData(itemId);
+        const _cat = _catItem && (_catItem.category || '').toLowerCase();
+        const _isCompanion = (_cat === 'companion');
+        if (activeInventoryTab === 'companions') { if (!_isCompanion) return; }
+        else { if (_isCompanion) return; }
 
         // 🌍 MULTIVERSO: ocultar items que no pertenecen a este planeta
         if (typeof isItemVisibleLocal === 'function') {
@@ -359,6 +389,7 @@ function renderInventory() {
         if (itemData) {
             const itemId = itemData.id;
             const qty = itemData.qty;
+            slot.dataset.itemId = itemId; // para que el tutorial del guide lo localice
 
             slot.style.background = "rgba(255, 255, 255, 0.05)";
             slot.style.border = "1px solid rgba(255, 255, 255, 0.15)";
@@ -567,8 +598,10 @@ function openItemInspector(itemId, quantity) {
         const itemValue = item.value || item.price || 0;
         
         // MOUNT & COSMETICS EQUIP LOGIC
-        if (['mount', 'head', 'body', 'hat'].includes(item.category)) {
-            const isEquipped = (player.equipped && player.equipped[item.category] === itemId);
+        if (['mount', 'head', 'body', 'hat', 'companion'].includes(item.category)) {
+            const isEquipped = (item.category === 'companion')
+                ? (Array.isArray(player.companions) && player.companions.includes(itemId))
+                : (player.equipped && player.equipped[item.category] === itemId);
             btnEquip.style.display = 'block';
             btnEquip.innerText = isEquipped
                 ? ((typeof t === 'function') ? t('inv.equipped') : "Equipado")
@@ -649,6 +682,19 @@ if (btnEquipItem) {
             // Re-evaluar si es arma o cosm�tico
             const isWeapon = getWeaponData(currentInspectingItemId);
             const catalogItem = getCatalogData(currentInspectingItemId);
+
+            // 🐾/🧢 Cosmético (head/body/hat/mount/companion): equipar por categoría
+            const _cat = catalogItem && (catalogItem.category || '').toLowerCase();
+            if (!isWeapon && ['head', 'body', 'hat', 'mount', 'companion'].includes(_cat)) {
+                if (!player.equipped) player.equipped = {};
+                if (_cat !== 'companion') player.equipped[_cat] = currentInspectingItemId; // el compañero lo confirma el server (companion_update)
+                ws.send(MessagePack.encode({ type: 'equip_cosmetic', itemId: currentInspectingItemId, category: _cat }));
+                const _m = document.getElementById('item-detail-modal');
+                if (_m) _m.style.display = 'none';
+                if (inventoryModal) inventoryModal.style.display = 'none';
+                if (typeof restoreTrayAfterModal === 'function') restoreTrayAfterModal();
+                return;
+            }
             
             // 1. Asignar el arma a tu Hotbar activo
             if (player.hotbar) {
